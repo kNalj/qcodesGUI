@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLineEdit, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLineEdit, QLabel, QMessageBox,\
+                            QCheckBox
 from PyQt5 import QtGui
 from AddInstrumentWidget import Widget
 import time
@@ -17,6 +18,7 @@ class MainWindow(QMainWindow):
 
         self.instruments = {}
         self.station_instruments = {}
+        self.dividers = {}
 
         self.statusBar().showMessage("Ready")
         self.show()
@@ -70,7 +72,7 @@ class MainWindow(QMainWindow):
         self.btn_run.resize(60, 40)
         self.btn_run.clicked.connect(self.run_qcodes)
         
-        self.btn_show_station = QPushButton("Show station instruments", self)
+        self.btn_show_station = QPushButton("Show station", self)
         self.btn_show_station.move(560, 260)
         self.btn_show_station.resize(60, 40)
         self.btn_show_station.clicked.connect(self.show_station)
@@ -117,34 +119,46 @@ class MainWindow(QMainWindow):
         
     def run_qcodes(self):
         
-        # should enclose into try-catch
-        self.lower = float(self.textbox_lower_limit.text()) if self.textbox_lower_limit.text() != "" else 0
-        self.upper = float(self.textbox_upper_limit.text()) if self.textbox_upper_limit.text() != "" else 1
-        self.num = float(self.textbox_num.text()) if self.textbox_num.text() != "" else 10
-        self.step = float(self.textbox_step.text()) if self.textbox_step.text() != "" else 0
-        
-        station = qc.Station()
-        for key, value in self.instruments.items():
-            
-            name = key
-            instrument = value[0]
-            action = value[1]
-            parameter = value[2]
-            
-            station.add_component(instrument, name)
-            if action == "sweep":
-                sweep_parameter = instrument.parameters[parameter]
-            elif action == "measure":
-                measure_parameter = instrument.parameters[parameter]
+        try:
+            self.lower = float(self.textbox_lower_limit.text())
+            self.upper = float(self.textbox_upper_limit.text())
+            self.num = float(self.textbox_num.text())
+            self.step = float(self.textbox_step.text())
 
-        # look into this dmm.v1 (how the hell is this v1 created, some dynamic magical monstrosity)
-        # Found it at InstrumentBase.parameters -> dictionary with parameter string as keys
-        # C:\Users\nanoelectronics\Anaconda3\envs\qcodes\lib\site-packages\qcodes\instrument\base.py -> line 53
-        # lp = qc.Loop(dac.ch1.sweep(self.lower, self.upper, num=self.num), self.step).each(dmm.v1)
+            station = qc.Station()
+            for key, value in self.instruments.items():
 
-        # make sure both required parameters exist before running a loop
-        lp = qc.Loop(sweep_parameter.sweep(self.lower, self.upper, num=self.num), self.step).each(measure_parameter)
-        data = lp.run('data/dataset')
+                name = key
+                instrument = value[0]
+                action = value[1]
+                parameter = value[2]
+
+                station.add_component(instrument, name)
+                if action == "sweep":
+                    sweep_parameter = instrument.parameters[parameter]
+                elif action == "measure":
+                    measure_parameter = instrument.parameters[parameter]
+
+            try:
+                sweep_parameter
+            except Exception as e:
+                raise NameError("Please define sweep parameter.\n" + str(e))
+            try:
+                measure_parameter
+            except Exception as e:
+                raise NameError("Please define measure parameter.\n" + str(e))
+
+            # look into this dmm.v1 (how the hell is this v1 created, some dynamic magical monstrosity)
+            # Found it at InstrumentBase.parameters -> dictionary with parameter string as keys
+            # C:\Users\nanoelectronics\Anaconda3\envs\qcodes\lib\site-packages\qcodes\instrument\base.py -> line 53
+            # lp = qc.Loop(dac.ch1.sweep(self.lower, self.upper, num=self.num), self.step).each(dmm.v1)
+            lp = qc.Loop(sweep_parameter.sweep(self.lower, self.upper, num=self.num), self.step).each(measure_parameter)
+        except Exception as e:
+            warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
+                             + str(e)
+            self.show_error_message("Warning", warning_string)
+        else:
+            data = lp.run('data/dataset')
         
     def show_station(self):
         for key, value in self.instruments.items():
@@ -158,22 +172,44 @@ class MainWindow(QMainWindow):
 
     def update_station_preview(self):
         if len(self.instruments) == 1:
-            header_string = "Nr." + "       " + "Name" + "      " + "Type"
+            header_string = "Nr." + "       " + "Action" + "      " + "Type" + 4*"\t" + "Dividers"
             new_label = QLabel(header_string, self)
             new_label.move(35, 150)
-            new_label.resize(300, 20)
+            new_label.resize(500, 20)
             new_label.show()
 
         for instrument in self.instruments:
             if instrument not in self.station_instruments:
-                display_string = str((len(self.instruments))) + ".      " + instrument + "      " + str(self.instruments[instrument][0])
+                display_string = str((len(self.instruments))) + ".      " + self.instruments[instrument][1] + "      " \
+                                 + str(self.instruments[instrument][0])
                 new_label = QLabel(display_string, self)
                 new_label.move(35, 170 + 20*len(self.station_instruments))
                 new_label.resize(300, 20)
                 new_label.show()
 
+                if self.instruments[instrument][1] == "sweep":
+                    self.dividers[instrument] = {}
+                    for parameter in self.instruments[instrument][0].parameters:
+                        if parameter != "IDN":
+                            self.dividers[instrument][parameter] = 1
+
+                    # make it so that changing the value of this filed changes the amp value
+                    for i, gate in enumerate(self.dividers[instrument]):
+                        input_field = QLineEdit(self)
+                        input_field.resize(40, 20)
+                        input_field.move(310 + 60*i, 170 + 20*len(self.station_instruments))
+                        input_field.show()
+
                 self.station_instruments[instrument] = self.instruments[instrument]
 
+    def show_error_message(self, title, message):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QtGui.QMessageBox.Warning)
+        msg_box.setWindowIcon(QtGui.QIcon("warning_icon.png"))
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg_box.exec_()
 
 def main():
     app = QApplication(sys.argv)

@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QVBoxLayout, QRadioButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QVBoxLayout, \
+    QRadioButton, QMessageBox
 from PyQt5 import QtGui
 import sys
 
@@ -33,7 +34,6 @@ class Widget(QWidget):
         self.label = QLabel("Type", self)
         self.label.move(20, 65)
         self.instrument_type = QLineEdit(self)
-        #self.instrument_type.setText()
         self.instrument_type.move(20, 80)
         self.instrument_type.setEnabled(False)
         
@@ -66,7 +66,7 @@ class Widget(QWidget):
 
     def add_instrument(self):
         """
-        Called upon clicking OK. Adds a new instrument based on input by user to the instrument dictionary in main window.
+        Called upon clicking OK. Adds instrument (based on unser input) to the instrument dictionary in the main window.
         Data structure -> instruments[name] : [instrument object, sweep/measure, gate to sweep/observe]
         """
 
@@ -78,7 +78,7 @@ class Widget(QWidget):
         name = self.instrument_name.text()
         gate = self.observed_gate.text()
         
-        if self.b1.isChecked(): # sweep
+        if self.b1.isChecked():  # sweep
             self.instruments[name] = [instrument(name, gates=gates), "sweep", gate]
         elif self.b2.isChecked():
             self.instruments[name] = [instrument(name, gates=gates), "measure", gate]
@@ -102,15 +102,18 @@ class Widget(QWidget):
         
     def validate_instrument_input(self):
         if len(self.instrument_name.text()) < 1:
-            #should also check is there is an instrument with a same name
+            # should also check is there is an instrument with a same name
             error_message = "Please specify instrument name."
         elif len(self.instrument_gates.text()) < 1:
-            #validate with REGEX maaaaybe ?
+            # validate with REGEX maaaaybe ?
             error_message = "Please specify instrument gates."
         elif len(self.observed_gate.text()) < 1:
-            #should add check if specified gate is withing gates
+            # should add check if specified gate is withing gates
             error_message = "Please specify observed gate."
-        elif self.b1.isChecked() == False and self.b2.isChecked() == False:
+        elif self.observed_gate.text() not in self.instrument_gates.text().split(","):
+            error_message = "Observed gate not in list of instrument gates " \
+                            + str(self.instrument_gates.text().split(","))
+        elif self.b1.isChecked() is False and self.b2.isChecked() is False:
             error_message = "Please specify instrument action (sweep/measure)"
         else:
             error_message = ""
@@ -120,6 +123,7 @@ class Widget(QWidget):
             return True
         else:
             return False
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
