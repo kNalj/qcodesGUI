@@ -4,6 +4,8 @@ from PyQt5 import QtGui
 from AddInstrumentWidget import Widget
 import time
 import sys
+import os
+import inspect
 
 import qcodes as qc
 from qcodes.tests.instrument_mocks import DummyInstrument
@@ -97,6 +99,18 @@ class MainWindow(QMainWindow):
         start_new_measurement_menu.addAction(start_new_measurement_action)
         start_new_measurement_menu.addSeparator()
 
+        path = os.path.dirname(inspect.getfile(qc)) + "\\instrument_drivers"
+        brands = self.get_subfolders(path, True)
+        for brand in brands:
+            current_brand_menu = QMenu(brand, self)
+            start_new_measurement_menu.addMenu(current_brand_menu)
+            models = self.get_files_in_folder(path + "\\" + brand, True)
+            for model in models:
+                current_model_action = QAction(model[0:-3], self)
+                current_brand_menu.addAction(current_model_action)
+                current_model_action.triggered.connect(self.add_new_instrument)
+
+
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu("&File")
         file_menu.addAction(exit_action)
@@ -118,6 +132,11 @@ class MainWindow(QMainWindow):
         self.add_instrument.show()
         
     def run_qcodes(self):
+        """
+        Runs qcodes with specified instruments and parameters. Checks for erronrs in data prior to runing qcodes
+
+        :return: NoneType
+        """
         
         try:
             self.lower = float(self.textbox_lower_limit.text())
@@ -161,6 +180,11 @@ class MainWindow(QMainWindow):
             data = lp.run('data/dataset')
         
     def show_station(self):
+        """
+        Helper function, should get removed when no longer needed, used by developer for testing only
+
+        :return: NoneType
+        """
         for key, value in self.instruments.items():
             print(key)
             print(value[0].parameters)
@@ -171,6 +195,12 @@ class MainWindow(QMainWindow):
             print(value[0].parameters)
 
     def update_station_preview(self):
+        """
+        When new instrument is added, updates the main window to display data about most recent instrument
+         added to the instruments dictionary.
+
+        :return: NoneType
+        """
         if len(self.instruments) == 1:
             header_string = "Nr." + "       " + "Action" + "      " + "Type" + 4*"\t" + "Dividers"
             new_label = QLabel(header_string, self)
@@ -203,6 +233,13 @@ class MainWindow(QMainWindow):
                 self.station_instruments[instrument] = self.instruments[instrument]
 
     def show_error_message(self, title, message):
+        """
+        Function for displaying warnings/errors
+
+        :param title: Title of the displayed watning window
+        :param message: Message shown by the displayed watning window
+        :return: NoneType
+        """
         msg_box = QMessageBox()
         msg_box.setIcon(QtGui.QMessageBox.Warning)
         msg_box.setWindowIcon(QtGui.QIcon("warning_icon.png"))
@@ -210,6 +247,29 @@ class MainWindow(QMainWindow):
         msg_box.setText(message)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.exec_()
+
+    def get_subfolders(self, path, instrument_brands_only=False):
+        """
+        Helper function to find all folders within folder specified by "path"
+
+        :param path: path to folder to scrap subfolders from
+        :return: list[] of subfolders from specified path
+        """
+        if instrument_brands_only:
+            return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0] != "_"]
+        return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0]]
+
+    def get_files_in_folder(self, path, instrument_drivers_only=False):
+        """
+        Helper function to find all files within folder specified by path
+
+        :param path: path to folder to scrap files from
+        :return: list[] of files from specified path
+        """
+        if instrument_drivers_only:
+            return[f.name for f in os.scandir(path) if f.is_file() and f.name[0].upper() == f.name[0] and f.name[0] != "_"]
+        return[f.name for f in os.scandir(path) if f.is_file()]
+
 
 def main():
     app = QApplication(sys.argv)

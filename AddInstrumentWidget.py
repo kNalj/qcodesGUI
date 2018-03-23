@@ -4,10 +4,19 @@ from PyQt5 import QtGui
 import sys
 
 from qcodes.tests.instrument_mocks import DummyInstrument
+from qcodes.instrument_drivers.QuTech import *
 
 
 class Widget(QWidget):
+
     def __init__(self, instruments, parent=None):
+        """
+        Constructor for AddInstrumentWidget window
+
+        :param instruments: Dictionary shared with parent (MainWindow) to be able to add instruments to instruments
+        dictionary in the MainWindow
+        :param parent: specify object that created this widget
+        """
         super(Widget, self).__init__()
 
         self.instruments = instruments
@@ -19,6 +28,11 @@ class Widget(QWidget):
         self.show()
 
     def init_ui(self):
+        """
+        Initialisation of the user interface (as the function name suggests)
+
+        :return: NoneType
+        """
 
         self.setGeometry(256, 256, 320, 260)
         self.setWindowTitle("Add new instrument")
@@ -60,13 +74,14 @@ class Widget(QWidget):
         self.ok_button = QPushButton("OK", self)
         self.ok_button.move(20, 220)
         self.ok_button.resize(280, 30)
-        self.ok_button.clicked.connect(self.add_instrument)
+        #self.ok_button.clicked.connect(self.add_instrument)
+        self.ok_button.clicked.connect(self.create_object)
         
         self.update_instrument_data()
 
     def add_instrument(self):
         """
-        Called upon clicking OK. Adds instrument (based on unser input) to the instrument dictionary in the main window.
+        Called upon clicking OK. Adds instrument (based on user input) to the instrument dictionary in the main window.
         Data structure -> instruments[name] : [instrument object, sweep/measure, gate to sweep/observe]
         """
 
@@ -87,11 +102,23 @@ class Widget(QWidget):
         self.close()
         
     def update_instrument_data(self):
+        """
+        Upon selecting one of instruments from dropdown, updates input fields with data availible from class
+
+        :return: NoneType
+        """
         
         self.instrument_type.setText(self.cb.currentText())
         self.instrument_gates.setText("g1,g2,g3")
         
     def show_error_message(self, title, message):
+        """
+        Function for displaying warnings/errors
+
+        :param title: Title of the displayed watning window
+        :param message: Message shown by the displayed watning window
+        :return: NoneType
+        """
         msg_box = QMessageBox()
         msg_box.setIcon(QtGui.QMessageBox.Warning)
         msg_box.setWindowIcon(QtGui.QIcon("warning_icon.png"))
@@ -101,6 +128,11 @@ class Widget(QWidget):
         msg_box.exec_()
         
     def validate_instrument_input(self):
+        """
+        Make sure all fields required for creating an object of a class are filled in with valid data
+
+        :return: NoneType
+        """
         if len(self.instrument_name.text()) < 1:
             # should also check is there is an instrument with a same name
             error_message = "Please specify instrument name."
@@ -124,6 +156,21 @@ class Widget(QWidget):
         else:
             return False
 
+    def instanciate_instrument_from_classname(self, classname):
+        """
+        Function that creates object of "classname" class and returns it
+
+        :param classname: name of the instrument class as a string
+        :return: instance of a "classname" class
+        """
+        id = classname
+        constructor = globals()[id]
+        print(type(constructor()))
+        # return constructor()
+
+    def create_object(self):
+        #self.instanciate_instrument_from_classname("IVVI")
+        print(globals()["D4"])
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
