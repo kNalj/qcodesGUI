@@ -2,9 +2,10 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabe
     QRadioButton, QMessageBox
 from PyQt5 import QtGui
 import sys
+import os
 
 from qcodes.tests.instrument_mocks import DummyInstrument
-from qcodes.instrument_drivers.QuTech import *
+from instrument_imports import *
 
 
 class Widget(QWidget):
@@ -20,9 +21,8 @@ class Widget(QWidget):
         super(Widget, self).__init__()
 
         self.instruments = instruments
-        self.premade_instruments = {"Dummy instrument": DummyInstrument,
-                                    "Other premade instrument": "Some other class",
-                                    "Yet another instrument": "Third instruments class"}
+        self.premade_instruments = {}
+        self.populate_premade_instruments()
         self.parent = parent
         self.init_ui()
         self.show()
@@ -156,6 +156,9 @@ class Widget(QWidget):
         else:
             return False
 
+    def populate_premade_instruments(self):
+        pass
+
     def instanciate_instrument_from_classname(self, classname):
         """
         Function that creates object of "classname" class and returns it
@@ -165,12 +168,36 @@ class Widget(QWidget):
         """
         id = classname
         constructor = globals()[id]
-        print(type(constructor()))
-        # return constructor()
+        #print(type(constructor()))
+        return constructor()
 
     def create_object(self):
-        #self.instanciate_instrument_from_classname("IVVI")
-        print(globals()["D4"])
+        self.instanciate_instrument_from_classname(self.instrument_type.text())
+
+    def get_subfolders(self, path, instrument_brands_only=False):
+        """
+        Helper function to find all folders within folder specified by "path"
+
+        :param path: path to folder to scrap subfolders from
+        :param instrument_brands_only: set to True if you want to filter brands of instruments only
+        :return: list[] of subfolders from specified path
+        """
+        if instrument_brands_only:
+            return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0] != "_"]
+        return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0]]
+
+    def get_files_in_folder(self, path, instrument_drivers_only=False):
+        """
+        Helper function to find all files within folder specified by path
+
+        :param path: path to folder to scrap files from
+        :param instrument_drivers_only: if True, apply set of rules that filter only instrument driver files
+        :return: list[] of files from specified path
+        """
+        if instrument_drivers_only:
+            return[f.name for f in os.scandir(path) if f.is_file() and f.name[0].upper() == f.name[0] and f.name[0] != "_"]
+        return[f.name for f in os.scandir(path) if f.is_file()]
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

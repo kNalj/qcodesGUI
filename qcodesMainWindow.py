@@ -10,6 +10,10 @@ import inspect
 import qcodes as qc
 from qcodes.tests.instrument_mocks import DummyInstrument
 
+"""
+Remember to change AddInstrumentWidget -> line 78
+from create_object, to add_instrument
+"""
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -84,6 +88,8 @@ class MainWindow(QMainWindow):
     def init_menu_bar(self):
         """
         Initializes menu bar, creates actions and submenus within menu bar, connects actions to menu items
+        KNOWN PROBLEMS -> ["M3201A", "M3300A", "M4i", "ZIUHFLI"] list of instruments that produce bugs
+
         :return: NoneType
         """
 
@@ -106,9 +112,16 @@ class MainWindow(QMainWindow):
             start_new_measurement_menu.addMenu(current_brand_menu)
             models = self.get_files_in_folder(path + "\\" + brand, True)
             for model in models:
-                current_model_action = QAction(model[0:-3], self)
-                current_brand_menu.addAction(current_model_action)
-                current_model_action.triggered.connect(self.add_new_instrument)
+                if model[0:-3] not in ["M3201A", "M3300A", "M4i", "ZIUHFLI", "Keithley_2600_channels", "AWGFileParser"]:
+                    current_model_action = QAction(model[0:-3], self)
+                    current_brand_menu.addAction(current_model_action)
+                    current_model_action.triggered.connect(self.add_new_instrument)
+                else:
+                    current_model_action = QAction(model[0:-3], self)
+                    current_model_action.setEnabled(False)
+                    current_model_action.setIcon(QtGui.QIcon("disabled.png"))
+                    current_brand_menu.addAction(current_model_action)
+                    current_model_action.triggered.connect(self.add_new_instrument)
 
 
         menu_bar = self.menuBar()
@@ -264,6 +277,7 @@ class MainWindow(QMainWindow):
         Helper function to find all files within folder specified by path
 
         :param path: path to folder to scrap files from
+        :param instrument_drivers_only: if True, apply set of rules that filter only instrument driver files
         :return: list[] of files from specified path
         """
         if instrument_drivers_only:
