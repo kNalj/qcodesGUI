@@ -1,10 +1,13 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QVBoxLayout, \
     QRadioButton, QMessageBox
 from PyQt5 import QtGui
+
+import inspect
 import sys
 import os
+import importlib
 
-from qcodes.tests.instrument_mocks import DummyInstrument
+import qcodes as qc
 from instrument_imports import *
 
 
@@ -27,6 +30,9 @@ class Widget(QWidget):
         self.init_ui()
         self.show()
 
+    """""""""""""""""""""
+    User interface
+    """""""""""""""""""""
     def init_ui(self):
         """
         Initialisation of the user interface (as the function name suggests)
@@ -56,26 +62,20 @@ class Widget(QWidget):
         self.instrument_name = QLineEdit(self)
         self.instrument_name.move(20, 130)
         
-        self.label = QLabel("Gates (example: v1, v2)", self)
+        self.label = QLabel("Address", self)
         self.label.move(20, 165)
-        self.instrument_gates = QLineEdit(self)
-        self.instrument_gates.move(20, 180)
+        self.instrument_address = QLineEdit(self)
+        self.instrument_address.move(20, 180)
 
         self.b1 = QRadioButton("Sweep", self)
         self.b1.move(200, 80)
         self.b2 = QRadioButton("Measure", self)
         self.b2.move(200, 100)
 
-        self.label = QLabel("Observed gate", self)
-        self.label.move(160, 165)
-        self.observed_gate = QLineEdit(self)
-        self.observed_gate.move(160, 180)
-
         self.ok_button = QPushButton("OK", self)
         self.ok_button.move(20, 220)
         self.ok_button.resize(280, 30)
-        #self.ok_button.clicked.connect(self.add_instrument)
-        self.ok_button.clicked.connect(self.create_object)
+        self.ok_button.clicked.connect(self.add_instrument)
         
         self.update_instrument_data()
 
@@ -88,15 +88,18 @@ class Widget(QWidget):
         if self.validate_instrument_input():
             return
                 
-        instrument = self.premade_instruments[self.instrument_type.text()]
-        gates = self.instrument_gates.text().split(",")
+        # instrument = self.premade_instruments[self.instrument_type.text()]
         name = self.instrument_name.text()
-        gate = self.observed_gate.text()
-        
-        if self.b1.isChecked():  # sweep
-            self.instruments[name] = [instrument(name, gates=gates), "sweep", gate]
+
+        """if self.b1.isChecked():  # sweep
+            self.instruments[name] = self.create_object()
         elif self.b2.isChecked():
-            self.instruments[name] = [instrument(name, gates=gates), "measure", gate]
+            self.instruments[name] = self.create_object()"""
+
+        try:
+            self.instruments[name] = self.create_object()
+        except Exception as e:
+            print(str(e))
 
         self.parent.update_station_preview()
         self.close()
@@ -109,9 +112,109 @@ class Widget(QWidget):
         """
         
         self.instrument_type.setText(self.cb.currentText())
-        self.instrument_gates.setText("g1,g2,g3")
+
+    """""""""""""""""""""
+    Data manipulation
+    """""""""""""""""""""
+    def validate_instrument_input(self):
+        """
+        Make sure all fields required for creating an object of a class are filled in with valid data
+
+        :return: True if there is an error, False if there is no errors
+        """
+        name = self.instrument_name.text()
+
+        if len(name) < 1:
+            error_message = "Please specify instrument name."
+        elif name in self.instruments:
+            error_message = "Another instrument already has name: " + name
+        else:
+            error_message = ""
         
-    def show_error_message(self, title, message):
+        if error_message != "":
+            self.show_error_message("Warning", error_message)
+            return True
+        else:
+            return False
+
+    def populate_premade_instruments(self):
+        """
+        Walks through folder structure and fetches instruments and their classes for further use
+
+        :return: NoneType
+        """
+
+        not_working = ["Keysight_33500B_channels", "M3201A", "M3300A", "M4i", "ZIUHFLI", "AWGFileParser"]
+
+        path = os.path.dirname(inspect.getfile(qc)) + "\\instrument_drivers"
+        brands = self.get_subfolders(path, True)
+        for brand in brands:
+            models = self.get_files_in_folder(path + "\\" + brand, True)
+            for model in models:
+                if model[0:-3] not in not_working:
+                    module_name = "qcodes.instrument_drivers." + brand + "." + model[:-3]
+                    module = importlib.import_module(module_name)
+                    my_class = 0
+                    if model[:-3] not in correct_names.keys():
+                        try:
+                            my_class = getattr(module, model[:-3])
+                        except Exception as e:
+                            print(str(e))
+                        finally:
+                            self.premade_instruments[model[:-3]] = my_class
+                    else:
+                        try:
+                            my_class = getattr(module, correct_names[model[:-3]])
+                        except Exception as e:
+                            print(str(e))
+                        finally:
+                            self.premade_instruments[model[:-3]] = my_class
+
+    def instantiate_instrument_from_classname(self, classname, name=None, address=None):
+        """
+        Function that creates object of "classname" class and returns it
+
+        :param classname: name of the instrument class as a string
+        :return: instance of a "classname" class
+        """
+
+        constructor = self.premade_instruments[classname]
+        return constructor(name, address)
+
+    def create_object(self):
+        return self.instanciate_instrument_from_classname(self.instrument_type.text(), self.instrument_name.text())
+
+    """""""""""""""""""""
+    Helper functions
+    """""""""""""""""""""
+    @staticmethod
+    def get_subfolders(path, instrument_brands_only=False):
+        """
+        Helper function to find all folders within folder specified by "path"
+
+        :param path: path to folder to scrap subfolders from
+        :param instrument_brands_only: set to True if you want to filter brands of instruments only
+        :return: list[] of subfolders from specified path
+        """
+        if instrument_brands_only:
+            return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0] != "_"]
+        return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0]]
+
+    @staticmethod
+    def get_files_in_folder(path, instrument_drivers_only=False):
+        """
+        Helper function to find all files within folder specified by path
+
+        :param path: path to folder to scrap files from
+        :param instrument_drivers_only: if True, apply set of rules that filter only instrument driver files
+        :return: list[] of files from specified path
+        """
+        if instrument_drivers_only:
+            return[f.name for f in os.scandir(path) if f.is_file() and f.name[0].upper() == f.name[0] and f.name[0] != "_"]
+        return[f.name for f in os.scandir(path) if f.is_file()]
+
+    @staticmethod
+    def show_error_message(title, message):
         """
         Function for displaying warnings/errors
 
@@ -126,77 +229,6 @@ class Widget(QWidget):
         msg_box.setText(message)
         msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
         msg_box.exec_()
-        
-    def validate_instrument_input(self):
-        """
-        Make sure all fields required for creating an object of a class are filled in with valid data
-
-        :return: NoneType
-        """
-        if len(self.instrument_name.text()) < 1:
-            # should also check is there is an instrument with a same name
-            error_message = "Please specify instrument name."
-        elif len(self.instrument_gates.text()) < 1:
-            # validate with REGEX maaaaybe ?
-            error_message = "Please specify instrument gates."
-        elif len(self.observed_gate.text()) < 1:
-            # should add check if specified gate is withing gates
-            error_message = "Please specify observed gate."
-        elif self.observed_gate.text() not in self.instrument_gates.text().split(","):
-            error_message = "Observed gate not in list of instrument gates " \
-                            + str(self.instrument_gates.text().split(","))
-        elif self.b1.isChecked() is False and self.b2.isChecked() is False:
-            error_message = "Please specify instrument action (sweep/measure)"
-        else:
-            error_message = ""
-        
-        if error_message != "":
-            self.show_error_message("Warning", error_message)
-            return True
-        else:
-            return False
-
-    def populate_premade_instruments(self):
-        pass
-
-    def instanciate_instrument_from_classname(self, classname):
-        """
-        Function that creates object of "classname" class and returns it
-
-        :param classname: name of the instrument class as a string
-        :return: instance of a "classname" class
-        """
-        id = classname
-        constructor = globals()[id]
-        #print(type(constructor()))
-        return constructor()
-
-    def create_object(self):
-        self.instanciate_instrument_from_classname(self.instrument_type.text())
-
-    def get_subfolders(self, path, instrument_brands_only=False):
-        """
-        Helper function to find all folders within folder specified by "path"
-
-        :param path: path to folder to scrap subfolders from
-        :param instrument_brands_only: set to True if you want to filter brands of instruments only
-        :return: list[] of subfolders from specified path
-        """
-        if instrument_brands_only:
-            return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0] != "_"]
-        return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0]]
-
-    def get_files_in_folder(self, path, instrument_drivers_only=False):
-        """
-        Helper function to find all files within folder specified by path
-
-        :param path: path to folder to scrap files from
-        :param instrument_drivers_only: if True, apply set of rules that filter only instrument driver files
-        :return: list[] of files from specified path
-        """
-        if instrument_drivers_only:
-            return[f.name for f in os.scandir(path) if f.is_file() and f.name[0].upper() == f.name[0] and f.name[0] != "_"]
-        return[f.name for f in os.scandir(path) if f.is_file()]
 
 
 if __name__ == '__main__':

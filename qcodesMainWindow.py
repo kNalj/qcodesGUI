@@ -77,11 +77,6 @@ class MainWindow(QMainWindow):
         self.btn_run.move(560, 320)
         self.btn_run.resize(60, 40)
         self.btn_run.clicked.connect(self.run_qcodes)
-        
-        self.btn_show_station = QPushButton("Show station", self)
-        self.btn_show_station.move(560, 260)
-        self.btn_show_station.resize(60, 40)
-        self.btn_show_station.clicked.connect(self.show_station)
 
         self.statusBar().showMessage("Ready")
 
@@ -191,21 +186,6 @@ class MainWindow(QMainWindow):
             self.show_error_message("Warning", warning_string)
         else:
             data = lp.run('data/dataset')
-        
-    def show_station(self):
-        """
-        Helper function, should get removed when no longer needed, used by developer for testing only
-
-        :return: NoneType
-        """
-        for key, value in self.instruments.items():
-            print(key)
-            print(value[0].parameters)
-
-        print("Station instruments")
-        for key, value in self.station_instruments.items():
-            print(key)
-            print(value[0].parameters)
 
     def update_station_preview(self):
         """

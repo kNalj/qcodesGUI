@@ -1,5 +1,6 @@
 import qcodes as qc
 from qcodes.tests.instrument_mocks import DummyInstrument
+from qcodes.instrument_drivers.QuTech.IVVI import IVVI
         
 #dmm = DummyInstrument('dmm', gates=['v1', 'v2'])
 #dac = DummyInstrument('dac', gates=['ch1', 'ch2'])
@@ -7,8 +8,9 @@ from qcodes.tests.instrument_mocks import DummyInstrument
 names = ["dmm","dac"]
 instruments = {"dmm" : DummyInstrument('dmm', gates=['v1', 'v2']), "dac" : DummyInstrument('dac', gates=['ch1', 'ch2'])}
 
-
-    
+name = "name"
+address = "123.123.123.123"
+ivvi = IVVI(name, address)
 
 """uncomment the line below to have acces to extra data (states of the instruments)
 creates additional dict entry with data about all instruments used"""
