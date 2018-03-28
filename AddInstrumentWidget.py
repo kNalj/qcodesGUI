@@ -4,11 +4,13 @@ from PyQt5 import QtGui
 
 import inspect
 import sys
-import os
 import importlib
 
 import qcodes as qc
 from instrument_imports import *
+from Helpers import *
+from qcodes.instrument.ip import IPInstrument
+from qcodes.instrument.visa import VisaInstrument
 
 
 class Widget(QWidget):
@@ -22,7 +24,6 @@ class Widget(QWidget):
         :param parent: specify object that created this widget
         """
         super(Widget, self).__init__()
-
         self.instruments = instruments
         self.premade_instruments = {}
         self.populate_premade_instruments()
@@ -62,20 +63,20 @@ class Widget(QWidget):
         self.instrument_name = QLineEdit(self)
         self.instrument_name.move(20, 130)
         
-        self.label = QLabel("Address", self)
-        self.label.move(20, 165)
+        self.address_label = QLabel("Address", self)
+        self.address_label.move(20, 165)
+        self.address_label.resize(400, 15)
         self.instrument_address = QLineEdit(self)
         self.instrument_address.move(20, 180)
 
-        self.b1 = QRadioButton("Sweep", self)
-        self.b1.move(200, 80)
-        self.b2 = QRadioButton("Measure", self)
-        self.b2.move(200, 100)
-
         self.ok_button = QPushButton("OK", self)
         self.ok_button.move(20, 220)
-        self.ok_button.resize(280, 30)
         self.ok_button.clicked.connect(self.add_instrument)
+
+        self.label_type = QLabel("Type: ", self)
+        self.label_type.move(180, 65)
+        self.label_num_gates = QLabel("Num. of gates: ", self)
+        self.label_num_gates.move(180, 80)
         
         self.update_instrument_data()
 
@@ -88,21 +89,17 @@ class Widget(QWidget):
         if self.validate_instrument_input():
             return
                 
-        # instrument = self.premade_instruments[self.instrument_type.text()]
         name = self.instrument_name.text()
-
-        """if self.b1.isChecked():  # sweep
-            self.instruments[name] = self.create_object()
-        elif self.b2.isChecked():
-            self.instruments[name] = self.create_object()"""
-
+        instrument = None
         try:
-            self.instruments[name] = self.create_object()
+            instrument = self.create_object()
         except Exception as e:
-            print(str(e))
+            show_error_message("Warning", str(e))
 
-        self.parent.update_station_preview()
-        self.close()
+        if instrument is not None:
+            self.instruments[name] = instrument
+            self.parent.update_station_preview()
+            self.close()
         
     def update_instrument_data(self):
         """
@@ -110,8 +107,15 @@ class Widget(QWidget):
 
         :return: NoneType
         """
-        
-        self.instrument_type.setText(self.cb.currentText())
+
+        instrument_type = self.cb.currentText()
+        instrument_class = self.premade_instruments[instrument_type]
+        self.instrument_type.setText(instrument_type)
+
+        if issubclass(instrument_class, IPInstrument):
+            pass
+        elif issubclass(instrument_class, VisaInstrument):
+            pass
 
     """""""""""""""""""""
     Data manipulation
@@ -123,16 +127,20 @@ class Widget(QWidget):
         :return: True if there is an error, False if there is no errors
         """
         name = self.instrument_name.text()
+        address = self.instrument_address.text()
 
         if len(name) < 1:
             error_message = "Please specify instrument name."
         elif name in self.instruments:
-            error_message = "Another instrument already has name: " + name
+            error_message = "Another instrument already has name: {}" + name + \
+                            ". Please change the name of your isntrument"
+        elif len(address) < 1:
+            error_message = "Please specify instrument address"
         else:
             error_message = ""
         
         if error_message != "":
-            self.show_error_message("Warning", error_message)
+            show_error_message("Warning", error_message)
             return True
         else:
             return False
@@ -143,13 +151,13 @@ class Widget(QWidget):
 
         :return: NoneType
         """
-
+        self.premade_instruments["DummyInstrument"] = getattr(importlib.import_module("qcodes.tests.instrument_mocks"), "DummyInstrument")
         not_working = ["Keysight_33500B_channels", "M3201A", "M3300A", "M4i", "ZIUHFLI", "AWGFileParser"]
 
         path = os.path.dirname(inspect.getfile(qc)) + "\\instrument_drivers"
-        brands = self.get_subfolders(path, True)
+        brands = get_subfolders(path, True)
         for brand in brands:
-            models = self.get_files_in_folder(path + "\\" + brand, True)
+            models = get_files_in_folder(path + "\\" + brand, True)
             for model in models:
                 if model[0:-3] not in not_working:
                     module_name = "qcodes.instrument_drivers." + brand + "." + model[:-3]
@@ -170,65 +178,34 @@ class Widget(QWidget):
                         finally:
                             self.premade_instruments[model[:-3]] = my_class
 
-    def instantiate_instrument_from_classname(self, classname, name=None, address=None):
-        """
-        Function that creates object of "classname" class and returns it
-
-        :param classname: name of the instrument class as a string
-        :return: instance of a "classname" class
-        """
-
-        constructor = self.premade_instruments[classname]
-        return constructor(name, address)
-
     def create_object(self):
-        return self.instanciate_instrument_from_classname(self.instrument_type.text(), self.instrument_name.text())
-
+        classname = self.instrument_type.text()
+        name = self.instrument_name.text()
+        instrument = None
+        if classname == "DummyInstrument":
+            try:
+                instrument = self.premade_instruments[classname](name, gates=["g1", "g2"])
+            except Exception as e:
+                if "VI_ERROR_RSRC_NFOUND" in str(e):
+                    show_error_message("Critical error", str(e) +
+                                       "\n\nTranslated to human language: Your address is probably incorrect")
+                else:
+                    show_error_message("Critical error", str(e))
+        else:
+            address = self.instrument_address.text()
+            try:
+                instrument = self.premade_instruments[classname](name, address)
+            except Exception as e:
+                if "VI_ERROR_RSRC_NFOUND" in str(e):
+                    show_error_message("Critical error", str(e) +
+                                       "\n\nTranslated to human language: Your address is probably incorrect")
+                else:
+                    show_error_message("Critical error", str(e))
+        return instrument
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
-    @staticmethod
-    def get_subfolders(path, instrument_brands_only=False):
-        """
-        Helper function to find all folders within folder specified by "path"
-
-        :param path: path to folder to scrap subfolders from
-        :param instrument_brands_only: set to True if you want to filter brands of instruments only
-        :return: list[] of subfolders from specified path
-        """
-        if instrument_brands_only:
-            return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0] != "_"]
-        return [f.name for f in os.scandir(path) if f.is_dir() and f.name[0]]
-
-    @staticmethod
-    def get_files_in_folder(path, instrument_drivers_only=False):
-        """
-        Helper function to find all files within folder specified by path
-
-        :param path: path to folder to scrap files from
-        :param instrument_drivers_only: if True, apply set of rules that filter only instrument driver files
-        :return: list[] of files from specified path
-        """
-        if instrument_drivers_only:
-            return[f.name for f in os.scandir(path) if f.is_file() and f.name[0].upper() == f.name[0] and f.name[0] != "_"]
-        return[f.name for f in os.scandir(path) if f.is_file()]
-
-    @staticmethod
-    def show_error_message(title, message):
-        """
-        Function for displaying warnings/errors
-
-        :param title: Title of the displayed watning window
-        :param message: Message shown by the displayed watning window
-        :return: NoneType
-        """
-        msg_box = QMessageBox()
-        msg_box.setIcon(QtGui.QMessageBox.Warning)
-        msg_box.setWindowIcon(QtGui.QIcon("warning_icon.png"))
-        msg_box.setWindowTitle(title)
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
-        msg_box.exec_()
+    # moved all helpers to separate file Helpers.py
 
 
 if __name__ == '__main__':
