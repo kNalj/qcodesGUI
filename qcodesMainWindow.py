@@ -6,6 +6,7 @@ import inspect
 
 import qcodes as qc
 from Helpers import *
+from ViewTree import ViewTree
 
 """
 Remember to change AddInstrumentWidget -> line 78
@@ -21,7 +22,9 @@ class MainWindow(QMainWindow):
 
         self.instruments = {}
         self.station_instruments = {}
-        self.dividers = {}
+        self.loops = {}
+        self.shown_loops = {}
+        self.actions = []
 
         self.statusBar().showMessage("Ready")
         self.show()
@@ -36,18 +39,32 @@ class MainWindow(QMainWindow):
         """
 
         self.setGeometry(128, 128, 640, 400)
+        self.setMinimumSize(640, 400)
         self.setWindowTitle("qcodes starter")
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
         
         label = QLabel("Instruments:", self)
         label.move(25,  30)
 
-        self.frame = QFrame(self)
-        self.frame.move(45, 65)
-        self.frame.setFrameShape(QFrame.StyledPanel)
-        self.frame.setFrameShadow(QFrame.Sunken)
-        self.frame.resize(400, 300)
-        self.frame.setStyleSheet("background-color: rgb(245, 245, 245)")
+        self.instruments_frame = QFrame(self)
+        self.instruments_frame.move(45, 65)
+        self.instruments_frame.setFrameShape(QFrame.StyledPanel)
+        self.instruments_frame.setFrameShadow(QFrame.Sunken)
+        self.instruments_frame.resize(400, 160)
+        self.instruments_frame.setStyleSheet("background-color: rgb(245, 245, 245)")
+
+        label = QLabel("Loops", self)
+        label.move(25, 240)
+        self.show_loop_details_btn = QPushButton("Show tree", self)
+        self.show_loop_details_btn.move(80, 240)
+        self.show_loop_details_btn.resize(100, 30)
+        self.show_loop_details_btn.clicked.connect(self.open_tree)
+        self.loops_frame = QFrame(self)
+        self.loops_frame.move(45, 280)
+        self.loops_frame.setFrameShape(QFrame.StyledPanel)
+        self.loops_frame.setFrameShadow(QFrame.Sunken)
+        self.loops_frame.resize(400, 100)
+        self.loops_frame.setStyleSheet("background-color: rgb(245, 245, 245)")
         
         self.btn_add_instrument = QPushButton("Add instrument", self)
         self.btn_add_instrument.move(490, 50)
@@ -156,49 +173,45 @@ class MainWindow(QMainWindow):
 
                 self.station_instruments[instrument] = self.instruments[instrument]
 
+    def update_loops_preview(self):
+        for name, loop in self.loops.items():
+            if name not in self.shown_loops:
+                self.shown_loops[name] = True
+                sweep_parameter_string = loop.snapshot_base()["sweep_values"]["parameter"]["full_name"]
+                actions = ""
+                for action in loop.snapshot_base()["actions"]:
+                    actions += str(action)
+                new_label = QLabel(name + "\t sweep on: " + sweep_parameter_string + "\t actions:" + actions, self)
+                new_label.move(60, 270 + 20 * len(self.loops))
+                new_label.resize(300, 20)
+                new_label.show()
+
     def run_qcodes(self):
         """
-        Runs qcodes with specified instruments and parameters. Checks for erronrs in data prior to runing qcodes
+        Runs qcodes with specified instruments and parameters. Checks for errors in data prior to runing qcodes
 
         :return: NoneType
         """
-        
-        try:
-            self.lower = float(self.textbox_lower_limit.text())
-            self.upper = float(self.textbox_upper_limit.text())
-            self.num = float(self.textbox_num.text())
-            self.step = float(self.textbox_step.text())
+        station = qc.Station()
+        for name, instrument in self.instruments.items():
+            station.add_component(instrument, name)
 
-            station = qc.Station()
-            for key, value in self.instruments.items():
-                name = key
-                instrument = value
-                station.add_component(instrument, name)
+        if len(self.actions) > 0:
+            if len(self.actions) == 1:
+                data = self.actions[0].run('data/dataset')
+            else:
+                # find out what to do when more loops are to be run
+                data = self.actions[-1].run('data/dataset')
 
-            """try:
-                sweep_parameter
-            except Exception as e:
-                raise NameError("Please define sweep parameter.\n" + str(e))
-            try:
-                measure_parameter
-            except Exception as e:
-                raise NameError("Please define measure parameter.\n" + str(e))"""
-
-            # look into this dmm.v1 (how the hell is this v1 created, some dynamic magical monstrosity)
-            # Found it at InstrumentBase.parameters -> dictionary with parameter string as keys
-            # C:\Users\nanoelectronics\Anaconda3\envs\qcodes\lib\site-packages\qcodes\instrument\base.py -> line 53
-            # lp = qc.Loop(dac.ch1.sweep(self.lower, self.upper, num=self.num), self.step).each(dmm.v1)
-            lp = qc.Loop(sweep_parameter.sweep(self.lower, self.upper, num=self.num), self.step).each(measure_parameter)
-        except Exception as e:
-            warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
-                             + str(e)
-            show_error_message("Warning", warning_string)
-        else:
-            data = lp.run('data/dataset')
+        self.statusBar().showMessage("Measurement done")
 
     def setup_loops(self):
-        self.setup_loops_widget = LoopsWidget(self.instruments, parent=self)
+        self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self)
         self.setup_loops_widget.show()
+
+    def open_tree(self):
+        self.view_tree = ViewTree({name: loop.snapshot_base() for name, loop in self.loops.items()})
+        self.view_tree.show()
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""

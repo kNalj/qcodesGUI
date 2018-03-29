@@ -42,6 +42,7 @@ class Widget(QWidget):
         """
 
         self.setGeometry(256, 256, 320, 260)
+        self.setMinimumSize(320, 260)
         self.setWindowTitle("Add new instrument")
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
         
