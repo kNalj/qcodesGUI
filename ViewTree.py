@@ -1,9 +1,12 @@
 from PyQt5.QtWidgets import  QApplication, QTreeWidget, QTreeWidgetItem
+from PyQt5 import QtGui
 
 
 class ViewTree(QTreeWidget):
     def __init__(self, value):
         super().__init__()
+        self.setWindowTitle("Loop details")
+        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
 
         def fill_item(item, value):
             def new_item(parent, text, val=None):

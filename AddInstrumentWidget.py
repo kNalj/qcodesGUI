@@ -180,6 +180,20 @@ class Widget(QWidget):
                             self.premade_instruments[model[:-3]] = my_class
 
     def create_object(self):
+        """
+        Creates a new instrument object based on data input by user. Adds newly created instrument to the "instruments"
+        dictionary in the MainWindow
+
+        Implements most of the error proofing for creating of the instrument object
+
+        Name of the instrument is taken from current text in the QLineEdit.
+        Type of the instrument exctracted after selecting instrument from combobox containing all instruments.
+        Instrument objects are created with help of the dict in instrument_imports.py file.
+        Each key->value pair in that file is a combination of instrument type and the name of the class representing
+        that instrument (as set by qcodes development team)
+
+        :return: NoneType
+        """
         classname = self.instrument_type.text()
         name = self.instrument_name.text()
         instrument = None

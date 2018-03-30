@@ -1,17 +1,15 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
+from AttachDividersWidget import DividerWidget
 import sys
 import inspect
 
 import qcodes as qc
 from Helpers import *
 from ViewTree import ViewTree
+from TextEditWidget import Notepad
 
-"""
-Remember to change AddInstrumentWidget -> line 78
-from create_object, to add_instrument
-"""
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -75,6 +73,16 @@ class MainWindow(QMainWindow):
         self.btn_setup_loops.move(490, 110)
         self.btn_setup_loops.resize(140, 40)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
+
+        self.btn_setup_loops = QPushButton("Attach dividers", self)
+        self.btn_setup_loops.move(490, 170)
+        self.btn_setup_loops.resize(140, 40)
+        self.btn_setup_loops.clicked.connect(self.attach_dividers)
+
+        self.open_text_edit_btn = QPushButton("Text", self)
+        self.open_text_edit_btn.move(480, 320)
+        self.open_text_edit_btn.resize(60, 40)
+        self.open_text_edit_btn.clicked.connect(self.open_text_editor)
         
         self.btn_run = QPushButton("Run", self)
         self.btn_run.move(560, 320)
@@ -174,6 +182,12 @@ class MainWindow(QMainWindow):
                 self.station_instruments[instrument] = self.instruments[instrument]
 
     def update_loops_preview(self):
+        """
+        This function is called from child class (SetupLoopsWidget) each time a new loop is created.
+        Displays all loops on the MainWindow
+
+        :return: NoneType
+        """
         for name, loop in self.loops.items():
             if name not in self.shown_loops:
                 self.shown_loops[name] = True
@@ -202,21 +216,51 @@ class MainWindow(QMainWindow):
             else:
                 # find out what to do when more loops are to be run
                 data = self.actions[-1].run('data/dataset')
-
+        else:
+            show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
 
     def setup_loops(self):
+        """
+        Open a new widget for creating loops based on instruments added to "instruments" dictionary trough
+        AddInstrumentWidget. Loops created with this widget are added to MainWindows "loops" dictionary, also for each
+        loop an action to be executed is created and added to MainWindows "actions" list
+
+        :return:
+        """
         self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self)
         self.setup_loops_widget.show()
 
     def open_tree(self):
+        """
+        Open a TreeView to inspect created loops
+
+        :return: NoneType
+        """
         self.view_tree = ViewTree({name: loop.snapshot_base() for name, loop in self.loops.items()})
         self.view_tree.show()
+
+    def attach_dividers(self):
+        """
+        Open a widget for attaching dividers to parameters (not used, implemented a better solution)
+
+        :return: NoneType
+        """
+        self.divider_widget = DividerWidget(self.instruments, parent=self)
+        self.divider_widget.show()
+
+    def open_text_editor(self):
+        """
+        Open a simple text editor as a new widget (possible custom tool creation)
+
+        :return: NoneType
+        """
+        self.text_editor = Notepad()
+        self.text_editor.show()
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
     # Helpers moved to separate file - Helpers.py (functions are shared with others windows)
-
 
 
 def main():

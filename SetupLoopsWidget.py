@@ -3,6 +3,7 @@ import sys
 
 from Helpers import *
 import qcodes as qc
+from qcodes.instrument_drivers.devices import VoltageDivider
 
 
 class LoopsWidget(QWidget):
@@ -25,6 +26,11 @@ class LoopsWidget(QWidget):
         self.show()
 
     def init_ui(self):
+        """
+        Initializes user interface for LoopsWidget class
+
+        :return:
+        """
         self.setGeometry(256, 256, 360, 340)
         self.setMinimumSize(360, 340)
         self.setWindowTitle("Setup loops")
@@ -63,12 +69,20 @@ class LoopsWidget(QWidget):
         self.sweep_parameter_cb.move(45, 140)
         for name, instrument in self.instruments.items():
             for parameter in instrument.parameters:
-                display_member_string = "[" + name + "] " + parameter
-                value_member = instrument.parameters[parameter]
-                self.sweep_parameter_cb.addItem(display_member_string, value_member)
+                if parameter != "IDN":
+                    display_member_string = "[" + name + "] " + parameter
+                    value_member = instrument.parameters[parameter]
+                    self.sweep_parameter_cb.addItem(display_member_string, value_member)
+
+        label = QLabel("Divider", self)
+        label.move(240, 120)
+        self.sweep_parameter_divider = QLineEdit("1", self)
+        self.sweep_parameter_divider.move(240, 140)
+        self.sweep_parameter_divider.resize(30, 30)
+
         self.add_sweep_parameter_btn = QPushButton("Add", self)
         self.add_sweep_parameter_btn.resize(60, 30)
-        self.add_sweep_parameter_btn.move(240, 140)
+        self.add_sweep_parameter_btn.move(290, 140)
         self.add_sweep_parameter_btn.clicked.connect(self.add_sweep_parameter)
 
         label = QLabel("Loop action parameter:", self)
@@ -78,16 +92,24 @@ class LoopsWidget(QWidget):
         self.action_parameter_cb.move(45, 220)
         for name, instrument in self.instruments.items():
             for parameter in instrument.parameters:
-                display_member_string = "[" + name + "] " + parameter
-                data_member = instrument.parameters[parameter]
-                self.action_parameter_cb.addItem(display_member_string, data_member)
+                if parameter != "IDN":
+                    display_member_string = "[" + name + "] " + parameter
+                    data_member = instrument.parameters[parameter]
+                    self.action_parameter_cb.addItem(display_member_string, data_member)
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
             data_member = loop
             self.action_parameter_cb.addItem(display_member_string, data_member)
+
+        label = QLabel("Divider", self)
+        label.move(240, 200)
+        self.action_parameter_divider = QLineEdit("1", self)
+        self.action_parameter_divider.move(240, 220)
+        self.action_parameter_divider.resize(30, 30)
+
         self.add_action_parameter_btn = QPushButton("Add", self)
         self.add_action_parameter_btn.resize(60, 30)
-        self.add_action_parameter_btn.move(240, 220)
+        self.add_action_parameter_btn.move(290, 220)
         self.add_action_parameter_btn.clicked.connect(self.add_action_parameter)
 
 
@@ -97,18 +119,34 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.clicked.connect(self.create_loop)
 
     def create_loop(self):
+        """
+        Creates a new loop from data inputed by user. Adds newly created loop to "loops" dictionary in MainWindow.
+        Creates action to be executed upon runing qcodes and adds it to "actions" list in MainWindow
+        :return:
+        """
 
         try:
             self.lower = float(self.textbox_lower_limit.text())
             self.upper = float(self.textbox_upper_limit.text())
             self.num = float(self.textbox_num.text())
             self.step = float(self.textbox_step.text())
+            sweep_division = float(self.sweep_parameter_divider.text())
+            action_division = float(self.action_parameter_divider.text())
+
             lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(self.lower, self.upper, num=self.num), self.step).each(self.action_parameter_cb.currentData())
         except Exception as e:
             warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
                              + str(e)
             show_error_message("Warning", warning_string)
         else:
+            if sweep_division != 1:
+                sweep_divider = VoltageDivider(self.sweep_parameter_cb.currentData(), sweep_division)
+                print(sweep_divider)
+                print("A sweep divider was added")
+            if action_division != 1:
+                action_divider = VoltageDivider(self.action_parameter_cb.currentData(), action_division)
+                print(action_divider)
+                print("An action divider was added")
             name = "loop" + str(len(self.actions)+1)
             self.loops[name] = lp
             self.actions.append(lp)
