@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, QLineEdit
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
 from AttachDividersWidget import DividerWidget
@@ -79,13 +79,24 @@ class MainWindow(QMainWindow):
         self.btn_setup_loops.resize(140, 40)
         self.btn_setup_loops.clicked.connect(self.attach_dividers)
 
+        label = QLabel("Output file name", self)
+        label.move(380, 240)
+        self.output_file_name = QLineEdit(self)
+        self.output_file_name.move(480, 240)
+        self.output_file_name.resize(140, 30)
+
+        self.btn_select_save_location = QPushButton("Select save location", self)
+        self.btn_select_save_location.move(480, 280)
+        self.btn_select_save_location.resize(140, 40)
+        self.btn_select_save_location.clicked.connect(self.select_save_location)
+
         self.open_text_edit_btn = QPushButton("Text", self)
-        self.open_text_edit_btn.move(480, 320)
+        self.open_text_edit_btn.move(480, 330)
         self.open_text_edit_btn.resize(60, 40)
         self.open_text_edit_btn.clicked.connect(self.open_text_editor)
         
         self.btn_run = QPushButton("Run", self)
-        self.btn_run.move(560, 320)
+        self.btn_run.move(560, 330)
         self.btn_run.resize(60, 40)
         self.btn_run.clicked.connect(self.run_qcodes)
 
@@ -212,10 +223,20 @@ class MainWindow(QMainWindow):
 
         if len(self.actions) > 0:
             if len(self.actions) == 1:
-                data = self.actions[0].run('data/dataset')
+                data = self.actions[0].get_data_set(name=self.output_file_name.text())
+                self.actions[0].run()
+
+                """instrument = self.actions[0]["actions"][0]["instrument"]
+                parameter = instrument.self.actions[0]["actions"][0]["name"]
+
+                print(data)
+                plot = qc.QtPlot()
+                plot.add(data.parameter)"""
+
             else:
                 # find out what to do when more loops are to be run
-                data = self.actions[-1].run('data/dataset')
+                data = self.actions[0].get_data_set(name=self.output_file_name.text())
+                self.actions[-1].run()
         else:
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
@@ -257,6 +278,12 @@ class MainWindow(QMainWindow):
         """
         self.text_editor = Notepad()
         self.text_editor.show()
+
+    def select_save_location(self):
+        save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        loc_provider = qc.data.location.FormatLocation(fmt=save_location + '/{date}/#{counter}_{name}_{time}')
+        qc.data.data_set.DataSet.location_provider = loc_provider
+
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
