@@ -201,12 +201,7 @@ class MainWindow(QMainWindow):
         """
         for name, loop in self.loops.items():
             if name not in self.shown_loops:
-                self.shown_loops[name] = True
-                sweep_parameter_string = loop.snapshot_base()["sweep_values"]["parameter"]["full_name"]
-                actions = ""
-                for action in loop.snapshot_base()["actions"]:
-                    actions += str(action)
-                new_label = QLabel(name + "\t sweep on: " + sweep_parameter_string + "\t actions:" + actions, self)
+                new_label = QLabel(name, self)
                 new_label.move(60, 270 + 20 * len(self.loops))
                 new_label.resize(300, 20)
                 new_label.show()
