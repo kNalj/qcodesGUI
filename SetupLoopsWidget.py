@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox
 import sys
+import importlib
 
 from Helpers import *
 import qcodes as qc
@@ -64,15 +65,21 @@ class LoopsWidget(QWidget):
 
         label = QLabel("Sweep parameter:", self)
         label.move(25, 120)
-        self.sweep_parameter_cb = QComboBox(self)
-        self.sweep_parameter_cb.resize(180, 30)
-        self.sweep_parameter_cb.move(45, 140)
+        self.sweep_parameter_instrument_cb = QComboBox(self)
+        self.sweep_parameter_instrument_cb.resize(80, 30)
+        self.sweep_parameter_instrument_cb.move(45, 140)
         for name, instrument in self.instruments.items():
-            for parameter in instrument.parameters:
-                if parameter != "IDN":
-                    display_member_string = "[" + name + "] " + parameter
-                    value_member = instrument.parameters[parameter]
-                    self.sweep_parameter_cb.addItem(display_member_string, value_member)
+            display_member = name
+            value_member = instrument
+            self.sweep_parameter_instrument_cb.addItem(display_member, value_member)
+            self.sweep_parameter_instrument_cb.currentIndexChanged.connect(self.update_sweep_instrument_parameters)
+
+        self.sweep_parameter_cb = QComboBox(self)
+        self.sweep_parameter_cb.resize(80, 30)
+        self.sweep_parameter_cb.move(135, 140)
+        for instrument in self.instruments:
+            self.update_sweep_instrument_parameters()
+            break
 
         label = QLabel("Divider", self)
         label.move(240, 120)
@@ -87,19 +94,26 @@ class LoopsWidget(QWidget):
 
         label = QLabel("Loop action parameter:", self)
         label.move(25, 200)
-        self.action_parameter_cb = QComboBox(self)
-        self.action_parameter_cb.resize(180, 30)
-        self.action_parameter_cb.move(45, 220)
+
+        self.action_parameter_instrument_cb = QComboBox(self)
+        self.action_parameter_instrument_cb.resize(80, 30)
+        self.action_parameter_instrument_cb.move(45, 220)
         for name, instrument in self.instruments.items():
-            for parameter in instrument.parameters:
-                if parameter != "IDN":
-                    display_member_string = "[" + name + "] " + parameter
-                    data_member = instrument.parameters[parameter]
-                    self.action_parameter_cb.addItem(display_member_string, data_member)
+            display_member = name
+            value_member = instrument
+            self.action_parameter_instrument_cb.addItem(display_member, value_member)
+            self.action_parameter_instrument_cb.currentIndexChanged.connect(self.update_action_instrument_parameters)
+
+        self.action_parameter_cb = QComboBox(self)
+        self.action_parameter_cb.resize(80, 30)
+        self.action_parameter_cb.move(135, 220)
+        for instrument in self.instruments:
+            self.update_action_instrument_parameters()
+            break
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
             data_member = loop
-            self.action_parameter_cb.addItem(display_member_string, data_member)
+            self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
 
         label = QLabel("Divider", self)
         label.move(240, 200)
@@ -158,6 +172,34 @@ class LoopsWidget(QWidget):
 
     def add_action_parameter(self):
         pass
+
+    def update_sweep_instrument_parameters(self):
+        self.sweep_parameter_cb.clear()
+        instrument = self.sweep_parameter_instrument_cb.currentData()
+        for parameter in instrument.parameters:
+            if parameter != "IDN":
+                display_member_string = parameter
+                data_member = instrument.parameters[parameter]
+                self.sweep_parameter_cb.addItem(display_member_string, data_member)
+
+    def update_action_instrument_parameters(self):
+        self.action_parameter_cb.clear()
+        action = self.action_parameter_instrument_cb.currentData()
+
+        module_name = "qcodes.loops"
+        module = importlib.import_module(module_name)
+        loop_class = getattr(module, "ActiveLoop")
+
+        if isinstance(action, loop_class):
+            display_member_string = self.action_parameter_instrument_cb.currentText()
+            data_member = self.action_parameter_instrument_cb.currentData()
+            self.action_parameter_cb.addItem(display_member_string, data_member)
+        else:
+            for parameter in action.parameters:
+                if parameter != "IDN":
+                    display_member_string = parameter
+                    data_member = action.parameters[parameter]
+                    self.action_parameter_cb.addItem(display_member_string, data_member)
 
 
 if __name__ == '__main__':

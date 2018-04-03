@@ -15,7 +15,7 @@ from qcodes.instrument.visa import VisaInstrument
 
 class Widget(QWidget):
 
-    def __init__(self, instruments, parent=None):
+    def __init__(self, instruments, parent=None, default="DummyInstrument"):
         """
         Constructor for AddInstrumentWidget window
 
@@ -28,6 +28,7 @@ class Widget(QWidget):
         self.premade_instruments = {}
         self.populate_premade_instruments()
         self.parent = parent
+        self.default = default
         self.init_ui()
         self.show()
 
@@ -51,6 +52,8 @@ class Widget(QWidget):
         self.cb.resize(280, 30)
         for key, value in self.premade_instruments.items():
             self.cb.addItem(key)
+        index = self.cb.findText(self.default)
+        self.cb.setCurrentIndex(index)
         self.cb.currentIndexChanged.connect(self.update_instrument_data)
         
         self.label = QLabel("Type", self)

@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
         self.instruments = {}
         self.station_instruments = {}
         self.loops = {}
-        self.shown_loops = {}
+        self.shown_loops = []
         self.actions = []
 
         self.statusBar().showMessage("Ready")
@@ -67,17 +67,17 @@ class MainWindow(QMainWindow):
         self.btn_add_instrument = QPushButton("Add instrument", self)
         self.btn_add_instrument.move(490, 50)
         self.btn_add_instrument.resize(140, 40)
-        self.btn_add_instrument.clicked.connect(self.add_new_instrument)
+        self.btn_add_instrument.clicked.connect(lambda checked, name="DummyInstrument": self.add_new_instrument(name))
 
         self.btn_setup_loops = QPushButton("Setup loops", self)
         self.btn_setup_loops.move(490, 110)
         self.btn_setup_loops.resize(140, 40)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
-        self.btn_setup_loops = QPushButton("Attach dividers", self)
-        self.btn_setup_loops.move(490, 170)
-        self.btn_setup_loops.resize(140, 40)
-        self.btn_setup_loops.clicked.connect(self.attach_dividers)
+        # self.btn_setup_loops = QPushButton("Attach dividers", self)
+        # self.btn_setup_loops.move(490, 170)
+        # self.btn_setup_loops.resize(140, 40)
+        # self.btn_setup_loops.clicked.connect(self.attach_dividers)
 
         label = QLabel("Output file name", self)
         label.move(380, 240)
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         start_new_measurement_action = QAction("New", self)
         start_new_measurement_action.setShortcut("Ctrl+M")
         start_new_measurement_action.setStatusTip("Open 'Add New Instrument' window")
-        start_new_measurement_action.triggered.connect(self.add_new_instrument)
+        start_new_measurement_action.triggered.connect(lambda checked, name="DummyInstrument": self.add_new_instrument(name))
 
         start_new_measurement_menu.addAction(start_new_measurement_action)
         start_new_measurement_menu.addSeparator()
@@ -133,14 +133,15 @@ class MainWindow(QMainWindow):
             for model in models:
                 if model[0:-3] not in ["M3201A", "M3300A", "M4i", "ZIUHFLI", "Keithley_2600_channels", "AWGFileParser"]:
                     current_model_action = QAction(model[0:-3], self)
+                    current_model_action.setData(model[0:-3])
                     current_brand_menu.addAction(current_model_action)
-                    current_model_action.triggered.connect(self.add_new_instrument)
+                    current_model_action.triggered.connect(lambda checked, name=current_model_action.data(): self.add_new_instrument(name))
                 else:
                     current_model_action = QAction(model[0:-3], self)
                     current_model_action.setEnabled(False)
                     current_model_action.setIcon(QtGui.QIcon("disabled.png"))
                     current_brand_menu.addAction(current_model_action)
-                    current_model_action.triggered.connect(self.add_new_instrument)
+                    current_model_action.triggered.connect(lambda checked, name=current_model_action.data(): self.add_new_instrument(name))
 
 
         menu_bar = self.menuBar()
@@ -153,17 +154,20 @@ class MainWindow(QMainWindow):
         Close the main window
         :return: NoneType
         """
+        for instrument in self.instruments:
+            instrument.close()
+
         self.close()
 
     """""""""""""""""""""
     Data manipulation
     """""""""""""""""""""
-    def add_new_instrument(self):
+    def add_new_instrument(self, name):
         """
         Opens a new Widget (window) with text inputs for parameters of an instrument, creates new instrument(s)
         :return: NoneType
         """
-        self.add_instrument = Widget(self.instruments, parent=self)
+        self.add_instrument = Widget(self.instruments, parent=self, default=name)
         self.add_instrument.show()
 
     def update_station_preview(self):
@@ -205,6 +209,7 @@ class MainWindow(QMainWindow):
                 new_label.move(60, 270 + 20 * len(self.loops))
                 new_label.resize(300, 20)
                 new_label.show()
+                self.shown_loops.append(name)
 
     def run_qcodes(self):
         """
@@ -232,6 +237,9 @@ class MainWindow(QMainWindow):
                 # find out what to do when more loops are to be run
                 data = self.actions[0].get_data_set(name=self.output_file_name.text())
                 self.actions[-1].run()
+
+                for name, instrument in self.instruments.items():
+                    instrument.close()
         else:
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
