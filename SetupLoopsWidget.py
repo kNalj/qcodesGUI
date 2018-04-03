@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QToolTip
 import sys
 import importlib
 
@@ -37,7 +37,11 @@ class LoopsWidget(QWidget):
         self.setWindowTitle("Setup loops")
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
 
-        labels = ["Lower limit", "Upper limit", "Num", "Step"]
+        labels = ["Lower limit", "Upper limit", "Steps", "Delay"]
+        tooltips = ["Self explainatory",
+                    "Self explainatory",
+                    "Number of steps to be measured from lower limit to upper limit",
+                    "Wait this many seconds between each step"]
         first_location = [40, 80]
 
         label = QLabel("Parameters", self)
@@ -46,6 +50,7 @@ class LoopsWidget(QWidget):
         for i in range(len(labels)):
             label = QLabel(labels[i], self)
             label.move(first_location[0] + i * 75, first_location[1] - 20)
+            label.setToolTip(tooltips[i])
 
         self.textbox_lower_limit = QLineEdit(self)
         self.textbox_lower_limit.move(first_location[0], first_location[1])
