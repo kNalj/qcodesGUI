@@ -26,6 +26,9 @@ class LoopsWidget(QWidget):
         self.init_ui()
         self.show()
 
+    """""""""""""""""""""
+    User interface
+    """""""""""""""""""""
     def init_ui(self):
         """
         Initializes user interface for LoopsWidget class
@@ -137,6 +140,9 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.resize(260, 40)
         self.add_loop_btn.clicked.connect(self.create_loop)
 
+    """""""""""""""""""""
+    Data manipulation
+    """""""""""""""""""""
     def create_loop(self):
         """
         Creates a new loop from data inputed by user. Adds newly created loop to "loops" dictionary in MainWindow.
@@ -171,12 +177,6 @@ class LoopsWidget(QWidget):
             self.actions.append(lp)
             self.parent.update_loops_preview()
             self.close()
-
-    def add_sweep_parameter(self):
-        pass
-
-    def add_action_parameter(self):
-        pass
 
     def update_sweep_instrument_parameters(self):
         self.sweep_parameter_cb.clear()

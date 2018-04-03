@@ -223,7 +223,6 @@ class Widget(QWidget):
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
-    # moved all helpers to separate file Helpers.py
 
 
 if __name__ == '__main__':

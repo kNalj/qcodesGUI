@@ -74,11 +74,6 @@ class MainWindow(QMainWindow):
         self.btn_setup_loops.resize(140, 40)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
-        # self.btn_setup_loops = QPushButton("Attach dividers", self)
-        # self.btn_setup_loops.move(490, 170)
-        # self.btn_setup_loops.resize(140, 40)
-        # self.btn_setup_loops.clicked.connect(self.attach_dividers)
-
         label = QLabel("Output file name", self)
         label.move(380, 240)
         self.output_file_name = QLineEdit(self)
@@ -149,27 +144,9 @@ class MainWindow(QMainWindow):
         file_menu.addAction(exit_action)
         file_menu.addMenu(start_new_measurement_menu)
 
-    def exit(self):
-        """
-        Close the main window
-        :return: NoneType
-        """
-        for instrument in self.instruments:
-            instrument.close()
-
-        self.close()
-
     """""""""""""""""""""
     Data manipulation
     """""""""""""""""""""
-    def add_new_instrument(self, name):
-        """
-        Opens a new Widget (window) with text inputs for parameters of an instrument, creates new instrument(s)
-        :return: NoneType
-        """
-        self.add_instrument = Widget(self.instruments, parent=self, default=name)
-        self.add_instrument.show()
-
     def update_station_preview(self):
         """
         When new instrument is added, updates the main window to display data about most recent instrument
@@ -244,6 +221,41 @@ class MainWindow(QMainWindow):
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
 
+    def select_save_location(self):
+        save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        loc_provider = qc.data.location.FormatLocation(fmt=save_location + '/{date}/#{counter}_{name}_{time}')
+        qc.data.data_set.DataSet.location_provider = loc_provider
+
+    """""""""""""""""""""
+    Helper functions
+    """""""""""""""""""""
+    def exit(self):
+        """
+        Close the main window
+        :return: NoneType
+        """
+        for instrument in self.instruments:
+            instrument.close()
+
+        self.close()
+
+    def add_new_instrument(self, name):
+        """
+        Opens a new Widget (window) with text inputs for parameters of an instrument, creates new instrument(s)
+        :return: NoneType
+        """
+        self.add_instrument = Widget(self.instruments, parent=self, default=name)
+        self.add_instrument.show()
+
+    def open_tree(self):
+        """
+        Open a TreeView to inspect created loops
+
+        :return: NoneType
+        """
+        self.view_tree = ViewTree({name: loop.snapshot_base() for name, loop in self.loops.items()})
+        self.view_tree.show()
+
     def setup_loops(self):
         """
         Open a new widget for creating loops based on instruments added to "instruments" dictionary trough
@@ -255,24 +267,6 @@ class MainWindow(QMainWindow):
         self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self)
         self.setup_loops_widget.show()
 
-    def open_tree(self):
-        """
-        Open a TreeView to inspect created loops
-
-        :return: NoneType
-        """
-        self.view_tree = ViewTree({name: loop.snapshot_base() for name, loop in self.loops.items()})
-        self.view_tree.show()
-
-    def attach_dividers(self):
-        """
-        Open a widget for attaching dividers to parameters (not used, implemented a better solution)
-
-        :return: NoneType
-        """
-        self.divider_widget = DividerWidget(self.instruments, parent=self)
-        self.divider_widget.show()
-
     def open_text_editor(self):
         """
         Open a simple text editor as a new widget (possible custom tool creation)
@@ -281,16 +275,6 @@ class MainWindow(QMainWindow):
         """
         self.text_editor = Notepad()
         self.text_editor.show()
-
-    def select_save_location(self):
-        save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        loc_provider = qc.data.location.FormatLocation(fmt=save_location + '/{date}/#{counter}_{name}_{time}')
-        qc.data.data_set.DataSet.location_provider = loc_provider
-
-    """""""""""""""""""""
-    Helper functions
-    """""""""""""""""""""
-    # Helpers moved to separate file - Helpers.py (functions are shared with others windows)
 
 
 def main():
