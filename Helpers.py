@@ -13,11 +13,11 @@ def show_error_message(title, message):
     :return: NoneType
     """
     msg_box = QMessageBox()
-    msg_box.setIcon(QtGui.QMessageBox.Warning)
+    msg_box.setIcon(QMessageBox.Warning)
     msg_box.setWindowIcon(QtGui.QIcon("warning_icon.png"))
     msg_box.setWindowTitle(title)
     msg_box.setText(message)
-    msg_box.setStandardButtons(QtGui.QMessageBox.Ok)
+    msg_box.setStandardButtons(QMessageBox.Ok)
     msg_box.exec_()
 
 
