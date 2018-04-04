@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eb9d9596-c875-4e1c-8b8a-64cf4322d845" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/InstrumentData.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AddInstrumentWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/AddInstrumentWidget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SetupLoopsWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/SetupLoopsWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/qcodesMainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/qcodesMainWindow.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,20 +23,22 @@
       <file leaf-file-name="qcodesMainWindow.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="207">
-              <caret line="97" column="47" lean-forward="true" selection-start-line="97" selection-start-column="47" selection-end-line="97" selection-end-column="47" />
+            <state relative-caret-position="143">
+              <caret line="100" column="28" selection-start-line="100" selection-start-column="28" selection-end-line="100" selection-end-column="28" />
               <folding>
                 <element signature="e#0#122#0" expanded="true" />
-                <element signature="e#3896#6099#0" />
-                <element signature="e#6129#6221#0" />
-                <element signature="e#6339#6595#0" />
-                <element signature="e#6643#7773#0" />
-                <element signature="e#8181#8687#0" />
-                <element signature="e#8319#9443#0" />
-                <element signature="e#9480#9970#0" />
-                <element signature="e#10005#10227#0" />
-                <element signature="e#10268#10521#0" />
-                <element signature="e#10563#10756#0" />
+                <element signature="e#449#736#0" />
+                <element signature="e#840#3678#0" />
+                <element signature="e#3717#6140#0" />
+                <element signature="e#6262#7392#0" />
+                <element signature="e#7438#7948#0" />
+                <element signature="e#7984#9214#0" />
+                <element signature="e#9260#9516#0" />
+                <element signature="e#9619#9787#0" />
+                <element signature="e#9837#10107#0" />
+                <element signature="e#10142#10364#0" />
+                <element signature="e#10401#10891#0" />
+                <element signature="e#10933#11126#0" />
               </folding>
             </state>
           </provider>
@@ -42,48 +47,25 @@
       <file leaf-file-name="SetupLoopsWidget.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/SetupLoopsWidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="125">
-              <caret line="42" column="85" lean-forward="true" selection-start-line="42" selection-start-column="85" selection-end-line="42" selection-end-column="85" />
+            <state relative-caret-position="431">
+              <caret line="208" column="32" lean-forward="true" selection-start-line="208" selection-start-column="32" selection-end-line="208" selection-end-column="32" />
               <folding>
                 <element signature="e#0#102#0" expanded="true" />
-                <element signature="e#313#810#0" />
-                <element signature="e#7038#7419#0" />
+                <element signature="e#340#837#0" />
+                <element signature="e#941#5504#0" />
+                <element signature="e#5615#7336#0" />
+                <element signature="e#7396#7777#0" />
+                <element signature="e#7838#8674#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AddInstrumentWidget.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/AddInstrumentWidget.py">
+      <file leaf-file-name="InstrumentData.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/InstrumentData.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-53">
-              <caret line="122" lean-forward="true" selection-start-line="122" selection-end-line="122" />
-              <folding>
-                <element signature="e#0#138#0" expanded="true" />
-                <element signature="e#463#978#0" />
-                <element signature="e#1082#2692#0" />
-                <element signature="e#1082#1201#1" />
-                <element signature="e#2732#3420#0" />
-                <element signature="e#3476#3948#0" />
-                <element signature="e#4073#4939#0" />
-                <element signature="e#6600#8503#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Helpers.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Helpers.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="79" lean-forward="true" selection-start-line="79" selection-end-line="79" />
-              <folding>
-                <element signature="e#0#76#0" expanded="true" />
-                <element signature="e#151#621#0" />
-                <element signature="e#684#1267#0" />
-                <element signature="e#1336#1838#0" />
-                <element signature="e#1874#2974#0" />
-              </folding>
+            <state relative-caret-position="238">
+              <caret line="14" column="41" lean-forward="true" selection-start-line="14" selection-start-column="41" selection-end-line="14" selection-end-column="41" />
             </state>
           </provider>
         </entry>
@@ -105,6 +87,7 @@
       <find>run</find>
       <find>location</find>
       <find>loop</find>
+      <find>add</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -128,11 +111,13 @@
         <option value="$PROJECT_DIR$/AttachDividersWidget.py" />
         <option value="$PROJECT_DIR$/data/2018-03-30/#005_{name}_12-50-48/erfgg_g2_set.dat" />
         <option value="$PROJECT_DIR$/TextEditWidget.py" />
-        <option value="$PROJECT_DIR$/AddInstrumentWidget.py" />
         <option value="$PROJECT_DIR$/dummies.py" />
-        <option value="$PROJECT_DIR$/qcodesMainWindow.py" />
         <option value="$PROJECT_DIR$/Helpers.py" />
+        <option value="$PROJECT_DIR$/qcodesMainWindow.py" />
+        <option value="$PROJECT_DIR$/InstrumentAddresses.py" />
+        <option value="$PROJECT_DIR$/InstrumentData.py" />
         <option value="$PROJECT_DIR$/SetupLoopsWidget.py" />
+        <option value="$PROJECT_DIR$/AddInstrumentWidget.py" />
       </list>
     </option>
   </component>
@@ -151,7 +136,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -159,28 +143,11 @@
               <item name="qcodesGUI" type="b2602c69:ProjectViewProjectNode" />
               <item name="qcodesGUI" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="qcodesGUI" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qcodesGUI" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="qcodesGUI" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qcodesGUI" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="2018-04-03" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="qcodesGUI" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qcodesGUI" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="2018-04-03" type="462c0819:PsiDirectoryNode" />
-              <item name="#008_{name}_13-38-20" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -188,118 +155,6 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-  </component>
-  <component name="RestoreUpdateTree" date="Moments ago" ActionInfo="_Update">
-    <UpdatedFiles>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Updated from server" />
-        <option name="myStatusName" value="Changed on server" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="CHANGED_ON_SERVER" />
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated" />
-          <option name="myStatusName" value="Changed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UPDATED" />
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/qcodes.iml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/workspace.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/qcodesMainWindow.py</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Created" />
-          <option name="myStatusName" value="Created" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CREATED" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Deleted" />
-          <option name="myStatusName" value="Deleted" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="true" />
-          <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Restored" />
-          <option name="myStatusName" value="Will be restored" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="RESTORED" />
-        </FILE-GROUP>
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Modified" />
-        <option name="myStatusName" value="Modified" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MODIFIED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Skipped" />
-        <option name="myStatusName" value="Skipped" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SKIPPED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with conflicts" />
-        <option name="myStatusName" value="Will be merged with conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_CONFLICTS" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with tree conflicts" />
-        <option name="myStatusName" value="Merged with tree conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with property conflicts" />
-        <option name="myStatusName" value="Will be merged with property conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged" />
-        <option name="myStatusName" value="Will be merged" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Not in repository" />
-        <option name="myStatusName" value="Not in repository" />
-        <option name="mySupportsDeletion" value="true" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="UNKNOWN" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally added" />
-        <option name="myStatusName" value="Locally added" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_ADDED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally removed" />
-        <option name="myStatusName" value="Locally removed" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_REMOVED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Switched" />
-        <option name="myStatusName" value="Switched" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SWITCHED" />
-      </FILE-GROUP>
-    </UpdatedFiles>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -507,7 +362,21 @@
       <option name="project" value="LOCAL" />
       <updated>1522762683737</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Fixed app crash caused by error messages">
+      <created>1522763889094</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1522763889094</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Reorganize code">
+      <created>1522764439068</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1522764439068</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -516,7 +385,7 @@
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.503125" side_tool="true" weight="0.32908705" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5026042" side_tool="true" weight="0.32908705" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32908705" />
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.496875" visible="true" weight="0.32908705" />
@@ -527,9 +396,7 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5026042" side_tool="true" weight="0.32908705" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -549,7 +416,9 @@
     <MESSAGE value="GUi redisign, created loop management window" />
     <MESSAGE value="Enabled running loops, created tree view helper for loop overview" />
     <MESSAGE value="Added function descriptions, added option to attach dividers to parameters, added simple text editor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added function descriptions, added option to attach dividers to parameters, added simple text editor" />
+    <MESSAGE value="Fixed app crash caused by error messages" />
+    <MESSAGE value="Reorganize code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Reorganize code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -557,7 +426,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Anaconda3/envs/qcodes/Lib/site-packages/qcodes/station.py" />
     <entry file="file://$USER_HOME$/Anaconda3/envs/qcodes/Lib/site-packages/qcodes/loops.py" />
     <entry file="file://$USER_HOME$/Anaconda3/envs/qcodes/Lib/site-packages/qcodes/tests/instrument_mocks.py" />
     <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/__init__.py" />
@@ -592,13 +460,6 @@
     <entry file="file://$PROJECT_DIR$/data/2018-03-29/#003_{name}_12-10-24/dasg_g1_set_dasg_g1_set_0.dat" />
     <entry file="file://$PROJECT_DIR$/data/2018-03-29/#004_{name}_14-06-36/snapshot.json" />
     <entry file="file://$PROJECT_DIR$/data/2018-03-29/#004_{name}_14-06-36/esdf_g1_set_esdf_g1_set_0.dat" />
-    <entry file="file://$PROJECT_DIR$/ViewTree.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="1" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/2018-03-30/#002_{name}_12-23-32/snapshot.json" />
     <entry file="file://$PROJECT_DIR$/data/2018-03-30/#001_{name}_12-17-21/snapshot.json" />
     <entry file="file://$PROJECT_DIR$/data/2018-03-30/#002_{name}_12-23-32/fdvcbv_g1_set.dat" />
@@ -608,29 +469,8 @@
     <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/instrument/parameter.py" />
     <entry file="file://$PROJECT_DIR$/data/2018-03-30/#005_{name}_12-50-48/erfgg_g2_set.dat" />
     <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/instrument_drivers/devices.py" />
-    <entry file="file://$PROJECT_DIR$/AttachDividersWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="16" lean-forward="true" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/TextEditWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="20" column="40" lean-forward="true" selection-start-line="20" selection-start-column="40" selection-end-line="20" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/2018-03-30/#008_{name}_15-06-26/gf_g1_set.dat" />
     <entry file="file://$PROJECT_DIR$/data/2018-03-30/#010_{name}_15-08-32/gf_g2_set_4r5tg_g1_set_gf_g2_set_0_0.dat" />
-    <entry file="file://$PROJECT_DIR$/instrument_imports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="51" selection-start-line="15" selection-start-column="51" selection-end-line="15" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/station.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="84">
@@ -677,9 +517,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
           <caret line="22" column="11" selection-start-line="22" selection-start-column="9" selection-end-line="22" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -697,65 +534,104 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/instrument_imports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="51" selection-start-line="15" selection-start-column="51" selection-end-line="15" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ViewTree.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-11">
+          <caret line="7" column="43" lean-forward="true" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
+          <folding>
+            <element signature="e#0#71#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/TextEditWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-130">
+          <caret line="20" column="40" lean-forward="true" selection-start-line="20" selection-start-column="40" selection-end-line="20" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Helpers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
+        <state relative-caret-position="482">
           <caret line="79" lean-forward="true" selection-start-line="79" selection-end-line="79" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AttachDividersWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" column="16" lean-forward="true" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/InstrumentData.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="41" lean-forward="true" selection-start-line="14" selection-start-column="41" selection-end-line="14" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="100" column="28" selection-start-line="100" selection-start-column="28" selection-end-line="100" selection-end-column="28" />
           <folding>
-            <element signature="e#0#76#0" expanded="true" />
-            <element signature="e#151#621#0" />
-            <element signature="e#684#1267#0" />
-            <element signature="e#1336#1838#0" />
-            <element signature="e#1874#2974#0" />
+            <element signature="e#0#122#0" expanded="true" />
+            <element signature="e#449#736#0" />
+            <element signature="e#840#3678#0" />
+            <element signature="e#3717#6140#0" />
+            <element signature="e#6262#7392#0" />
+            <element signature="e#7438#7948#0" />
+            <element signature="e#7984#9214#0" />
+            <element signature="e#9260#9516#0" />
+            <element signature="e#9619#9787#0" />
+            <element signature="e#9837#10107#0" />
+            <element signature="e#10142#10364#0" />
+            <element signature="e#10401#10891#0" />
+            <element signature="e#10933#11126#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AddInstrumentWidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-53">
-          <caret line="122" lean-forward="true" selection-start-line="122" selection-end-line="122" />
+        <state relative-caret-position="108">
+          <caret line="88" lean-forward="true" selection-start-line="88" selection-end-line="88" />
           <folding>
             <element signature="e#0#138#0" expanded="true" />
-            <element signature="e#463#978#0" />
-            <element signature="e#1082#2692#0" />
-            <element signature="e#1082#1201#1" />
-            <element signature="e#2732#3420#0" />
-            <element signature="e#3476#3948#0" />
-            <element signature="e#4073#4939#0" />
-            <element signature="e#6600#8503#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="207">
-          <caret line="97" column="47" lean-forward="true" selection-start-line="97" selection-start-column="47" selection-end-line="97" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#122#0" expanded="true" />
-            <element signature="e#3896#6099#0" />
-            <element signature="e#6129#6221#0" />
-            <element signature="e#6339#6595#0" />
-            <element signature="e#6643#7773#0" />
-            <element signature="e#8181#8687#0" />
-            <element signature="e#8319#9443#0" />
-            <element signature="e#9480#9970#0" />
-            <element signature="e#10005#10227#0" />
-            <element signature="e#10268#10521#0" />
-            <element signature="e#10563#10756#0" />
+            <element signature="e#490#1036#0" />
+            <element signature="e#1140#2836#0" />
+            <element signature="e#2876#3564#0" />
+            <element signature="e#3649#4166#0" />
+            <element signature="e#4217#5083#0" />
+            <element signature="e#5137#6705#0" />
+            <element signature="e#6744#8647#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/SetupLoopsWidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="125">
-          <caret line="42" column="85" lean-forward="true" selection-start-line="42" selection-start-column="85" selection-end-line="42" selection-end-column="85" />
+        <state relative-caret-position="431">
+          <caret line="208" column="32" lean-forward="true" selection-start-line="208" selection-start-column="32" selection-end-line="208" selection-end-column="32" />
           <folding>
             <element signature="e#0#102#0" expanded="true" />
-            <element signature="e#313#810#0" />
-            <element signature="e#7038#7419#0" />
+            <element signature="e#340#837#0" />
+            <element signature="e#941#5504#0" />
+            <element signature="e#5615#7336#0" />
+            <element signature="e#7396#7777#0" />
+            <element signature="e#7838#8674#0" />
           </folding>
         </state>
       </provider>

@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, QLineEdit
+from PyQt5.QtCore import pyqtSlot
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
 from AttachDividersWidget import DividerWidget
@@ -212,7 +213,7 @@ class MainWindow(QMainWindow):
 
             else:
                 # find out what to do when more loops are to be run
-                data = self.actions[0].get_data_set(name=self.output_file_name.text())
+                data = self.actions[-1].get_data_set(name=self.output_file_name.text())
                 self.actions[-1].run()
 
                 for name, instrument in self.instruments.items():
@@ -221,6 +222,7 @@ class MainWindow(QMainWindow):
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
 
+    @pyqtSlot()
     def select_save_location(self):
         save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         loc_provider = qc.data.location.FormatLocation(fmt=save_location + '/{date}/#{counter}_{name}_{time}')
@@ -229,6 +231,7 @@ class MainWindow(QMainWindow):
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
+    @pyqtSlot()
     def exit(self):
         """
         Close the main window
@@ -239,6 +242,7 @@ class MainWindow(QMainWindow):
 
         self.close()
 
+    @pyqtSlot()
     def add_new_instrument(self, name):
         """
         Opens a new Widget (window) with text inputs for parameters of an instrument, creates new instrument(s)
@@ -247,6 +251,7 @@ class MainWindow(QMainWindow):
         self.add_instrument = Widget(self.instruments, parent=self, default=name)
         self.add_instrument.show()
 
+    @pyqtSlot()
     def open_tree(self):
         """
         Open a TreeView to inspect created loops
@@ -256,6 +261,7 @@ class MainWindow(QMainWindow):
         self.view_tree = ViewTree({name: loop.snapshot_base() for name, loop in self.loops.items()})
         self.view_tree.show()
 
+    @pyqtSlot()
     def setup_loops(self):
         """
         Open a new widget for creating loops based on instruments added to "instruments" dictionary trough
@@ -267,6 +273,7 @@ class MainWindow(QMainWindow):
         self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self)
         self.setup_loops_widget.show()
 
+    @pyqtSlot()
     def open_text_editor(self):
         """
         Open a simple text editor as a new widget (possible custom tool creation)

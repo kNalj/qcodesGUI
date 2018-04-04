@@ -41,8 +41,8 @@ class LoopsWidget(QWidget):
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
 
         labels = ["Lower limit", "Upper limit", "Steps", "Delay"]
-        tooltips = ["Self explainatory",
-                    "Self explainatory",
+        tooltips = ["Start from this value",
+                    "Sweep to this value",
                     "Number of steps to be measured from lower limit to upper limit",
                     "Wait this many seconds between each step"]
         first_location = [40, 80]
@@ -63,11 +63,15 @@ class LoopsWidget(QWidget):
         self.textbox_upper_limit.move(115, 80)
         self.textbox_upper_limit.resize(45, 20)
 
+        # number of steps
         self.textbox_num = QLineEdit(self)
+        self.textbox_num.setText("1")
         self.textbox_num.move(190, 80)
         self.textbox_num.resize(45, 20)
 
+        # this is actualy a delay (NOT STEPS !)
         self.textbox_step = QLineEdit(self)
+        self.textbox_step.setText("0")
         self.textbox_step.move(265, 80)
         self.textbox_step.resize(45, 20)
 
@@ -76,6 +80,7 @@ class LoopsWidget(QWidget):
         self.sweep_parameter_instrument_cb = QComboBox(self)
         self.sweep_parameter_instrument_cb.resize(80, 30)
         self.sweep_parameter_instrument_cb.move(45, 140)
+        self.sweep_parameter_instrument_cb.setToolTip("Please select instrument to sweep from")
         for name, instrument in self.instruments.items():
             display_member = name
             value_member = instrument
@@ -85,20 +90,17 @@ class LoopsWidget(QWidget):
         self.sweep_parameter_cb = QComboBox(self)
         self.sweep_parameter_cb.resize(80, 30)
         self.sweep_parameter_cb.move(135, 140)
+        self.sweep_parameter_cb.setToolTip("Please select parameter to sweep")
         for instrument in self.instruments:
             self.update_sweep_instrument_parameters()
             break
 
         label = QLabel("Divider", self)
         label.move(240, 120)
+        label.setToolTip("Add division/amplification to the instrument being swept")
         self.sweep_parameter_divider = QLineEdit("1", self)
         self.sweep_parameter_divider.move(240, 140)
         self.sweep_parameter_divider.resize(30, 30)
-
-        self.add_sweep_parameter_btn = QPushButton("Add", self)
-        self.add_sweep_parameter_btn.resize(60, 30)
-        self.add_sweep_parameter_btn.move(290, 140)
-        self.add_sweep_parameter_btn.clicked.connect(self.add_sweep_parameter)
 
         label = QLabel("Loop action parameter:", self)
         label.move(25, 200)
@@ -125,19 +127,15 @@ class LoopsWidget(QWidget):
 
         label = QLabel("Divider", self)
         label.move(240, 200)
+        label.setToolTip("Add division/amplification to the instrument")
         self.action_parameter_divider = QLineEdit("1", self)
         self.action_parameter_divider.move(240, 220)
         self.action_parameter_divider.resize(30, 30)
 
-        self.add_action_parameter_btn = QPushButton("Add", self)
-        self.add_action_parameter_btn.resize(60, 30)
-        self.add_action_parameter_btn.move(290, 220)
-        self.add_action_parameter_btn.clicked.connect(self.add_action_parameter)
-
-
         self.add_loop_btn = QPushButton("Create loop", self)
         self.add_loop_btn.move(45, 270)
         self.add_loop_btn.resize(260, 40)
+        self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
         self.add_loop_btn.clicked.connect(self.create_loop)
 
     """""""""""""""""""""

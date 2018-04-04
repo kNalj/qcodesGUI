@@ -8,6 +8,7 @@ import importlib
 
 import qcodes as qc
 from instrument_imports import *
+from InstrumentData import *
 from Helpers import *
 from qcodes.instrument.ip import IPInstrument
 from qcodes.instrument.visa import VisaInstrument
@@ -22,6 +23,7 @@ class Widget(QWidget):
         :param instruments: Dictionary shared with parent (MainWindow) to be able to add instruments to instruments
         dictionary in the MainWindow
         :param parent: specify object that created this widget
+        :param default: instrument data (type, name, address) is filled based on what is passed as a default instrument
         """
         super(Widget, self).__init__()
         self.instruments = instruments
@@ -37,7 +39,8 @@ class Widget(QWidget):
     """""""""""""""""""""
     def init_ui(self):
         """
-        Initialisation of the user interface (as the function name suggests)
+        Initialisation of the user interface (as the function name suggests, why am i even writing this ?
+        Is this real world ? Am i real ? WOW !)
 
         :return: NoneType
         """
@@ -87,7 +90,7 @@ class Widget(QWidget):
     def add_instrument(self):
         """
         Called upon clicking OK. Adds instrument (based on user input) to the instrument dictionary in the main window.
-        Data structure -> instruments[name] : [instrument object, sweep/measure, gate to sweep/observe]
+        Data structure -> name : instrument object
         """
 
         if self.validate_instrument_input():
@@ -108,18 +111,22 @@ class Widget(QWidget):
     def update_instrument_data(self):
         """
         Upon selecting one of instruments from dropdown, updates input fields with data availible from class
+        Additionally if the instrument has data bound to it in the InstrumentData file, also update that data
 
         :return: NoneType
         """
 
         instrument_type = self.cb.currentText()
-        instrument_class = self.premade_instruments[instrument_type]
+        # instrument_class = self.premade_instruments[instrument_type]
+        if instrument_type in instrument_data:
+            instrument_name = instrument_data[instrument_type][0]
+            instrument_address = instrument_data[instrument_type][1]
+            self.instrument_name.setText(instrument_name)
+            self.instrument_address.setText(instrument_address)
+        else:
+            self.instrument_name.setText("")
+            self.instrument_address.setText("")
         self.instrument_type.setText(instrument_type)
-
-        if issubclass(instrument_class, IPInstrument):
-            pass
-        elif issubclass(instrument_class, VisaInstrument):
-            pass
 
     """""""""""""""""""""
     Data manipulation
@@ -171,15 +178,15 @@ class Widget(QWidget):
                         try:
                             my_class = getattr(module, model[:-3])
                         except Exception as e:
-                            print(str(e))
-                        finally:
+                            show_error_message(str(e))
+                        else:
                             self.premade_instruments[model[:-3]] = my_class
                     else:
                         try:
                             my_class = getattr(module, correct_names[model[:-3]])
                         except Exception as e:
-                            print(str(e))
-                        finally:
+                            show_error_message(str(e))
+                        else:
                             self.premade_instruments[model[:-3]] = my_class
 
     def create_object(self):
