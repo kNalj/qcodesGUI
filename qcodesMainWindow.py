@@ -175,8 +175,8 @@ class MainWindow(QMainWindow):
                 new_label.resize(350, 20)
                 new_label.show()
                 current_instrument_btn = QPushButton("Edit", self)
-                current_instrument_btn.resize(40, 20)
-                current_instrument_btn.move(350, 95 + 20*len(self.station_instruments))
+                current_instrument_btn.resize(35, 20)
+                current_instrument_btn.move(5, 95 + 20*len(self.station_instruments))
                 current_instrument_btn.clicked.connect(self.make_open_instrument_edit(instrument))
                 current_instrument_btn.show()
                 self.edit_button_dict[instrument] = current_instrument_btn

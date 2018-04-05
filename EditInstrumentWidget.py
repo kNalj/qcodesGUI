@@ -71,6 +71,10 @@ class EditInstrumentWidget(QWidget):
             set_value_btn.clicked.connect(self.make_set_parameter(name))
             start_y += 25
 
+        set_all_btn = QPushButton("SET ALL", self)
+        set_all_btn.move(320, start_y+50)
+        set_all_btn.clicked.connect(self.set_all)
+
         set_all_to_zero_btn = QPushButton("All zeroes", self)
         set_all_to_zero_btn.move(200, start_y+50)
         set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
@@ -79,10 +83,21 @@ class EditInstrumentWidget(QWidget):
     Data manipulation
     """""""""""""""""""""
     def make_set_parameter(self, parameter):
-        print(parameter)
-        print(self.textboxes[parameter].text())
+        """
+        Function factory that createc function for each of the set buttons. Takes in name of the instrument parameter
+        and passes it to the inner function. Function returns newly created function.
+
+        :param parameter: name of the parameter that is being set
+        :return: function that sets the parameter
+        """
 
         def set_parameter():
+            """
+            Fetches the data from textbox belonging to the parameter (data set by user) and sets the parameter value
+            to that data. Also implements some data validation
+
+            :return: NoneType
+            """
             try:
                 value = float(self.textboxes[parameter].text())
                 self.instrument.set(parameter, value)
@@ -94,6 +109,11 @@ class EditInstrumentWidget(QWidget):
         return set_parameter
 
     def update_parameters_data(self):
+        """
+        Updates values of all parameters after a change has been made. Implements data validation (has to be number)
+
+        :return: NoneType
+        """
         for name, textbox in self.textboxes.items():
             textbox.setText(str(self.instrument.get(name)))
         for name, textbox in self.textboxes_real_values.items():
@@ -103,12 +123,33 @@ class EditInstrumentWidget(QWidget):
                 textbox.setText(str(self.instrument.get(name)))
 
     def set_all_to_zero(self):
+        """
+        Set value of all numeric type parameters to be zero
+
+        :return: NoneType
+        """
 
         for name, parameter in self.instrument.parameters.items():
-            """print(name, parameter)"""
             if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
                 self.instrument.set(name, 0)
             self.update_parameters_data()
+
+    def set_all(self):
+        """
+        Sets and updates displayed values for all parameters at the same time (if multiple parameters were edited)
+
+        :return: NoneType
+        """
+        for name, parameter in self.instrument.parameters.items():
+            if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+                try:
+                    value = float(self.textboxes[name].text())
+                    self.instrument.set(name, value)
+                except Exception as e:
+                    show_error_message("Warning", str(e))
+                else:
+                    self.setStatusTip("Parameter value changed to: " + str(value))
+        self.update_parameters_data()
 
     """""""""""""""""""""
     Helper functions
