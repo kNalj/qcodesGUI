@@ -67,9 +67,9 @@ class EditInstrumentWidget(QWidget):
             set_value_btn.clicked.connect(self.make_set_parameter(name))
             start_y += 25
 
-            set_all_to_zero_btn = QPushButton("All zeroes", self)
-            set_all_to_zero_btn.move(200, start_y+50)
-            set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
+        set_all_to_zero_btn = QPushButton("All zeroes", self)
+        set_all_to_zero_btn.move(200, start_y+50)
+        set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
 
     """""""""""""""""""""
     Data manipulation
@@ -91,9 +91,12 @@ class EditInstrumentWidget(QWidget):
 
     def update_parameters_data(self):
         for name, textbox in self.textboxes.items():
-            textbox.setText(str(round(self.instrument.get(name), 3)))
+            textbox.setText(str(self.instrument.get(name)))
         for name, textbox in self.textboxes_real_values.items():
-            textbox.setText(str(round(self.instrument.get(name), 3)))
+            if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+                textbox.setText(str(round(self.instrument.get(name), 3)))
+            else:
+                textbox.setText(str(self.instrument.get(name)))
 
     def set_all_to_zero(self):
 

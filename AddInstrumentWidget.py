@@ -3,9 +3,7 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QVBoxLayout, \
-    QRadioButton, QMessageBox
-from PyQt5 import QtGui
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox
 
 import inspect
 import sys
@@ -15,8 +13,7 @@ import qcodes as qc
 from instrument_imports import *
 from InstrumentData import *
 from Helpers import *
-from qcodes.instrument.ip import IPInstrument
-from qcodes.instrument.visa import VisaInstrument
+
 
 
 class Widget(QWidget):
