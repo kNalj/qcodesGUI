@@ -38,8 +38,8 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
-        height = len(self.instrument.parameters)*50 + 100
-        self.setGeometry(256, height, 320, 260)
+        height = len(self.instrument.parameters)*30 + 100
+        self.setGeometry(256, 256, 480, height)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
@@ -55,14 +55,18 @@ class EditInstrumentWidget(QWidget):
             label = QLabel(name, self)
             label.move(30, start_y)
             label.show()
-            self.textboxes_real_values[name] = QLineEdit(str(self.instrument.get(name)), self)
-            self.textboxes_real_values[name].move(80, start_y)
+            if str(self.instrument.get(name)).replace(".", "", 1).isdigit():
+                val = str(round(self.instrument.get(name), 3))
+            else:
+                val = str(self.instrument.get(name))
+            self.textboxes_real_values[name] = QLineEdit(val, self)
+            self.textboxes_real_values[name].move(160, start_y)
             self.textboxes_real_values[name].resize(40, 20)
             self.textboxes_real_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(self.instrument.get(name)), self)
-            self.textboxes[name].move(130, start_y)
+            self.textboxes[name].move(210, start_y)
             set_value_btn = QPushButton("Set", self)
-            set_value_btn.move(280, start_y)
+            set_value_btn.move(360, start_y)
             set_value_btn.resize(40, 20)
             set_value_btn.clicked.connect(self.make_set_parameter(name))
             start_y += 25
@@ -101,7 +105,7 @@ class EditInstrumentWidget(QWidget):
     def set_all_to_zero(self):
 
         for name, parameter in self.instrument.parameters.items():
-            print(name, parameter)
+            """print(name, parameter)"""
             if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
                 self.instrument.set(name, 0)
             self.update_parameters_data()
