@@ -1,3 +1,8 @@
+"""
+qcodes/instrument/base.py -> line 263
+There u can find a set function for setting paramater defined by "name" to a value defined by "value"
+"""
+
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QVBoxLayout, \
     QRadioButton, QMessageBox
 from PyQt5 import QtGui

@@ -149,27 +149,38 @@ class LoopsWidget(QWidget):
         """
 
         try:
-            self.lower = float(self.textbox_lower_limit.text())
-            self.upper = float(self.textbox_upper_limit.text())
-            self.num = float(self.textbox_num.text())
-            self.step = float(self.textbox_step.text())
+            lower = float(self.textbox_lower_limit.text())
+            upper = float(self.textbox_upper_limit.text())
+            num = float(self.textbox_num.text())
+            delay = float(self.textbox_step.text())
             sweep_division = float(self.sweep_parameter_divider.text())
             action_division = float(self.action_parameter_divider.text())
-
-            lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(self.lower, self.upper, num=self.num), self.step).each(self.action_parameter_cb.currentData())
         except Exception as e:
             warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
                              + str(e)
             show_error_message("Warning", warning_string)
         else:
-            if sweep_division != 1:
+            if sweep_division != 1 and action_division != 1:
                 sweep_divider = VoltageDivider(self.sweep_parameter_cb.currentData(), sweep_division)
-                print(sweep_divider)
-                print("A sweep divider was added")
-            if action_division != 1:
                 action_divider = VoltageDivider(self.action_parameter_cb.currentData(), action_division)
-                print(action_divider)
+                lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay).each(
+                    action_divider)
+            elif sweep_division != 1:
+                sweep_divider = VoltageDivider(self.sweep_parameter_cb.currentData(), sweep_division)
+                # sweep_divider(sweep_division)
+                print("A sweep divider was added")
+                lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay).each(
+                    self.action_parameter_cb.currentData())
+            elif action_division != 1:
+                action_divider = VoltageDivider(self.action_parameter_cb.currentData(), action_division)
+                # action_divider(action_division)
                 print("An action divider was added")
+                lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay).each(
+                    action_divider)
+            else:
+                lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay).each(
+                    self.action_parameter_cb.currentData())
+
             name = "loop" + str(len(self.actions)+1)
             self.loops[name] = lp
             self.actions.append(lp)

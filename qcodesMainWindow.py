@@ -1,8 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, QLineEdit
 from PyQt5.QtCore import pyqtSlot
-from AddInstrumentWidget import Widget
-from SetupLoopsWidget import LoopsWidget
-from AttachDividersWidget import DividerWidget
+
 import sys
 import inspect
 
@@ -10,6 +8,9 @@ import qcodes as qc
 from Helpers import *
 from ViewTree import ViewTree
 from TextEditWidget import Notepad
+from AddInstrumentWidget import Widget
+from SetupLoopsWidget import LoopsWidget
+from EditInstrumentWidget import EditInstrumentWidget
 
 
 class MainWindow(QMainWindow):
@@ -24,6 +25,8 @@ class MainWindow(QMainWindow):
         self.loops = {}
         self.shown_loops = []
         self.actions = []
+
+        self.edit_button_dict = {}
 
         self.statusBar().showMessage("Ready")
         self.show()
@@ -156,7 +159,7 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         if len(self.instruments) == 1:
-            header_string = "Nr." + "       " + "Type" + 4*"\t" + "Dividers"
+            header_string = "Nr." + "       " + "Type" + 3*"\t" + "Parameters"
             new_label = QLabel(header_string, self)
             new_label.move(60, 75)
             new_label.resize(500, 20)
@@ -165,12 +168,18 @@ class MainWindow(QMainWindow):
         for instrument in self.instruments:
             if instrument not in self.station_instruments:
                 current_instrument = self.instruments[instrument]
-                display_string = str((len(self.instruments))) + ".      " + str(current_instrument) + ".      " + \
+                display_string = str((len(self.instruments))) + ".      " + str(current_instrument) + " " + "\t" + \
                                  str([i for i in current_instrument.parameters.keys()])
                 new_label = QLabel(display_string, self)
                 new_label.move(60, 95 + 20*len(self.station_instruments))
-                new_label.resize(300, 20)
+                new_label.resize(400, 20)
                 new_label.show()
+                current_instrument_btn = QPushButton("Edit", self)
+                current_instrument_btn.resize(40, 20)
+                current_instrument_btn.move(350, 95 + 20*len(self.station_instruments))
+                current_instrument_btn.clicked.connect(self.make_open_instrument_edit(instrument))
+                current_instrument_btn.show()
+                self.edit_button_dict[instrument] = current_instrument_btn
 
                 self.station_instruments[instrument] = self.instruments[instrument]
 
@@ -282,6 +291,26 @@ class MainWindow(QMainWindow):
         """
         self.text_editor = Notepad()
         self.text_editor.show()
+
+    # This is a function factory
+    def make_open_instrument_edit(self, instrument):
+        """
+        Hi, i am a function factory, and for each button you see next to an instrument i create a new function to edit
+        that particular instrument. After creating that function i return it so it can be called with a click on the
+        button.
+
+        :param instrument: refers to an instrument to be edited
+        :return: newly created function to open "EditInstrumentWidget" with this particular instrument
+        """
+        def open_instrument_edit():
+            """
+            Open a new widget and pass it an instrument that can be edited through the newly opened widget
+
+            :return: NoneType
+            """
+            self.edit_instrument = EditInstrumentWidget(self.instruments, parent=self, instrument_name=instrument)
+            self.edit_instrument.show()
+        return open_instrument_edit
 
 
 def main():
