@@ -17,7 +17,7 @@ dummy2 = DummyInstrument("haleluja", gates=["g1", "g2"])
 #print(dummy.get("g1"))
 dummy.set("g1", 200.6756)
 #print(dummy.get("g1"))
-print(dummy.parameters.items())
+#print(dummy.parameters.items())
 
 lp = qc.Loop(dummy.parameters["g1"].sweep(0, 1, num=10), 0).each(dummy2.parameters["g2"])
 # print(lp.snapshot_base()["sweep_values"]["parameter"]["full_name"])
@@ -33,3 +33,4 @@ mclass = getattr(module, "ActiveLoop")
 # print(isinstance(lp1, mclass))
 
 # print(lp1)
+

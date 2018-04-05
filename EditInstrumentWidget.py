@@ -38,8 +38,8 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
-
-        self.setGeometry(256, len(self.instrument.parameters)*50 + 100, 320, 260)
+        height = len(self.instrument.parameters)*50 + 100
+        self.setGeometry(256, height, 320, 260)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
@@ -68,7 +68,7 @@ class EditInstrumentWidget(QWidget):
             start_y += 25
 
             set_all_to_zero_btn = QPushButton("All zeroes", self)
-            set_all_to_zero_btn.move(200, 200)
+            set_all_to_zero_btn.move(200, start_y+50)
             set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
 
     """""""""""""""""""""
@@ -91,9 +91,9 @@ class EditInstrumentWidget(QWidget):
 
     def update_parameters_data(self):
         for name, textbox in self.textboxes.items():
-            textbox.setText(str(self.instrument.get(name)))
+            textbox.setText(str(round(self.instrument.get(name), 3)))
         for name, textbox in self.textboxes_real_values.items():
-            textbox.setText(str(self.instrument.get(name)))
+            textbox.setText(str(round(self.instrument.get(name), 3)))
 
     def set_all_to_zero(self):
 
