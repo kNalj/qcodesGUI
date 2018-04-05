@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
                                  str([i for i in current_instrument.parameters.keys()])
                 new_label = QLabel(display_string, self)
                 new_label.move(60, 95 + 20*len(self.station_instruments))
-                new_label.resize(400, 20)
+                new_label.resize(350, 20)
                 new_label.show()
                 current_instrument_btn = QPushButton("Edit", self)
                 current_instrument_btn.resize(40, 20)
@@ -246,7 +246,8 @@ class MainWindow(QMainWindow):
         Close the main window
         :return: NoneType
         """
-        for instrument in self.instruments:
+        for name, instrument in self.instruments.items():
+            print(instrument)
             instrument.close()
 
         self.close()
