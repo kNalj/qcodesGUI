@@ -20,5 +20,6 @@ correct_names = {"PCIE_1751": "Advantech_PCIE_1751",
                  "AWG5014": "Tektronix_AWG5014",
                  "AWG520": "Tektronix_AWG520",
                  "AWG5200": "Tektronix_AWG5200",
-                 "Keithley_2600_channels": "Keithley_2600"
+                 "Keithley_2600_channels": "Keithley_2600",
+				 "DAC20bit": "IST_20"
                  }

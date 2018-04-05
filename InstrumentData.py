@@ -18,4 +18,7 @@ EXAMPLE:
 """
 
 
-instrument_data = {"IVVI": ["dac", "Address"]}
+instrument_data = {
+"IVVI": ["dac", "ASRL5::INSTR"],
+"Agilent_34400A":  ["dmm", "USB0::0x2A8D::0x0101::MY54505177::INSTR"]
+}

@@ -183,14 +183,14 @@ class Widget(QWidget):
                         try:
                             my_class = getattr(module, model[:-3])
                         except Exception as e:
-                            show_error_message(str(e))
+                            show_error_message("Warning",str(e))
                         else:
                             self.premade_instruments[model[:-3]] = my_class
                     else:
                         try:
                             my_class = getattr(module, correct_names[model[:-3]])
                         except Exception as e:
-                            show_error_message(str(e))
+                            show_error_message("Warning",str(e))
                         else:
                             self.premade_instruments[model[:-3]] = my_class
 
