@@ -1,3 +1,4 @@
 #ignore data files created by qcodes
 data/
 dummies.py
+.idea/
