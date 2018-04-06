@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabe
 import sys
 
 from Helpers import *
-
+from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 class EditInstrumentWidget(QWidget):
 
@@ -21,11 +21,16 @@ class EditInstrumentWidget(QWidget):
         """
         super(EditInstrumentWidget, self).__init__()
         self.parent = parent
+
         self.instruments = instruments
         self.instrument_name = instrument_name
         self.instrument = self.instruments[instrument_name]
+
         self.textboxes = {}
         self.textboxes_real_values = {}
+
+        self.inner_parameter_btns = {}
+
         self.init_ui()
         self.show()
 
@@ -55,6 +60,11 @@ class EditInstrumentWidget(QWidget):
             label = QLabel(name, self)
             label.move(30, start_y)
             label.show()
+
+            self.inner_parameter_btns[name] = QPushButton("Edit " + name, self)
+            self.inner_parameter_btns[name].move(70, start_y)
+            self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
+
             if str(self.instrument.get(name)).replace(".", "", 1).isdigit():
                 val = str(round(self.instrument.get(name), 3))
             else:
@@ -71,13 +81,17 @@ class EditInstrumentWidget(QWidget):
             set_value_btn.clicked.connect(self.make_set_parameter(name))
             start_y += 25
 
+        set_all_to_zero_btn = QPushButton("All zeroes", self)
+        set_all_to_zero_btn.move(200, start_y + 50)
+        set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
+
         set_all_btn = QPushButton("SET ALL", self)
-        set_all_btn.move(320, start_y+50)
+        set_all_btn.move(290, start_y + 50)
         set_all_btn.clicked.connect(self.set_all)
 
-        set_all_to_zero_btn = QPushButton("All zeroes", self)
-        set_all_to_zero_btn.move(200, start_y+50)
-        set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
+        ok_btn = QPushButton("Close", self)
+        ok_btn.move(380, start_y + 50)
+        ok_btn.clicked.connect(self.close)
 
     """""""""""""""""""""
     Data manipulation
@@ -107,6 +121,14 @@ class EditInstrumentWidget(QWidget):
                 self.update_parameters_data()
                 self.setStatusTip("Parameter value changed to: " + str(value))
         return set_parameter
+
+    def make_edit_parameter(self, parameter):
+
+        def edit_instrument():
+            self.edit_instrument_parameters = EditInstrumentParameterWidget(self.instruments, self.instrument, parameter, parent=self)
+            self.edit_instrument_parameters.show()
+
+        return edit_instrument
 
     def update_parameters_data(self):
         """
