@@ -63,6 +63,7 @@ class EditInstrumentWidget(QWidget):
 
             self.inner_parameter_btns[name] = QPushButton("Edit " + name, self)
             self.inner_parameter_btns[name].move(70, start_y)
+            self.inner_parameter_btns[name].resize(80, 20)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
             if str(self.instrument.get(name)).replace(".", "", 1).isdigit():
@@ -70,8 +71,8 @@ class EditInstrumentWidget(QWidget):
             else:
                 val = str(self.instrument.get(name))
             self.textboxes_real_values[name] = QLineEdit(val, self)
-            self.textboxes_real_values[name].move(160, start_y)
-            self.textboxes_real_values[name].resize(40, 20)
+            self.textboxes_real_values[name].move(155, start_y)
+            self.textboxes_real_values[name].resize(50, 20)
             self.textboxes_real_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(self.instrument.get(name)), self)
             self.textboxes[name].move(210, start_y)
