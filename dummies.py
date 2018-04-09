@@ -35,12 +35,4 @@ from qcodes.tests.instrument_mocks import DummyInstrument
 # print(lp1)
 
 
-test_ivvi = IVVI("ivvi", "ASRL4::INSTR")
-
-parameter = test_ivvi.parameters["dac1"]
-
-print(parameter)
-
-print(parameter._step)
-parameter.set_step(15)
-print(parameter._step)
+test_ivvi = IVVI("ivvi", "ASRL4::INSTR", reset=True)

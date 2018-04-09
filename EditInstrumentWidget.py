@@ -151,12 +151,14 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
-
-        for name, parameter in self.instrument.parameters.items():
-            if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
-                if name[0:3] == "dac" and len(name) == (4 or 5):
-                    self.instrument.set(name, 0)
-            self.update_parameters_data()
+        if hasattr(self.instrument, "set_dacs_zero"):
+            self.instrument.set_dacs_zero()
+        else:
+            for name, parameter in self.instrument.parameters.items():
+                if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+                    if name[0:3] == "dac" and len(name) == (4 or 5):
+                        self.instrument.set(name, 0)
+        self.update_parameters_data()
 
     def set_all(self):
         """
