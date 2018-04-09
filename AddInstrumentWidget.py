@@ -61,31 +61,26 @@ class Widget(QWidget):
         self.cb.setCurrentIndex(index)
         self.cb.currentIndexChanged.connect(self.update_instrument_data)
         
-        self.label = QLabel("Type", self)
-        self.label.move(20, 65)
+        type_label = QLabel("Type", self)
+        type_label.move(20, 65)
         self.instrument_type = QLineEdit(self)
         self.instrument_type.move(20, 80)
         self.instrument_type.setEnabled(False)
         
-        self.label = QLabel("Name", self)
-        self.label.move(20, 115)
+        name_label = QLabel("Name", self)
+        name_label.move(20, 115)
         self.instrument_name = QLineEdit(self)
         self.instrument_name.move(20, 130)
         
-        self.address_label = QLabel("Address", self)
-        self.address_label.move(20, 165)
-        self.address_label.resize(400, 15)
+        address_label = QLabel("Address", self)
+        address_label.move(20, 165)
+        address_label.resize(400, 15)
         self.instrument_address = QLineEdit(self)
         self.instrument_address.move(20, 180)
 
         self.ok_button = QPushButton("OK", self)
         self.ok_button.move(20, 220)
         self.ok_button.clicked.connect(self.add_instrument)
-
-        self.label_type = QLabel("Type: ", self)
-        self.label_type.move(180, 65)
-        self.label_num_gates = QLabel("Num. of gates: ", self)
-        self.label_num_gates.move(180, 80)
         
         self.update_instrument_data()
 
