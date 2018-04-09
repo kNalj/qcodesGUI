@@ -1,4 +1,11 @@
 #ignore data files created by qcodes
 data/
-dummies.py
+
+#ignore pycharm setup
 .idea/
+
+#ignore test file
+dummies.py
+
+#ignore InstrumentData.py, this file is different for every computer
+InstrumentData.py
