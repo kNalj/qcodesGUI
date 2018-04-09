@@ -11,8 +11,8 @@ from qcodes.instrument_drivers.QuTech.IVVI import IVVI
 
 from qcodes.tests.instrument_mocks import DummyInstrument
 
-dummy = DummyInstrument("amen", gates=["g1", "g2"])
-dummy2 = DummyInstrument("haleluja", gates=["g1", "g2"])
+# dummy = DummyInstrument("amen", gates=["g1", "g2"])
+# dummy2 = DummyInstrument("haleluja", gates=["g1", "g2"])
 
 #print(dummy.get("g1"))
 #dummy.set("g1", 200.675365534576436)
@@ -35,3 +35,12 @@ dummy2 = DummyInstrument("haleluja", gates=["g1", "g2"])
 # print(lp1)
 
 
+test_ivvi = IVVI("ivvi", "ASRL4::INSTR")
+
+parameter = test_ivvi.parameters["dac1"]
+
+print(parameter)
+
+print(parameter._step)
+parameter.set_step(15)
+print(parameter._step)

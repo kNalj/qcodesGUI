@@ -154,7 +154,8 @@ class EditInstrumentWidget(QWidget):
 
         for name, parameter in self.instrument.parameters.items():
             if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
-                self.instrument.set(name, 0)
+                if name[0:3] == "dac" and len(name) == (4 or 5):
+                    self.instrument.set(name, 0)
             self.update_parameters_data()
 
     def set_all(self):

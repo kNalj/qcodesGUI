@@ -26,6 +26,8 @@ class EditInstrumentParameterWidget(QWidget):
         self.instrument = instrument
         self.parameter = self.instrument.parameters[parameter]
 
+        print(self.parameter)
+
         self.textboxes = {}
         self.textboxes_real_values = {}
 
@@ -48,17 +50,23 @@ class EditInstrumentParameterWidget(QWidget):
         self.setWindowTitle("Edit " + self.parameter.name + " parameter")
         self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
 
-        extras = ["step", "inter_delay", "post_delay"]
+        extras = ["step", "inter_delay"]
         start_y = 25
         for name in extras:
             label = QLabel(name, self)
             label.move(30, start_y)
             label.show()
-            self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter, name)), self)
+            if name == "step":
+                self.textboxes_real_values[name] = QLineEdit(str(self.parameter._step), self)
+            elif name == "inter_delay":
+                self.textboxes_real_values[name] = QLineEdit(str(self.parameter.get_delay()), self)
             self.textboxes_real_values[name].move(120, start_y)
             self.textboxes_real_values[name].resize(40, 20)
             self.textboxes_real_values[name].setDisabled(True)
-            self.textboxes[name] = QLineEdit(str(getattr(self.parameter, name)), self)
+            if name == "step":
+                self.textboxes[name] = QLineEdit(str(self.parameter._step), self)
+            elif name == "inter_delay":
+                self.textboxes[name] = QLineEdit(str(self.parameter.get_delay()), self)
             self.textboxes[name].move(180, start_y)
             set_value_btn = QPushButton("Set", self)
             set_value_btn.move(340, start_y)
@@ -80,7 +88,7 @@ class EditInstrumentParameterWidget(QWidget):
             if value_name == "step":
                 try:
                     value = float(self.textboxes[value_name].text())
-                    parameter.step = value
+                    parameter.set_step(value)
                 except Exception as e:
                     show_error_message("Warning", str(e))
                 else:
@@ -90,17 +98,7 @@ class EditInstrumentParameterWidget(QWidget):
             elif value_name == "inter_delay":
                 try:
                     value = float(self.textboxes[value_name].text())
-                    parameter.inter_delay = value
-                except Exception as e:
-                    show_error_message("Warning", str(e))
-                else:
-                    self.setStatusTip("Parameter value changed to: " + str(value))
-                    self.update_displayed_values()
-
-            elif value_name == "post_delay":
-                try:
-                    value = float(self.textboxes[value_name].text())
-                    parameter.post_delay = value
+                    parameter.set_delay(value)
                 except Exception as e:
                     show_error_message("Warning", str(e))
                 else:
@@ -112,19 +110,15 @@ class EditInstrumentParameterWidget(QWidget):
     def update_displayed_values(self):
         for name, textbox in self.textboxes.items():
             if name == "step":
-                textbox.setText(str(self.parameter.step))
+                textbox.setText(str(self.parameter._step))
             elif name == "inter_delay":
-                textbox.setText(str(self.parameter.inter_delay))
-            elif name == "post_delay":
-                textbox.setText(str(self.parameter.post_delay))
+                textbox.setText(str(self.parameter.get_delay()))
 
         for name, textbox in self.textboxes_real_values.items():
             if name == "step":
-                textbox.setText(str(self.parameter.step))
+                textbox.setText(str(self.parameter._step))
             elif name == "inter_delay":
-                textbox.setText(str(self.parameter.inter_delay))
-            elif name == "post_delay":
-                textbox.setText(str(self.parameter.post_delay))
+                textbox.setText(str(self.parameter.get_delay()))
 
     """""""""""""""""""""
     Helper functions
