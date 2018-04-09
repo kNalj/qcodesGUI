@@ -2,7 +2,8 @@
 data/
 
 #ignore pycharm setup
-.idea/
+ .idea/workspace.xml
+ .idea/tasks.xml
 
 #ignore test file
 dummies.py
