@@ -14,7 +14,7 @@ def show_error_message(title, message):
     """
     msg_box = QMessageBox()
     msg_box.setIcon(QMessageBox.Warning)
-    msg_box.setWindowIcon(QtGui.QIcon("warning_icon.png"))
+    msg_box.setWindowIcon(QtGui.QIcon("img/warning_icon.png"))
     msg_box.setWindowTitle(title)
     msg_box.setText(message)
     msg_box.setStandardButtons(QMessageBox.Ok)
@@ -55,7 +55,7 @@ class ViewTree(QTreeWidget):
     def __init__(self, value):
         super().__init__()
         self.setWindowTitle("Loop details")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         def fill_item(item, value):
             def new_item(parent, text, val=None):

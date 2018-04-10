@@ -3,7 +3,8 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QShortcut
+from PyQt5.QtCore import Qt
 
 import inspect
 import sys
@@ -50,7 +51,7 @@ class Widget(QWidget):
         self.setGeometry(256, 256, 320, 260)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Add new instrument")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
         
         self.cb = QComboBox(self)
         self.cb.move(20, 20)
@@ -81,6 +82,13 @@ class Widget(QWidget):
         self.ok_button = QPushButton("OK", self)
         self.ok_button.move(20, 220)
         self.ok_button.clicked.connect(self.add_instrument)
+
+        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Return), self)
+        add_shortcut.activated.connect(self.add_instrument)
+        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Enter), self)
+        add_shortcut.activated.connect(self.add_instrument)
+        close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
+        close_shortcut.activated.connect(self.close)
         
         self.update_instrument_data()
 

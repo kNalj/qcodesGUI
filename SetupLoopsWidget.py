@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QToolTip
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QToolTip, QShortcut
+from PyQt5.QtCore import Qt
+
 import sys
 import importlib
 
@@ -41,7 +43,7 @@ class LoopsWidget(QWidget):
         self.setGeometry(256, 256, 360, 340)
         self.setMinimumSize(360, 340)
         self.setWindowTitle("Setup loops")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         labels = ["Lower limit", "Upper limit", "Steps", "Delay"]
         tooltips = ["Start from this value",
@@ -137,6 +139,9 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.resize(260, 40)
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
         self.add_loop_btn.clicked.connect(self.create_loop)
+
+        close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
+        close_shortcut.activated.connect(self.close)
 
     """""""""""""""""""""
     Data manipulation

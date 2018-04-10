@@ -1,12 +1,16 @@
-from PyQt5.QtWidgets import  QApplication, QTreeWidget, QTreeWidgetItem
+from PyQt5.QtWidgets import  QApplication, QTreeWidget, QTreeWidgetItem, QShortcut
 from PyQt5 import QtGui
+from PyQt5.QtCore import Qt
 
 
 class ViewTree(QTreeWidget):
     def __init__(self, value):
         super().__init__()
         self.setWindowTitle("Loop details")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
+
+        close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
+        close_shortcut.activated.connect(self.close)
 
         def fill_item(item, value):
             def new_item(parent, text, val=None):

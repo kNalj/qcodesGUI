@@ -43,7 +43,7 @@ class DividerWidget(QWidget):
         self.setGeometry(256, 256, 320, 260)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Attach divider")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         label = QLabel("Parameter:", self)
         label.move(25, 40)

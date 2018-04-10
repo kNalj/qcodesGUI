@@ -3,7 +3,8 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut
+from PyQt5.QtCore import Qt
 
 import sys
 
@@ -48,7 +49,7 @@ class EditInstrumentParameterWidget(QWidget):
         self.setGeometry(256, 256, 480, 260)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Edit " + self.parameter.name + " parameter")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         extras = ["step", "inter_delay"]
         start_y = 25
@@ -77,6 +78,9 @@ class EditInstrumentParameterWidget(QWidget):
         self.OK_btn = QPushButton("Close", self)
         self.OK_btn.move(400, 220)
         self.OK_btn.clicked.connect(self.close)
+
+        close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
+        close_shortcut.activated.connect(self.close)
 
     """""""""""""""""""""
     Data manipulation

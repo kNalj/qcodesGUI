@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(128, 128, 640, 400)
         self.setMinimumSize(640, 400)
         self.setWindowTitle("qcodes starter")
-        self.setWindowIcon(QtGui.QIcon("osciloscope_icon.png"))
+        self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
         
         label = QLabel("Instruments:", self)
         label.move(25,  30)
@@ -66,7 +66,10 @@ class MainWindow(QMainWindow):
         self.show_loop_details_btn = QPushButton("Show tree", self)
         self.show_loop_details_btn.move(80, 240)
         self.show_loop_details_btn.resize(100, 30)
+        icon = QtGui.QIcon("img/binary_tree_icon.png")
+        self.show_loop_details_btn.setIcon(icon)
         self.show_loop_details_btn.clicked.connect(self.open_tree)
+
         self.loops_frame = QFrame(self)
         self.loops_frame.move(45, 280)
         self.loops_frame.setFrameShape(QFrame.StyledPanel)
@@ -75,13 +78,17 @@ class MainWindow(QMainWindow):
         self.loops_frame.setStyleSheet("background-color: rgb(245, 245, 245)")
         
         self.btn_add_instrument = QPushButton("Add instrument", self)
-        self.btn_add_instrument.move(490, 50)
+        self.btn_add_instrument.move(480, 50)
         self.btn_add_instrument.resize(140, 40)
+        icon = QtGui.QIcon("img/osciloscope_icon.png")
+        self.btn_add_instrument.setIcon(icon)
         self.btn_add_instrument.clicked.connect(lambda checked, name="DummyInstrument": self.add_new_instrument(name))
 
         self.btn_setup_loops = QPushButton("Setup loops", self)
-        self.btn_setup_loops.move(490, 110)
+        self.btn_setup_loops.move(480, 110)
         self.btn_setup_loops.resize(140, 40)
+        icon = QtGui.QIcon("img/measure.png")
+        self.btn_setup_loops.setIcon(icon)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
         label = QLabel("Output file name", self)
@@ -91,11 +98,19 @@ class MainWindow(QMainWindow):
         self.output_file_name.resize(140, 30)
 
         self.btn_select_save_location = QPushButton("Select save location", self)
-        self.btn_select_save_location.move(480, 280)
+        self.btn_select_save_location.move(480, 180)
         self.btn_select_save_location.resize(140, 40)
+        icon = QtGui.QIcon("img/save_icon.png")
+        self.btn_select_save_location.setIcon(icon)
         self.btn_select_save_location.clicked.connect(self.select_save_location)
 
-        self.open_text_edit_btn = QPushButton("Text", self)
+        self.stop_btn = QPushButton("STOP", self)
+        self.stop_btn.move(480, 280)
+        self.stop_btn.resize(140, 40)
+        icon = QtGui.QIcon("img/cancel_1-512.png")
+        self.stop_btn.setIcon(icon)
+
+        self.open_text_edit_btn = QPushButton("{Text}", self)
         self.open_text_edit_btn.move(480, 330)
         self.open_text_edit_btn.resize(60, 40)
         self.open_text_edit_btn.clicked.connect(self.open_text_editor)
@@ -104,6 +119,8 @@ class MainWindow(QMainWindow):
         self.btn_run.move(560, 330)
         self.btn_run.resize(60, 40)
         self.btn_run.clicked.connect(self.run_qcodes)
+        icon = QtGui.QIcon("img/play_icon.png")
+        self.btn_run.setIcon(icon)
 
         self.statusBar().showMessage("Ready")
 
@@ -144,7 +161,7 @@ class MainWindow(QMainWindow):
                 else:
                     current_model_action = QAction(model[0:-3], self)
                     current_model_action.setEnabled(False)
-                    current_model_action.setIcon(QtGui.QIcon("disabled.png"))
+                    current_model_action.setIcon(QtGui.QIcon("img/disabled.png"))
                     current_brand_menu.addAction(current_model_action)
                     current_model_action.triggered.connect(lambda checked, name=current_model_action.data(): self.add_new_instrument(name))
 
