@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
         self.edit_button_dict = {}
 
         # Thread pool for adding separate threads
-        # (execute qcodes in another thread [to not freeze program while executing])
+        # (execute qcodes in another thread [to not freeze GUI thread while executing])
         self.thread_pool = QThreadPool()
 
         self.statusBar().showMessage("Ready")
