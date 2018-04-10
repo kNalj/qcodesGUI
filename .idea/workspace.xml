@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eb9d9596-c875-4e1c-8b8a-64cf4322d845" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/ThreadWorker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AddInstrumentWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/AddInstrumentWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EditInstrumentParametersWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/EditInstrumentParametersWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qcodesMainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/qcodesMainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ThreadWorker.py" beforeDir="false" afterPath="$PROJECT_DIR$/ThreadWorker.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,11 +17,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="qcodesMainWindow.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="qcodesMainWindow.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="306" column="32" lean-forward="true" selection-start-line="306" selection-start-column="32" selection-end-line="306" selection-end-column="32" />
+            <state relative-caret-position="167">
+              <caret line="326" column="31" lean-forward="true" selection-start-line="326" selection-start-column="31" selection-end-line="326" selection-end-column="31" />
               <folding>
                 <element signature="e#0#128#0" expanded="true" />
                 <element signature="e#918#3756#0" />
@@ -44,11 +41,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ThreadWorker.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ThreadWorker.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ThreadWorker.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="483">
-              <caret line="72" lean-forward="true" selection-start-line="72" selection-end-line="72" />
+            <state relative-caret-position="323">
+              <caret line="25" column="38" lean-forward="true" selection-start-line="25" selection-start-column="38" selection-end-line="25" selection-end-column="38" />
               <folding>
                 <element signature="e#0#65#0" expanded="true" />
               </folding>
@@ -173,8 +170,8 @@
         <option value="$PROJECT_DIR$/SetupLoopsWidget.py" />
         <option value="$PROJECT_DIR$/AddInstrumentWidget.py" />
         <option value="$PROJECT_DIR$/EditInstrumentParametersWidget.py" />
-        <option value="$PROJECT_DIR$/ThreadWorker.py" />
         <option value="$PROJECT_DIR$/qcodesMainWindow.py" />
+        <option value="$PROJECT_DIR$/ThreadWorker.py" />
       </list>
     </option>
   </component>
@@ -492,7 +489,14 @@
       <option name="project" value="LOCAL" />
       <updated>1523280347736</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Implemented executing qcodes loop in a separate thread">
+      <created>1523353452726</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1523353452726</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -551,7 +555,8 @@
     <MESSAGE value="Fixed minor PEP8 problems" />
     <MESSAGE value="Fixed setting instrument set and delay" />
     <MESSAGE value="Update .gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update .gitignore" />
+    <MESSAGE value="Implemented executing qcodes loop in a separate thread" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented executing qcodes loop in a separate thread" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -708,20 +713,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ThreadWorker.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="483">
-          <caret line="72" lean-forward="true" selection-start-line="72" selection-end-line="72" />
-          <folding>
-            <element signature="e#0#65#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="306" column="32" lean-forward="true" selection-start-line="306" selection-start-column="32" selection-end-line="306" selection-end-column="32" />
+        <state relative-caret-position="167">
+          <caret line="326" column="31" lean-forward="true" selection-start-line="326" selection-start-column="31" selection-end-line="326" selection-end-column="31" />
           <folding>
             <element signature="e#0#128#0" expanded="true" />
             <element signature="e#918#3756#0" />
@@ -736,6 +731,16 @@
             <element signature="e#11034#11524#0" />
             <element signature="e#11582#11775#0" />
             <element signature="e#11871#12703#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ThreadWorker.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="25" column="38" lean-forward="true" selection-start-line="25" selection-start-column="38" selection-end-line="25" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#65#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -19,14 +19,14 @@ class Worker(QRunnable):
         """
         super(Worker, self).__init__()
 
-        # Add the callback to our kwargs
-        kwargs['progress_callback'] = self.signals.progress
-
         # Store constructor arguments (re-used for processing)
         self.func = func
         self.args = args
         self.kwargs = kwargs
         self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        kwargs['progress_callback'] = self.signals.progress
 
     @pyqtSlot()
     def run(self):
