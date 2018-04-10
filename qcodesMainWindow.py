@@ -165,7 +165,6 @@ class MainWindow(QMainWindow):
                     current_brand_menu.addAction(current_model_action)
                     current_model_action.triggered.connect(lambda checked, name=current_model_action.data(): self.add_new_instrument(name))
 
-
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu("&File")
         file_menu.addAction(exit_action)
@@ -342,12 +341,30 @@ class MainWindow(QMainWindow):
         return open_instrument_edit
 
     def progress_func(self, n):
+        """
+        Helper function for thread worker
+
+        :param n: integer representing percentage of the job that is already done
+        :return: NoneType
+        """
         print("%d%% done" % n)
 
     def print_output(self, s):
+        """
+        Helper function for thread worker
+
+        :param s: String returned (if any) by function that was processed in a thread
+        :return: NoneType
+        """
+
         print(s)
 
     def thread_complete(self):
+        """
+        Helper function for thread worker, prints out this message after finishing the thread job.
+
+        :return: NoneType
+        """
         print("Loop execution complete !")
 
 def main():

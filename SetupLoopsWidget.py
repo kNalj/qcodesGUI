@@ -193,6 +193,12 @@ class LoopsWidget(QWidget):
             self.close()
 
     def update_sweep_instrument_parameters(self):
+        """
+        Replaces data in parameters combo box. Fetch all parameters of an instrument selected in a instrument combo box
+        and display them as options in parameters combo box
+
+        :return: NoneType
+        """
         if len(self.instruments):
             self.sweep_parameter_cb.clear()
             instrument = self.sweep_parameter_instrument_cb.currentData()
@@ -203,6 +209,12 @@ class LoopsWidget(QWidget):
                     self.sweep_parameter_cb.addItem(display_member_string, data_member)
 
     def update_action_instrument_parameters(self):
+        """
+        Replaces data in parameters combo box. Fetch all parameters of an instrument selected in a instrument combo box
+        and display them as options in parameters combo box
+
+        :return: NoneType
+        """
         if len(self.instruments):
             self.action_parameter_cb.clear()
             action = self.action_parameter_instrument_cb.currentData()

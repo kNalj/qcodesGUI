@@ -188,13 +188,30 @@ class EditInstrumentWidget(QWidget):
     Helper functions
     """""""""""""""""""""
     def progress_func(self, n):
+        """
+        Helper function for thread worker
+
+        :param n: integer representing percentage of the job that is already done
+        :return: NoneType
+        """
         print("%d%% done" % n)
 
     def print_output(self, s):
+        """
+        Helper function for thread worker
+
+        :param s: String returned (if any) by function that was processed in a thread
+        :return: NoneType
+        """
         if s is not None:
             print(s)
 
     def thread_complete(self):
+        """
+        Helper function for thread worker, prints out this message after finishing the thread job.
+
+        :return: NoneType
+        """
         print("Parameters changed !")
 
     def call_worker(self, func):
