@@ -193,11 +193,11 @@ class EditInstrumentWidget(QWidget):
     def thread_complete(self):
         print("Parameters changed !")
 
-    def call_worker(self, function):
+    def call_worker(self, func):
 
         def instanciate_worker():
 
-            worker = Worker(function)
+            worker = Worker(func)
             worker.signals.result.connect(self.print_output)
             worker.signals.finished.connect(self.thread_complete)
             worker.signals.progress.connect(self.progress_func)
