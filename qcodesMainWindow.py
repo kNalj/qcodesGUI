@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, QLineEdit
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, \
+    QLineEdit
+from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
 import inspect
@@ -11,6 +12,7 @@ from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
 from EditInstrumentWidget import EditInstrumentWidget
+from ThreadWorker import Worker
 
 
 class MainWindow(QMainWindow):
@@ -27,6 +29,10 @@ class MainWindow(QMainWindow):
         self.actions = []
 
         self.edit_button_dict = {}
+
+        # Thread pool for adding separate threads
+        # (execute qcodes in another thread [to not freeze program while executing])
+        self.thread_pool = QThreadPool()
 
         self.statusBar().showMessage("Ready")
         self.show()
@@ -211,19 +217,24 @@ class MainWindow(QMainWindow):
         if len(self.actions) > 0:
             if len(self.actions) == 1:
                 data = self.actions[0].get_data_set(name=self.output_file_name.text())
-                self.actions[0].run()
 
-                """instrument = self.actions[0]["actions"][0]["instrument"]
-                parameter = instrument.self.actions[0]["actions"][0]["name"]
+                worker = Worker(self.actions[0].run)
+                worker.signals.result.connect(self.print_output)
+                worker.signals.finished.connect(self.thread_complete)
+                worker.signals.progress.connect(self.progress_fn)
 
-                print(data)
-                plot = qc.QtPlot()
-                plot.add(data.parameter)"""
-
+                self.thread_pool.start(worker)
+                # self.actions[0].run()
             else:
-                # find out what to do when more loops are to be run
                 data = self.actions[-1].get_data_set(name=self.output_file_name.text())
-                self.actions[-1].run()
+
+                worker = Worker(self.actions[0].run)
+                worker.signals.result.connect(self.print_output)
+                worker.signals.finished.connect(self.thread_complete)
+                worker.signals.progress.connect(self.progress_fn)
+
+                self.thread_pool.start(worker)
+                # self.actions[0].run()
 
                 for name, instrument in self.instruments.items():
                     instrument.close()
@@ -247,7 +258,7 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         for name, instrument in self.instruments.items():
-            print(instrument)
+            print("Closing", instrument)
             instrument.close()
 
         self.close()
@@ -313,6 +324,14 @@ class MainWindow(QMainWindow):
             self.edit_instrument.show()
         return open_instrument_edit
 
+    def progress_func(self, n):
+        print("%d%% done" % n)
+
+    def print_output(self, s):
+        print(s)
+
+    def thread_complete(self):
+        print("Loop execution complete !")
 
 def main():
     app = QApplication(sys.argv)

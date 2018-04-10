@@ -87,7 +87,7 @@ class Widget(QWidget):
     def add_instrument(self):
         """
         Called upon clicking OK. Adds instrument (based on user input) to the instrument dictionary in the main window.
-        Data structure -> name : instrument object
+        Data structure -> {name : instrument object}
         """
 
         if self.validate_instrument_input():
@@ -114,7 +114,6 @@ class Widget(QWidget):
         """
 
         instrument_type = self.cb.currentText()
-        # instrument_class = self.premade_instruments[instrument_type]
         if instrument_type in instrument_data:
             instrument_name = instrument_data[instrument_type][0]
             instrument_address = instrument_data[instrument_type][1]
@@ -157,6 +156,10 @@ class Widget(QWidget):
         """
         Walks through folder structure and fetches instruments and their classes for further use
 
+        NOTE: Contains a list of instruments (not_working[]) that specifies instruments that throw errors (possibly they
+        require some extra drivers made by instrument manufacturer, instruments starting with "Infiniium" ending with
+        "Keithley_2600_Channels" were not throwing errors prior to qcodes commit (date cca. 06.04.2018))
+
         :return: NoneType
         """
         self.premade_instruments["DummyInstrument"] = getattr(importlib.import_module("qcodes.tests.instrument_mocks"), "DummyInstrument")
@@ -172,7 +175,6 @@ class Widget(QWidget):
                 if model[0:-3] not in not_working:
                     module_name = "qcodes.instrument_drivers." + brand + "." + model[:-3]
                     module = importlib.import_module(module_name)
-                    my_class = 0
                     if model[:-3] not in correct_names.keys():
                         try:
                             my_class = getattr(module, model[:-3])

@@ -16,7 +16,9 @@ class EditInstrumentParameterWidget(QWidget):
         """
         Constructor for EditInstrumentWidget window
 
+        :param instruments: dict of all instruments that are currently in the station (shared with the mainWindow)
         :param instrument: Instance of an instrument to be edited
+        :param parameter: name of the parameter that is being edited with current instance of this widget
         :param parent: specify object that created this widget
         """
         super(EditInstrumentParameterWidget, self).__init__()
@@ -25,8 +27,6 @@ class EditInstrumentParameterWidget(QWidget):
         self.instruments = instruments
         self.instrument = instrument
         self.parameter = self.instrument.parameters[parameter]
-
-        print(self.parameter)
 
         self.textboxes = {}
         self.textboxes_real_values = {}
@@ -82,7 +82,14 @@ class EditInstrumentParameterWidget(QWidget):
     Data manipulation
     """""""""""""""""""""
     def make_set_value(self, value_name):
+        """
+        Function factory for making a function that manipulates parameter values (delay and step)
+        Button send the name of a value to be set (either step or delay) and a function is created and executed based on
+        the parameter passed to the factory.
 
+        :param value_name: name of the value to be changed
+        :return: function set_value that updates the requested value (read from QLineEdit)
+        """
         def set_value():
             parameter = self.parameter
             if value_name == "step":
@@ -108,6 +115,12 @@ class EditInstrumentParameterWidget(QWidget):
         return set_value
 
     def update_displayed_values(self):
+        """
+        Usually called after changing step/delay of a parameter, updates displayed data to match the real values on
+        the instruments.
+
+        :return: NoneType
+        """
         for name, textbox in self.textboxes.items():
             if name == "step":
                 textbox.setText(str(self.parameter._step))
