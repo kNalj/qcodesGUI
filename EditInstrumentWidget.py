@@ -8,7 +8,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabe
 import sys
 
 from Helpers import *
+from ThreadWorker import Worker
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
+
 
 class EditInstrumentWidget(QWidget):
 
@@ -16,7 +18,7 @@ class EditInstrumentWidget(QWidget):
         """
         Constructor for EditInstrumentWidget window
 
-        :param instrument: Instance of an instrument to be edited
+        :param instrument_name: Name of an instrument to be edited
         :param parent: specify object that created this widget
         """
         super(EditInstrumentWidget, self).__init__()
@@ -84,11 +86,11 @@ class EditInstrumentWidget(QWidget):
 
         set_all_to_zero_btn = QPushButton("All zeroes", self)
         set_all_to_zero_btn.move(200, start_y + 50)
-        set_all_to_zero_btn.clicked.connect(self.set_all_to_zero)
+        set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
 
         set_all_btn = QPushButton("SET ALL", self)
         set_all_btn.move(290, start_y + 50)
-        set_all_btn.clicked.connect(self.set_all)
+        set_all_btn.clicked.connect(self.call_worker(self.set_all))
 
         ok_btn = QPushButton("Close", self)
         ok_btn.move(380, start_y + 50)
@@ -126,7 +128,8 @@ class EditInstrumentWidget(QWidget):
     def make_edit_parameter(self, parameter):
 
         def edit_instrument():
-            self.edit_instrument_parameters = EditInstrumentParameterWidget(self.instruments, self.instrument, parameter, parent=self)
+            self.edit_instrument_parameters = EditInstrumentParameterWidget(self.instruments, self.instrument,
+                                                                            parameter, parent=self)
             self.edit_instrument_parameters.show()
 
         return edit_instrument
@@ -180,6 +183,27 @@ class EditInstrumentWidget(QWidget):
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
+    def progress_func(self, n):
+        print("%d%% done" % n)
+
+    def print_output(self, s):
+        print(s)
+
+    def thread_complete(self):
+        print("Parameters changed !")
+
+    def call_worker(self, function):
+
+        def instanciate_worker():
+
+            worker = Worker(function)
+            worker.signals.result.connect(self.print_output)
+            worker.signals.finished.connect(self.thread_complete)
+            worker.signals.progress.connect(self.progress_func)
+
+            self.parent.thread_pool.start(worker)
+
+        return instanciate_worker
 
 
 if __name__ == '__main__':

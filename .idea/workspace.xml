@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="eb9d9596-c875-4e1c-8b8a-64cf4322d845" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ThreadWorker.py" beforeDir="false" afterPath="$PROJECT_DIR$/ThreadWorker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EditInstrumentWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/EditInstrumentWidget.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,19 +17,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="qcodesMainWindow.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="qcodesMainWindow.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="432">
-              <caret line="231" column="64" lean-forward="true" selection-start-line="231" selection-start-column="64" selection-end-line="231" selection-end-column="64" />
+            <state relative-caret-position="365">
+              <caret line="234" lean-forward="true" selection-start-line="234" selection-end-line="234" />
               <folding>
-                <element signature="e#8174#8684#0" />
-                <element signature="e#10291#10547#0" />
-                <element signature="e#10955#11225#0" />
-                <element signature="e#11276#11498#0" />
-                <element signature="e#11551#12041#0" />
-                <element signature="e#12099#12292#0" />
-                <element signature="e#12388#13220#0" />
+                <element signature="e#0#128#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -38,8 +32,8 @@
       <file leaf-file-name="ThreadWorker.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ThreadWorker.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="26" selection-start-line="26" selection-end-line="26" />
+            <state relative-caret-position="765">
+              <caret line="45" column="16" lean-forward="true" selection-start-line="45" selection-start-column="16" selection-end-line="45" selection-end-column="16" />
               <folding>
                 <element signature="e#0#65#0" expanded="true" />
               </folding>
@@ -50,15 +44,32 @@
       <file leaf-file-name="AddInstrumentWidget.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/AddInstrumentWidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1547">
-              <caret line="153" selection-start-line="153" selection-end-line="153" />
+            <state relative-caret-position="383">
+              <caret line="143" column="30" lean-forward="true" selection-start-line="143" selection-start-column="30" selection-end-line="143" selection-end-column="30" />
               <folding>
                 <element signature="e#149#241#0" expanded="true" />
                 <element signature="e#503#1169#0" />
                 <element signature="e#1273#2837#0" />
-                <element signature="e#2877#3512#0" />
-                <element signature="e#5459#7327#0" />
-                <element signature="e#7366#9269#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EditInstrumentWidget.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/EditInstrumentWidget.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="127">
+              <caret line="99" column="21" lean-forward="true" selection-start-line="99" selection-start-column="21" selection-end-line="99" selection-end-column="21" />
+              <folding>
+                <element signature="e#149#230#0" expanded="true" />
+                <element signature="e#3638#4643#0" />
+                <element signature="e#4700#4940#0" />
+                <element signature="e#4988#5558#0" />
+                <element signature="e#5599#6125#0" />
+                <element signature="e#6158#6836#0" />
+                <element signature="e#7064#7086#0" />
+                <element signature="e#7127#7135#0" />
+                <element signature="e#7176#7210#0" />
               </folding>
             </state>
           </provider>
@@ -67,8 +78,8 @@
       <file leaf-file-name="EditInstrumentParametersWidget.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/EditInstrumentParametersWidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="18" column="65" selection-start-line="18" selection-start-column="65" selection-end-line="18" selection-end-column="65" />
+            <state relative-caret-position="162">
+              <caret line="18" column="114" selection-start-line="18" selection-start-column="114" selection-end-line="18" selection-end-column="114" />
             </state>
           </provider>
         </entry>
@@ -87,6 +98,15 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="170">
               <caret line="16" column="50" selection-start-line="16" selection-start-column="50" selection-end-line="16" selection-end-column="50" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="loops.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/loops.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="918">
+              <caret line="66" column="18" selection-start-line="66" selection-start-column="18" selection-end-line="66" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -145,13 +165,13 @@
         <option value="$PROJECT_DIR$/InstrumentData.py" />
         <option value="$PROJECT_DIR$/instrument_imports.py" />
         <option value="$PROJECT_DIR$/dummies.py" />
-        <option value="$PROJECT_DIR$/EditInstrumentWidget.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/SetupLoopsWidget.py" />
         <option value="$PROJECT_DIR$/AddInstrumentWidget.py" />
         <option value="$PROJECT_DIR$/EditInstrumentParametersWidget.py" />
         <option value="$PROJECT_DIR$/ThreadWorker.py" />
         <option value="$PROJECT_DIR$/qcodesMainWindow.py" />
+        <option value="$PROJECT_DIR$/EditInstrumentWidget.py" />
       </list>
     </option>
   </component>
@@ -171,7 +191,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -184,16 +203,11 @@
               <item name="qcodesGUI" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="qcodesGUI" type="b2602c69:ProjectViewProjectNode" />
-              <item name="qcodesGUI" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="2018-04-10" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -493,14 +507,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5078125" side_tool="true" visible="true" weight="0.32799247" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5083333" side_tool="true" visible="true" weight="0.3269639" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.32908705" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4921875" weight="0.32799247" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49166667" visible="true" weight="0.3269639" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -630,13 +645,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/EditInstrumentWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="169" column="76" lean-forward="true" selection-start-line="169" selection-start-column="76" selection-end-line="169" selection-end-column="76" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
@@ -644,7 +652,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/loops.py" />
+    <entry file="file://$USER_HOME$/AppData/Local/Continuum/anaconda3/envs/qcodes/Lib/site-packages/qcodes/loops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="918">
+          <caret line="66" column="18" selection-start-line="66" selection-start-column="18" selection-end-line="66" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/SetupLoopsWidget.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
@@ -659,50 +673,59 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AddInstrumentWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1547">
-          <caret line="153" selection-start-line="153" selection-end-line="153" />
-          <folding>
-            <element signature="e#149#241#0" expanded="true" />
-            <element signature="e#503#1169#0" />
-            <element signature="e#1273#2837#0" />
-            <element signature="e#2877#3512#0" />
-            <element signature="e#5459#7327#0" />
-            <element signature="e#7366#9269#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/EditInstrumentParametersWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="18" column="65" selection-start-line="18" selection-start-column="65" selection-end-line="18" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ThreadWorker.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="26" selection-start-line="26" selection-end-line="26" />
+        <state relative-caret-position="765">
+          <caret line="45" column="16" lean-forward="true" selection-start-line="45" selection-start-column="16" selection-end-line="45" selection-end-column="16" />
           <folding>
             <element signature="e#0#65#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/AddInstrumentWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="383">
+          <caret line="143" column="30" lean-forward="true" selection-start-line="143" selection-start-column="30" selection-end-line="143" selection-end-column="30" />
+          <folding>
+            <element signature="e#149#241#0" expanded="true" />
+            <element signature="e#503#1169#0" />
+            <element signature="e#1273#2837#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/EditInstrumentParametersWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="18" column="114" selection-start-line="18" selection-start-column="114" selection-end-line="18" selection-end-column="114" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/qcodesMainWindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="231" column="64" lean-forward="true" selection-start-line="231" selection-start-column="64" selection-end-line="231" selection-end-column="64" />
+        <state relative-caret-position="365">
+          <caret line="234" lean-forward="true" selection-start-line="234" selection-end-line="234" />
           <folding>
-            <element signature="e#8174#8684#0" />
-            <element signature="e#10291#10547#0" />
-            <element signature="e#10955#11225#0" />
-            <element signature="e#11276#11498#0" />
-            <element signature="e#11551#12041#0" />
-            <element signature="e#12099#12292#0" />
-            <element signature="e#12388#13220#0" />
+            <element signature="e#0#128#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/EditInstrumentWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="127">
+          <caret line="99" column="21" lean-forward="true" selection-start-line="99" selection-start-column="21" selection-end-line="99" selection-end-column="21" />
+          <folding>
+            <element signature="e#149#230#0" expanded="true" />
+            <element signature="e#3638#4643#0" />
+            <element signature="e#4700#4940#0" />
+            <element signature="e#4988#5558#0" />
+            <element signature="e#5599#6125#0" />
+            <element signature="e#6158#6836#0" />
+            <element signature="e#7064#7086#0" />
+            <element signature="e#7127#7135#0" />
+            <element signature="e#7176#7210#0" />
           </folding>
         </state>
       </provider>
