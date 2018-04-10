@@ -221,7 +221,7 @@ class MainWindow(QMainWindow):
                 worker = Worker(self.actions[0].run)
                 worker.signals.result.connect(self.print_output)
                 worker.signals.finished.connect(self.thread_complete)
-                worker.signals.progress.connect(self.progress_fn)
+                worker.signals.progress.connect(self.progress_func)
 
                 self.thread_pool.start(worker)
                 # self.actions[0].run()
@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
                 worker = Worker(self.actions[0].run)
                 worker.signals.result.connect(self.print_output)
                 worker.signals.finished.connect(self.thread_complete)
-                worker.signals.progress.connect(self.progress_fn)
+                worker.signals.progress.connect(self.progress_func)
 
                 self.thread_pool.start(worker)
                 # self.actions[0].run()
