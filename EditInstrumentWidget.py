@@ -187,7 +187,8 @@ class EditInstrumentWidget(QWidget):
         print("%d%% done" % n)
 
     def print_output(self, s):
-        print(s)
+        if s is not None:
+            print(s)
 
     def thread_complete(self):
         print("Parameters changed !")
