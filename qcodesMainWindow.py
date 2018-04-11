@@ -153,7 +153,10 @@ class MainWindow(QMainWindow):
             start_new_measurement_menu.addMenu(current_brand_menu)
             models = get_files_in_folder(path + "\\" + brand, True)
             for model in models:
-                if model[0:-3] not in ["M3201A", "M3300A", "M4i", "ZIUHFLI", "Keithley_2600_channels", "AWGFileParser"]:
+                if model[0:-3] not in ["M3201A", "M3300A", "M4i", "ZIUHFLI", "Keithley_2600_channels", "AWGFileParser",
+                                       "Keysight_33500B_channels", "Infiniium", "KeysightAgilent_33XXX", "Model_336",
+                                       "Base_SPDT", "RC_SP4T", "RC_SPDT", "USB_SPDT", "QDac_channels", "RTO1000", "ZNB",
+                                       "SR860", "SR86x", "AWG5208", "AWG70000A", "AWG70002A", "Keithley_2600_channels"]:
                     current_model_action = QAction(model[0:-3], self)
                     current_model_action.setData(model[0:-3])
                     current_brand_menu.addAction(current_model_action)

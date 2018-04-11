@@ -23,5 +23,6 @@ correct_names = {"PCIE_1751": "Advantech_PCIE_1751",
                  "Keithley_2600_channels": "Keithley_2600",
                  "DAC20bit": "IST_20",
                  "ATS9360": "AlazarTech_ATS9360",
-                 "Base_SDTP": "SPDT_Base"
+                 "Base_SDTP": "SPDT_Base",
+                 "Agilent_34450A": "Agilent_34400A"
                  }
