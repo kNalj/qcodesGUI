@@ -70,3 +70,33 @@ class WorkerSignals(QObject):
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
+
+
+def progress_func(progress):
+    """
+    Helper function for thread worker
+
+    :param progress: integer representing percentage of the job that is already done
+    :return: NoneType
+    """
+    print("%d%% done" % progress)
+
+
+def print_output(output):
+    """
+    Helper function for thread worker
+
+    :param output: String returned (if any) by function that was processed in a thread
+    :return: NoneType
+    """
+    if output is not None:
+        print(output)
+
+
+def thread_complete():
+    """
+    Helper function for thread worker, prints out this message after finishing the thread job.
+
+    :return: NoneType
+    """
+    print("Thread executed successfully")

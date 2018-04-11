@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt
 import sys
 
 from Helpers import *
-from ThreadWorker import Worker
+from ThreadWorker import Worker, progress_func, print_output, thread_complete
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 
@@ -187,41 +187,14 @@ class EditInstrumentWidget(QWidget):
     """""""""""""""""""""
     Helper functions
     """""""""""""""""""""
-    def progress_func(self, n):
-        """
-        Helper function for thread worker
-
-        :param n: integer representing percentage of the job that is already done
-        :return: NoneType
-        """
-        print("%d%% done" % n)
-
-    def print_output(self, s):
-        """
-        Helper function for thread worker
-
-        :param s: String returned (if any) by function that was processed in a thread
-        :return: NoneType
-        """
-        if s is not None:
-            print(s)
-
-    def thread_complete(self):
-        """
-        Helper function for thread worker, prints out this message after finishing the thread job.
-
-        :return: NoneType
-        """
-        print("Parameters changed !")
-
     def call_worker(self, func):
 
         def instanciate_worker():
 
             worker = Worker(func)
-            worker.signals.result.connect(self.print_output)
-            worker.signals.finished.connect(self.thread_complete)
-            worker.signals.progress.connect(self.progress_func)
+            worker.signals.result.connect(print_output)
+            worker.signals.finished.connect(thread_complete)
+            worker.signals.progress.connect(progress_func)
 
             self.parent.thread_pool.start(worker)
 

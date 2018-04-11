@@ -12,7 +12,7 @@ from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
 from EditInstrumentWidget import EditInstrumentWidget
-from ThreadWorker import Worker
+from ThreadWorker import Worker, progress_func, print_output, thread_complete
 
 
 class MainWindow(QMainWindow):
@@ -235,9 +235,9 @@ class MainWindow(QMainWindow):
                 data = self.actions[0].get_data_set(name=self.output_file_name.text())
 
                 worker = Worker(self.actions[0].run)
-                worker.signals.result.connect(self.print_output)
-                worker.signals.finished.connect(self.thread_complete)
-                worker.signals.progress.connect(self.progress_func)
+                worker.signals.result.connect(print_output)
+                worker.signals.finished.connect(thread_complete)
+                worker.signals.progress.connect(progress_func)
 
                 self.thread_pool.start(worker)
                 # self.actions[0].run()
@@ -245,9 +245,9 @@ class MainWindow(QMainWindow):
                 data = self.actions[-1].get_data_set(name=self.output_file_name.text())
 
                 worker = Worker(self.actions[0].run)
-                worker.signals.result.connect(self.print_output)
-                worker.signals.finished.connect(self.thread_complete)
-                worker.signals.progress.connect(self.progress_func)
+                worker.signals.result.connect(print_output)
+                worker.signals.finished.connect(thread_complete)
+                worker.signals.progress.connect(progress_func)
 
                 self.thread_pool.start(worker)
                 # self.actions[0].run()
@@ -340,32 +340,6 @@ class MainWindow(QMainWindow):
             self.edit_instrument.show()
         return open_instrument_edit
 
-    def progress_func(self, n):
-        """
-        Helper function for thread worker
-
-        :param n: integer representing percentage of the job that is already done
-        :return: NoneType
-        """
-        print("%d%% done" % n)
-
-    def print_output(self, s):
-        """
-        Helper function for thread worker
-
-        :param s: String returned (if any) by function that was processed in a thread
-        :return: NoneType
-        """
-
-        print(s)
-
-    def thread_complete(self):
-        """
-        Helper function for thread worker, prints out this message after finishing the thread job.
-
-        :return: NoneType
-        """
-        print("Loop execution complete !")
 
 def main():
     app = QApplication(sys.argv)
