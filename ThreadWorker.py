@@ -35,25 +35,22 @@ class Worker(QRunnable):
         """
         Initialise the runner function with passed args, kwargs.
         """
-        self.is_running = True
-
-        while self.is_running:
-            # Retrieve args/kwargs here; and fire processing using them
-            try:
-                result = self.func(*self.args, **self.kwargs)
-            except:
-                traceback.print_exc()
-                exctype, value = sys.exc_info()[:2]
-                self.signals.error.emit((exctype, value, traceback.format_exc()))
-            else:
-                self.signals.result.emit(result)  # Return the result of the processing
-            finally:
-                self.is_running = False
-                self.signals.finished.emit()  # Done
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.func(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
 
     @pyqtSlot()
     def stop(self):
         self.is_running = False
+
 
 class WorkerSignals(QObject):
     """
@@ -78,7 +75,7 @@ class WorkerSignals(QObject):
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
-    kill = pyqtSignal(bool)
+    kill = pyqtSignal(object)
 
 
 def progress_func(progress):
@@ -109,3 +106,7 @@ def thread_complete():
     :return: NoneType
     """
     print("Thread executed successfully")
+
+
+def destroy_worker(worker):
+    del worker

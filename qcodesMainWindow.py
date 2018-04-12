@@ -12,7 +12,7 @@ from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
 from EditInstrumentWidget import EditInstrumentWidget
-from ThreadWorker import Worker, progress_func, print_output, thread_complete
+from ThreadWorker import Worker, progress_func, print_output, thread_complete, destroy_worker
 
 
 class MainWindow(QMainWindow):
@@ -240,25 +240,26 @@ class MainWindow(QMainWindow):
                 data = self.actions[0].get_data_set(name=self.output_file_name.text())
 
                 worker = Worker(self.actions[0].run)
+                self.workers.append(worker)
+
                 worker.signals.result.connect(print_output)
                 worker.signals.finished.connect(thread_complete)
                 worker.signals.progress.connect(progress_func)
+                worker.signals.kill.connect(destroy_worker)
 
                 self.thread_pool.start(worker)
             else:
                 data = self.actions[-1].get_data_set(name=self.output_file_name.text())
 
                 worker = Worker(self.actions[0].run)
+                self.workers.append(worker)
+
                 worker.signals.result.connect(print_output)
                 worker.signals.finished.connect(thread_complete)
                 worker.signals.progress.connect(progress_func)
-                worker.signals.kill.connect(worker.stop)
+                worker.signals.kill.connect(destroy_worker)
 
-                self.workers.append(worker)
                 self.thread_pool.start(worker)
-
-                for name, instrument in self.instruments.items():
-                    instrument.close()
         else:
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
@@ -327,7 +328,7 @@ class MainWindow(QMainWindow):
 
     def stop_all_workers(self):
         for worker in self.workers:
-            worker.signals.kill.emit()
+            pass
 
     # This is a function factory
     def make_open_instrument_edit(self, instrument):
