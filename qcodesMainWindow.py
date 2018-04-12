@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         # Thread pool for adding separate threads
         # (execute qcodes in another thread [to not freeze GUI thread while executing])
         self.thread_pool = QThreadPool()
+        self.workers = []
 
         self.statusBar().showMessage("Ready")
         self.show()
@@ -109,6 +110,7 @@ class MainWindow(QMainWindow):
         self.stop_btn.resize(140, 40)
         icon = QtGui.QIcon("img/cancel_1-512.png")
         self.stop_btn.setIcon(icon)
+        self.stop_btn.clicked.connect(self.stop_all_workers)
 
         self.open_text_edit_btn = QPushButton("{Text}", self)
         self.open_text_edit_btn.move(480, 330)
@@ -243,7 +245,6 @@ class MainWindow(QMainWindow):
                 worker.signals.progress.connect(progress_func)
 
                 self.thread_pool.start(worker)
-                # self.actions[0].run()
             else:
                 data = self.actions[-1].get_data_set(name=self.output_file_name.text())
 
@@ -251,9 +252,10 @@ class MainWindow(QMainWindow):
                 worker.signals.result.connect(print_output)
                 worker.signals.finished.connect(thread_complete)
                 worker.signals.progress.connect(progress_func)
+                worker.signals.kill.connect(worker.stop)
 
+                self.workers.append(worker)
                 self.thread_pool.start(worker)
-                # self.actions[0].run()
 
                 for name, instrument in self.instruments.items():
                     instrument.close()
@@ -322,6 +324,10 @@ class MainWindow(QMainWindow):
         """
         self.text_editor = Notepad()
         self.text_editor.show()
+
+    def stop_all_workers(self):
+        for worker in self.workers:
+            worker.signals.kill.emit()
 
     # This is a function factory
     def make_open_instrument_edit(self, instrument):

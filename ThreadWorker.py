@@ -13,7 +13,7 @@ class Worker(QRunnable):
         """
         This is a constructor for the worker class, it runs any function passed to it as a separate thread
 
-        :param function: function to be ran in a separate thread
+        :param func: pointer to the function to be ran in a separate thread
         :param args: arguments (for passing to run() method)
         :param kwargs: key word arguments (for passing to run() method)
         """
@@ -25,6 +25,8 @@ class Worker(QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
+        self.is_running = False
+
         # Add the callback to our kwargs
         # kwargs['progress_callback'] = self.signals.progress
 
@@ -33,19 +35,25 @@ class Worker(QRunnable):
         """
         Initialise the runner function with passed args, kwargs.
         """
+        self.is_running = True
 
-        # Retrieve args/kwargs here; and fire processing using them
-        try:
-            result = self.func(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)  # Return the result of the processing
-        finally:
-            self.signals.finished.emit()  # Done
+        while self.is_running:
+            # Retrieve args/kwargs here; and fire processing using them
+            try:
+                result = self.func(*self.args, **self.kwargs)
+            except:
+                traceback.print_exc()
+                exctype, value = sys.exc_info()[:2]
+                self.signals.error.emit((exctype, value, traceback.format_exc()))
+            else:
+                self.signals.result.emit(result)  # Return the result of the processing
+            finally:
+                self.is_running = False
+                self.signals.finished.emit()  # Done
 
+    @pyqtSlot()
+    def stop(self):
+        self.is_running = False
 
 class WorkerSignals(QObject):
     """
@@ -70,6 +78,7 @@ class WorkerSignals(QObject):
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
+    kill = pyqtSignal(bool)
 
 
 def progress_func(progress):
