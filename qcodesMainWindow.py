@@ -86,20 +86,20 @@ class MainWindow(QMainWindow):
         self.btn_add_instrument.clicked.connect(lambda checked, name="DummyInstrument": self.add_new_instrument(name))
 
         self.btn_setup_loops = QPushButton("Setup loops", self)
-        self.btn_setup_loops.move(480, 110)
+        self.btn_setup_loops.move(480, 95)
         self.btn_setup_loops.resize(140, 40)
         icon = QtGui.QIcon("img/measure.png")
         self.btn_setup_loops.setIcon(icon)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
         label = QLabel("Output file name", self)
-        label.move(380, 240)
+        label.move(480, 185)
         self.output_file_name = QLineEdit(self)
-        self.output_file_name.move(480, 240)
+        self.output_file_name.move(480, 210)
         self.output_file_name.resize(140, 30)
 
         self.btn_select_save_location = QPushButton("Select save location", self)
-        self.btn_select_save_location.move(480, 180)
+        self.btn_select_save_location.move(480, 140)
         self.btn_select_save_location.resize(140, 40)
         icon = QtGui.QIcon("img/save_icon.png")
         self.btn_select_save_location.setIcon(icon)
@@ -112,10 +112,19 @@ class MainWindow(QMainWindow):
         self.stop_btn.setIcon(icon)
         self.stop_btn.clicked.connect(self.stop_all_workers)
 
-        self.open_text_edit_btn = QPushButton("{Text}", self)
-        self.open_text_edit_btn.move(480, 330)
-        self.open_text_edit_btn.resize(60, 40)
+        self.open_text_edit_btn = QPushButton("Text", self)
+        self.open_text_edit_btn.move(200, 240)
+        self.open_text_edit_btn.resize(100, 30)
         self.open_text_edit_btn.clicked.connect(self.open_text_editor)
+        icon = QtGui.QIcon("img/text_icon.png")
+        self.open_text_edit_btn.setIcon(icon)
+
+        self.plot_btn = QPushButton("Plot", self)
+        self.plot_btn.move(480, 330)
+        self.plot_btn.resize(60, 40)
+        self.plot_btn.clicked.connect(self.run_with_plot)
+        icon = QtGui.QIcon("img/plot_icon.png")
+        self.plot_btn.setIcon(icon)
         
         self.btn_run = QPushButton("Run", self)
         self.btn_run.move(560, 330)
@@ -223,9 +232,14 @@ class MainWindow(QMainWindow):
                 new_label.move(60, 270 + 20 * len(self.loops))
                 new_label.resize(300, 20)
                 new_label.show()
+                current_loop_btn = QPushButton("Edit", self)
+                current_loop_btn.resize(35, 20)
+                current_loop_btn.move(5, 270 + 20 * len(self.loops))
+                current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.setup_loops(loop_name))
+                current_loop_btn.show()
                 self.shown_loops.append(name)
 
-    def run_qcodes(self):
+    def run_qcodes(self, with_plot=False):
         """
         Runs qcodes with specified instruments and parameters. Checks for errors in data prior to runing qcodes
 
@@ -237,9 +251,17 @@ class MainWindow(QMainWindow):
 
         if len(self.actions) > 0:
             if len(self.actions) == 1:
-                data = self.actions[0].get_data_set(name=self.output_file_name.text())
+                loop = self.actions[0]
+                data = loop.get_data_set(name=self.output_file_name.text())
 
-                worker = Worker(self.actions[0].run)
+                if with_plot:
+                    parameter = get_plot_parameter(loop)
+                    parameter_name = str(parameter)
+                    plot = qc.QtPlot()
+                    plot.add(getattr(data, parameter_name))
+                    worker = Worker(loop.with_bg_task(plot.update, plot.save).run)
+                else:
+                    worker = Worker(loop.run)
                 self.workers.append(worker)
 
                 worker.signals.result.connect(print_output)
@@ -263,6 +285,9 @@ class MainWindow(QMainWindow):
         else:
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")
+
+    def run_with_plot(self):
+        self.run_qcodes(with_plot=True)
 
     @pyqtSlot()
     def select_save_location(self):
@@ -305,7 +330,7 @@ class MainWindow(QMainWindow):
         self.view_tree.show()
 
     @pyqtSlot()
-    def setup_loops(self):
+    def setup_loops(self, loop_name=""):
         """
         Open a new widget for creating loops based on instruments added to "instruments" dictionary trough
         AddInstrumentWidget. Loops created with this widget are added to MainWindows "loops" dictionary, also for each
@@ -313,7 +338,7 @@ class MainWindow(QMainWindow):
 
         :return:
         """
-        self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self)
+        self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self, loop_name=loop_name)
         self.setup_loops_widget.show()
 
     @pyqtSlot()

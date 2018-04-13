@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QMessageBox, QTreeWidget, QTreeWidgetItem
 from PyQt5 import QtGui
 
 import os
+import importlib
 
 
 def show_error_message(title, message):
@@ -46,6 +47,18 @@ def get_files_in_folder(path, instrument_drivers_only=False):
     if instrument_drivers_only:
         return [f.name for f in os.scandir(path) if f.is_file() and f.name[0].upper() == f.name[0] and f.name[0] != "_"]
     return [f.name for f in os.scandir(path) if f.is_file()]
+
+
+def get_plot_parameter(loop):
+    action = loop.actions[0]
+    module_name = "qcodes.loops"
+    module = importlib.import_module(module_name)
+    loop_class = getattr(module, "ActiveLoop")
+
+    if isinstance(action, loop_class):
+        return get_plot_parameter(action)
+    else:
+        return loop.actions[0]
 
 
 class ViewTree(QTreeWidget):

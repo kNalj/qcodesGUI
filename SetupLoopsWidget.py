@@ -14,7 +14,7 @@ That inner delay thing is probably hidden somewhere in file: qcodes/instrument/p
 
 class LoopsWidget(QWidget):
 
-    def __init__(self, instruments, loops, actions, parent=None):
+    def __init__(self, instruments, loops, actions, parent=None, loop_name=""):
         """
         Constructor for AddInstrumentWidget window
 
@@ -28,6 +28,7 @@ class LoopsWidget(QWidget):
         self.loops = loops
         self.actions = actions
         self.parent = parent
+        self.name = loop_name
         self.init_ui()
         self.show()
 
