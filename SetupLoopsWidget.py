@@ -41,7 +41,7 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
-        self.setGeometry(256, 256, 360, 340)
+        self.setGeometry(720, 64, 360, 340)
         self.setMinimumSize(360, 340)
         self.setWindowTitle("Setup loops")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
@@ -191,7 +191,7 @@ class LoopsWidget(QWidget):
             self.loops[name] = lp
             self.actions.append(lp)
             self.parent.update_loops_preview()
-            self.close()
+            # self.close()
 
     def update_sweep_instrument_parameters(self):
         """

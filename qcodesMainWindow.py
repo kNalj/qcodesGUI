@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, \
-    QLineEdit
+    QLineEdit, QShortcut
 from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
 import inspect
 
+from PyQt5.QtCore import Qt
 import qcodes as qc
 from Helpers import *
 from ViewTree import ViewTree
@@ -47,7 +48,7 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
 
-        self.setGeometry(128, 128, 640, 400)
+        self.setGeometry(64, 64, 640, 400)
         self.setMinimumSize(640, 400)
         self.setWindowTitle("qcodes starter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
@@ -134,6 +135,9 @@ class MainWindow(QMainWindow):
         self.btn_run.setIcon(icon)
 
         self.statusBar().showMessage("Ready")
+
+        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_F1), self)
+        add_shortcut.activated.connect(self.setup_loops)
 
     def init_menu_bar(self):
         """
@@ -249,39 +253,27 @@ class MainWindow(QMainWindow):
         for name, instrument in self.instruments.items():
             station.add_component(instrument, name)
 
-        if len(self.actions) > 0:
-            if len(self.actions) == 1:
-                loop = self.actions[0]
-                data = loop.get_data_set(name=self.output_file_name.text())
+        if len(self.actions):
+            loop = self.actions[-1]
+            data = loop.get_data_set(name=self.output_file_name.text())
 
-                if with_plot:
-                    parameter = get_plot_parameter(loop)
-                    parameter_name = str(parameter)
-                    plot = qc.QtPlot()
-                    plot.add(getattr(data, parameter_name))
-                    worker = Worker(loop.with_bg_task(plot.update, plot.save).run)
-                else:
-                    worker = Worker(loop.run)
-                self.workers.append(worker)
-
-                worker.signals.result.connect(print_output)
-                worker.signals.finished.connect(thread_complete)
-                worker.signals.progress.connect(progress_func)
-                worker.signals.kill.connect(destroy_worker)
-
-                self.thread_pool.start(worker)
+            if with_plot:
+                parameter = get_plot_parameter(loop)
+                parameter_name = str(parameter)
+                plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4)
+                plot.add(getattr(data, parameter_name))
+                worker = Worker(loop.with_bg_task(plot.update, plot.save).run)
             else:
-                data = self.actions[-1].get_data_set(name=self.output_file_name.text())
+                worker = Worker(loop.run)
+            self.workers.append(worker)
 
-                worker = Worker(self.actions[0].run)
-                self.workers.append(worker)
+            worker.signals.result.connect(print_output)
+            worker.signals.finished.connect(thread_complete)
+            worker.signals.progress.connect(progress_func)
+            worker.signals.kill.connect(destroy_worker)
 
-                worker.signals.result.connect(print_output)
-                worker.signals.finished.connect(thread_complete)
-                worker.signals.progress.connect(progress_func)
-                worker.signals.kill.connect(destroy_worker)
+            self.thread_pool.start(worker)
 
-                self.thread_pool.start(worker)
         else:
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
         self.statusBar().showMessage("Measurement done")

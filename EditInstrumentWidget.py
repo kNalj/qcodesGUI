@@ -5,6 +5,7 @@ There u can find a set function for setting paramater defined by "name" to a val
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut
 from PyQt5.QtCore import Qt
+from PyQt5 import QtGui
 
 import sys
 
@@ -46,6 +47,7 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
+        # _, _, width, height = QtGui.QDesktopWidget().screenGeometry().getCoords()
         height = len(self.instrument.parameters)*30 + 100
         self.setGeometry(256, 256, 480, height)
         self.setMinimumSize(320, 260)
