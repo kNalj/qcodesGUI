@@ -29,6 +29,8 @@ class LoopsWidget(QWidget):
         self.actions = actions
         self.parent = parent
         self.name = loop_name
+        if self.name != "":
+            self.loop = self.loops[self.name]
         self.init_ui()
         self.show()
 
@@ -141,6 +143,10 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
         self.add_loop_btn.clicked.connect(self.create_loop)
 
+        # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
+        if self.name != "":
+            self.fill_loop_data()
+
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
         close_shortcut.activated.connect(self.close)
 
@@ -234,6 +240,38 @@ class LoopsWidget(QWidget):
                         display_member_string = parameter
                         data_member = action.parameters[parameter]
                         self.action_parameter_cb.addItem(display_member_string, data_member)
+
+    def fill_loop_data(self):
+        self.textbox_lower_limit.setText(str(self.loop.sweep_values[0]))
+        self.textbox_upper_limit.setText(str(self.loop.sweep_values[-1]))
+        self.textbox_num.setText(str(len(self.loop.sweep_values)))
+        self.textbox_step.setText(str(self.loop.delay))
+
+        # if action is a loop, display it as a loop
+        # else display selected instrument and parameter
+        action = self.loop.actions[0]
+        module_name = "qcodes.loops"
+        module = importlib.import_module(module_name)
+        loop_class = getattr(module, "ActiveLoop")
+        if isinstance(action, loop_class):
+            action_parameter_instrument_name = self.loop.actions[0]
+            index = self.action_parameter_instrument_cb.findData(action_parameter_instrument_name)
+            self.action_parameter_instrument_cb.setCurrentIndex(index)
+        else:
+            action_parameter_instrument_name = self.loop.actions[0]._instrument.name
+            index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
+            self.action_parameter_instrument_cb.setCurrentIndex(index)
+            action_parameter_name = self.loop.actions[0].name
+            index = self.action_parameter_cb.findText(action_parameter_name)
+            self.action_parameter_cb.setCurrentIndex(index)
+
+        # do the same thing for sweep parameter
+        sweep_parameter_instrument_name = self.loop.sweep_values.parameter._instrument.name
+        index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
+        self.sweep_parameter_instrument_cb.setCurrentIndex(index)
+        sweep_parameter_name = self.loop.sweep_values.parameter.name
+        index = self.sweep_parameter_cb.findText(sweep_parameter_name)
+        self.sweep_parameter_cb.setCurrentIndex(index)
 
 
 if __name__ == '__main__':

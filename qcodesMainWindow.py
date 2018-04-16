@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, \
-    QLineEdit, QShortcut
+    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView
 from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
@@ -56,12 +56,15 @@ class MainWindow(QMainWindow):
         label = QLabel("Instruments:", self)
         label.move(25,  30)
 
-        self.instruments_frame = QFrame(self)
-        self.instruments_frame.move(45, 65)
-        self.instruments_frame.setFrameShape(QFrame.StyledPanel)
-        self.instruments_frame.setFrameShadow(QFrame.Sunken)
-        self.instruments_frame.resize(400, 160)
-        self.instruments_frame.setStyleSheet("background-color: rgb(245, 245, 245)")
+        self.instruments_table = QTableWidget(0, 3, self)
+        self.instruments_table.move(45, 65)
+        self.instruments_table.resize(400, 160)
+        self.instruments_table.setHorizontalHeaderLabels(("Name", "Type", "Edit"))
+        header = self.instruments_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.Stretch)
+        self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         label = QLabel("Loops", self)
         label.move(25, 240)
@@ -72,13 +75,16 @@ class MainWindow(QMainWindow):
         self.show_loop_details_btn.setIcon(icon)
         self.show_loop_details_btn.clicked.connect(self.open_tree)
 
-        self.loops_frame = QFrame(self)
-        self.loops_frame.move(45, 280)
-        self.loops_frame.setFrameShape(QFrame.StyledPanel)
-        self.loops_frame.setFrameShadow(QFrame.Sunken)
-        self.loops_frame.resize(400, 100)
-        self.loops_frame.setStyleSheet("background-color: rgb(245, 245, 245)")
-        
+
+        self.loops_table = QTableWidget(0, 2, self)
+        self.loops_table.move(45, 280)
+        self.loops_table.resize(400, 100)
+        self.loops_table.setHorizontalHeaderLabels(("Name", "Edit"))
+        header = self.loops_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
+
         self.btn_add_instrument = QPushButton("Add instrument", self)
         self.btn_add_instrument.move(480, 50)
         self.btn_add_instrument.resize(140, 40)
@@ -198,29 +204,22 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
-        if len(self.instruments) == 1:
-            header_string = "Nr." + "       " + "Type" + 3*"\t" + "Parameters"
-            new_label = QLabel(header_string, self)
-            new_label.move(60, 75)
-            new_label.resize(500, 20)
-            new_label.show()
-
         for instrument in self.instruments:
             if instrument not in self.station_instruments:
                 current_instrument = self.instruments[instrument]
-                display_string = str((len(self.instruments))) + ".      " + str(current_instrument) + " " + "\t" + \
-                                 str([i for i in current_instrument.parameters.keys()])
-                new_label = QLabel(display_string, self)
-                new_label.move(60, 95 + 20*len(self.station_instruments))
-                new_label.resize(350, 20)
-                new_label.show()
-                current_instrument_btn = QPushButton("Edit", self)
+                rows = self.instruments_table.rowCount()
+                self.instruments_table.insertRow(rows)
+                item = QTableWidgetItem(instrument)
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                self.instruments_table.setItem(rows, 0, item)
+                item = QTableWidgetItem(str(current_instrument))
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                self.instruments_table.setItem(rows, 1, item)
+                current_instrument_btn = QPushButton("Edit")
                 current_instrument_btn.resize(35, 20)
-                current_instrument_btn.move(5, 95 + 20*len(self.station_instruments))
                 current_instrument_btn.clicked.connect(self.make_open_instrument_edit(instrument))
-                current_instrument_btn.show()
+                self.instruments_table.setCellWidget(rows, 2, current_instrument_btn)
                 self.edit_button_dict[instrument] = current_instrument_btn
-
                 self.station_instruments[instrument] = self.instruments[instrument]
 
     def update_loops_preview(self):
@@ -232,15 +231,15 @@ class MainWindow(QMainWindow):
         """
         for name, loop in self.loops.items():
             if name not in self.shown_loops:
-                new_label = QLabel(name, self)
-                new_label.move(60, 270 + 20 * len(self.loops))
-                new_label.resize(300, 20)
-                new_label.show()
+                rows = self.loops_table.rowCount()
+                self.loops_table.insertRow(rows)
+                item = QTableWidgetItem(name)
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                self.loops_table.setItem(rows, 0, item)
                 current_loop_btn = QPushButton("Edit", self)
                 current_loop_btn.resize(35, 20)
-                current_loop_btn.move(5, 270 + 20 * len(self.loops))
                 current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.setup_loops(loop_name))
-                current_loop_btn.show()
+                self.loops_table.setCellWidget(rows, 1, current_loop_btn)
                 self.shown_loops.append(name)
 
     def run_qcodes(self, with_plot=False):
