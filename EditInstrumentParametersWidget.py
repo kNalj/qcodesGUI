@@ -73,6 +73,10 @@ class EditInstrumentParameterWidget(QWidget):
             set_value_btn.move(340, start_y)
             set_value_btn.resize(40, 20)
             set_value_btn.clicked.connect(self.make_set_value(name))
+            get_value_btn = QPushButton("Get", self)
+            get_value_btn.move(390, start_y)
+            get_value_btn.resize(40, 20)
+            get_value_btn.clicked.connect(self.update_displayed_values)
             start_y += 25
 
         self.OK_btn = QPushButton("Close", self)

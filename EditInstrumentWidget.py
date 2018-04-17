@@ -85,15 +85,23 @@ class EditInstrumentWidget(QWidget):
             set_value_btn.move(360, start_y)
             set_value_btn.resize(40, 20)
             set_value_btn.clicked.connect(self.make_set_parameter(name))
+            get_value_btn = QPushButton("Get", self)
+            get_value_btn.move(410, start_y)
+            get_value_btn.resize(40, 20)
+            get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
 
         set_all_to_zero_btn = QPushButton("All zeroes", self)
-        set_all_to_zero_btn.move(200, start_y + 50)
+        set_all_to_zero_btn.move(380, start_y + 20)
         set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
 
         set_all_btn = QPushButton("SET ALL", self)
-        set_all_btn.move(290, start_y + 50)
+        set_all_btn.move(290, start_y + 20)
         set_all_btn.clicked.connect(self.call_worker(self.set_all))
+
+        set_all_btn = QPushButton("GET ALL", self)
+        set_all_btn.move(290, start_y + 50)
+        set_all_btn.clicked.connect(self.call_worker(self.update_parameters_data))
 
         ok_btn = QPushButton("Close", self)
         ok_btn.move(380, start_y + 50)
@@ -140,19 +148,28 @@ class EditInstrumentWidget(QWidget):
 
         return edit_instrument
 
-    def update_parameters_data(self):
+    def update_parameters_data(self, name=None):
         """
         Updates values of all parameters after a change has been made. Implements data validation (has to be number)
+        Also used to "Get all", well, cause it gets all ... :/
 
+        If name is passed update only value of that single parameter
+
+        :param name: if this parameter is set to something(string) get the value of only that single parameter
         :return: NoneType
         """
-        for name, textbox in self.textboxes.items():
-            textbox.setText(str(self.instrument.get(name)))
-        for name, textbox in self.textboxes_real_values.items():
-            if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
-                textbox.setText(str(round(self.instrument.get(name), 3)))
-            else:
+        if name is not None:
+            self.textboxes[name].setText(str(self.instrument.get(name)))
+            self.textboxes_real_values[name].setText(str(self.instrument.get(name)))
+        else:
+
+            for name, textbox in self.textboxes.items():
                 textbox.setText(str(self.instrument.get(name)))
+            for name, textbox in self.textboxes_real_values.items():
+                if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+                    textbox.setText(str(round(self.instrument.get(name), 3)))
+                else:
+                    textbox.setText(str(self.instrument.get(name)))
 
     def set_all_to_zero(self):
         """
@@ -191,8 +208,7 @@ class EditInstrumentWidget(QWidget):
     """""""""""""""""""""
     def call_worker(self, func):
 
-        def instanciate_worker():
-
+        def instantiate_worker():
             worker = Worker(func)
             worker.signals.result.connect(print_output)
             worker.signals.finished.connect(thread_complete)
@@ -200,7 +216,7 @@ class EditInstrumentWidget(QWidget):
 
             self.parent.thread_pool.start(worker)
 
-        return instanciate_worker
+        return instantiate_worker
 
 
 if __name__ == '__main__':
