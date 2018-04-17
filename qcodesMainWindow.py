@@ -1,8 +1,3 @@
-"""
-This is a main window class. Contains buttons for opening other windows and a preview of all instruments or loops
-created. From this window a loop is ran by either clicking run, or plot (obviously plot runs a loop with ploting)
-"""
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
     QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget
 from PyQt5.QtCore import pyqtSlot, QThreadPool
@@ -12,6 +7,8 @@ import inspect
 
 from PyQt5.QtCore import Qt
 import qcodes as qc
+from qcodes.actions import _QcodesBreak
+
 from Helpers import *
 from ViewTree import ViewTree
 from TextEditWidget import Notepad
@@ -86,8 +83,7 @@ class MainWindow(QMainWindow):
         self.show_loop_details_btn.setIcon(icon)
         self.show_loop_details_btn.clicked.connect(self.open_tree)
 
-
-        self.loops_table = QTableWidget(0, 2, self)
+        self.loops_table = QTableWidget(0, 3, self)
         self.loops_table.move(45, 280)
         self.loops_table.resize(400, 100)
         self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run"))
