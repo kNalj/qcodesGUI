@@ -3,7 +3,7 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 
@@ -47,9 +47,9 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
-        # _, _, width, height = QtGui.QDesktopWidget().screenGeometry().getCoords()
-        height = len(self.instrument.parameters)*30 + 100
-        self.setGeometry(256, 256, 480, height)
+        _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
+        window_height = len(self.instrument.parameters)*30 + 100
+        self.setGeometry((width - 500), int(0.05*height), 480, window_height)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
@@ -140,13 +140,18 @@ class EditInstrumentWidget(QWidget):
         return set_parameter
 
     def make_edit_parameter(self, parameter):
+        """
+        Function factory for creating functions that open new window for editing parameters of an instrument
 
-        def edit_instrument():
+        :param parameter: name of the parameter to be edited
+        :return: reference to a function "edit_instrument"
+        """
+        def edit_parameter():
             self.edit_instrument_parameters = EditInstrumentParameterWidget(self.instruments, self.instrument,
                                                                             parameter, parent=self)
             self.edit_instrument_parameters.show()
 
-        return edit_instrument
+        return edit_parameter
 
     def update_parameters_data(self, name=None):
         """
@@ -207,7 +212,12 @@ class EditInstrumentWidget(QWidget):
     Helper functions
     """""""""""""""""""""
     def call_worker(self, func):
+        """
+        Function factory for instantiating worker objects that run a certain function in a separate thread
 
+        :param func:
+        :return:
+        """
         def instantiate_worker():
             worker = Worker(func)
             worker.signals.result.connect(print_output)

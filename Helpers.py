@@ -50,6 +50,13 @@ def get_files_in_folder(path, instrument_drivers_only=False):
 
 
 def get_plot_parameter(loop):
+    """
+    Recursive function that gets to the innermost action parameter of the loop passed to it, and returns its name
+    Used for getting the parameter that is passed to the qcodes QtPlot function
+
+    :param loop: instance of a loop class
+    :return: full name of loops action parameter
+    """
     action = loop.actions[0]
     module_name = "qcodes.loops"
     module = importlib.import_module(module_name)

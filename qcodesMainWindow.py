@@ -1,5 +1,10 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFrame, QFileDialog, \
-    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView
+"""
+This is a main window class. Contains buttons for opening other windows and a preview of all instruments or loops
+created. From this window a loop is ran by either clicking run, or plot (obviously plot runs a loop with ploting)
+"""
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
+    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget
 from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
@@ -23,12 +28,18 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.init_menu_bar()
 
+        # list of instruments shared by all windows
         self.instruments = {}
+        # instruments that are added to station
         self.station_instruments = {}
+        # loops that have been created
         self.loops = {}
+        # displayed loops
         self.shown_loops = []
+        # actions that can be ran
         self.actions = []
 
+        # contains references to buttons for editing
         self.edit_button_dict = {}
 
         # Thread pool for adding separate threads
@@ -47,8 +58,8 @@ class MainWindow(QMainWindow):
         Initializes the main window user interface, sets dimensions, position, etc. of a main window
         :return: NoneType
         """
-
-        self.setGeometry(64, 64, 640, 400)
+        _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
+        self.setGeometry(int(0.02 * width), int(0.05 * height), 640, 400)
         self.setMinimumSize(640, 400)
         self.setWindowTitle("qcodes starter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
@@ -79,10 +90,11 @@ class MainWindow(QMainWindow):
         self.loops_table = QTableWidget(0, 2, self)
         self.loops_table.move(45, 280)
         self.loops_table.resize(400, 100)
-        self.loops_table.setHorizontalHeaderLabels(("Name", "Edit"))
+        self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run"))
         header = self.loops_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.Stretch)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         self.btn_add_instrument = QPushButton("Add instrument", self)
@@ -142,7 +154,7 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage("Ready")
 
-        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_F1), self)
+        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_F12), self)
         add_shortcut.activated.connect(self.setup_loops)
 
     def init_menu_bar(self):
@@ -222,6 +234,12 @@ class MainWindow(QMainWindow):
                 self.edit_button_dict[instrument] = current_instrument_btn
                 self.station_instruments[instrument] = self.instruments[instrument]
 
+                key = "Key_F" + str(rows+1)
+                key_class = getattr(Qt, key)
+
+                add_shortcut = QShortcut(QtGui.QKeySequence(key_class), self)
+                add_shortcut.activated.connect(self.make_open_instrument_edit(instrument))
+
     def update_loops_preview(self):
         """
         This function is called from child class (SetupLoopsWidget) each time a new loop is created.
@@ -241,6 +259,10 @@ class MainWindow(QMainWindow):
                 current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.setup_loops(loop_name))
                 self.loops_table.setCellWidget(rows, 1, current_loop_btn)
                 self.shown_loops.append(name)
+
+                key_combo_string = "Ctrl+F"+str(rows+1)
+                add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
+                add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
 
     def run_qcodes(self, with_plot=False):
         """
