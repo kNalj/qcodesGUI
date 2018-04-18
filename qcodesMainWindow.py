@@ -298,6 +298,7 @@ class MainWindow(QMainWindow):
 
         if len(self.actions):
             loop = self.actions[-1]
+            loop.data_set = None
             data = loop.get_data_set(name=self.output_file_name.text())
 
             if with_plot:
