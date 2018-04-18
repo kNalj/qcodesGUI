@@ -69,9 +69,9 @@ class MainWindow(QMainWindow):
         self.instruments_table.resize(400, 160)
         self.instruments_table.setHorizontalHeaderLabels(("Name", "Type", "Edit"))
         header = self.instruments_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         label = QLabel("Loops", self)
@@ -89,8 +89,8 @@ class MainWindow(QMainWindow):
         self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run"))
         header = self.loops_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         self.btn_add_instrument = QPushButton("Add instrument", self)
@@ -236,7 +236,7 @@ class MainWindow(QMainWindow):
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_class), self)
                 add_shortcut.activated.connect(self.make_open_instrument_edit(instrument))
 
-    def update_loops_preview(self):
+    def update_loops_preview(self, edit=False):
         """
         This function is called from child class (SetupLoopsWidget) each time a new loop is created.
         Displays all loops on the MainWindow
@@ -247,23 +247,49 @@ class MainWindow(QMainWindow):
             if name not in self.shown_loops:
                 rows = self.loops_table.rowCount()
                 self.loops_table.insertRow(rows)
-                item = QTableWidgetItem(name)
+
+                lower = str(loop.sweep_values[0])
+                upper = str(loop.sweep_values[-1])
+                steps = str(len(loop.sweep_values))
+                delay = str(loop.delay)
+                display_string = "{} [{}, {}, {}, {}].{}".format(name, lower, upper, steps, delay, str(loop.actions[0]))
+                item = QTableWidgetItem(display_string)
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 self.loops_table.setItem(rows, 0, item)
-                current_loop_btn = QPushButton("Edit", self)
+                current_loop_btn = QPushButton("Edit")
                 current_loop_btn.resize(35, 20)
                 current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.setup_loops(loop_name))
                 self.loops_table.setCellWidget(rows, 1, current_loop_btn)
+
+                run_current_loop_btn = QPushButton("Run")
+                run_current_loop_btn.resize(35, 20)
+                run_current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.run_specific_loop(loop_name))
+                self.loops_table.setCellWidget(rows, 2, run_current_loop_btn)
+
                 self.shown_loops.append(name)
 
                 key_combo_string = "Ctrl+F"+str(rows+1)
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
+            elif edit == name:
+                print(edit, name)
+                rows = int(name[-1])-1
+                print(rows)
+
+                lower = str(loop.sweep_values[0])
+                upper = str(loop.sweep_values[-1])
+                steps = str(len(loop.sweep_values))
+                delay = str(loop.delay)
+                display_string = "{} [{}, {}, {}, {}].{}".format(name, lower, upper, steps, delay, str(loop.actions[0]))
+                item = QTableWidgetItem(display_string)
+                item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+                self.loops_table.setItem(rows, 0, item)
 
     def run_qcodes(self, with_plot=False):
         """
         Runs qcodes with specified instruments and parameters. Checks for errors in data prior to runing qcodes
 
+        :param with_plot: if set to true, runs (and saves) live plot while measurment is running
         :return: NoneType
         """
         station = qc.Station()
@@ -279,8 +305,12 @@ class MainWindow(QMainWindow):
                 parameter_name = str(parameter)
                 plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4)
                 plot.add(getattr(data, parameter_name))
+                # loop.with_bg_task(plot.update, plot.save).run(use_threads=True)
+                loop.bg_task = None
                 worker = Worker(loop.with_bg_task(plot.update, plot.save).run)
             else:
+                # loop.run(use_threads=True) -> this has something to do with multiple gets at the same time
+                #                               i guess it would get them all at the same time instead of one by one
                 worker = Worker(loop.run)
             self.workers.append(worker)
 
@@ -364,7 +394,7 @@ class MainWindow(QMainWindow):
         for worker in self.workers:
             pass
 
-    # This is a function factory
+    # This is a function factory (wow, i'm so cool, i made a function factory)
     def make_open_instrument_edit(self, instrument):
         """
         Hi, i am a function factory, and for each button you see next to an instrument i create a new function to edit
@@ -384,6 +414,12 @@ class MainWindow(QMainWindow):
             self.edit_instrument.show()
         return open_instrument_edit
 
+    def run_specific_loop(self, loop_name):
+
+        loop = self.loops[loop_name]
+        loop_index = self.actions.index(loop)
+        self.actions[loop_index], self.actions[-1] = self.actions[-1], self.actions[loop_index]
+        self.run_with_plot()
 
 def main():
     app = QApplication(sys.argv)

@@ -198,11 +198,17 @@ class LoopsWidget(QWidget):
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
                              progress_interval=20).each(self.action_parameter_cb.currentData())
 
-            name = "loop" + str(len(self.actions)+1)
-            self.loops[name] = lp
-            self.actions.append(lp)
-            self.parent.update_loops_preview()
-            # self.close()
+            if self.name != "":
+                name = self.name
+                self.loops[name] = lp
+                self.actions.append(lp)
+                self.parent.update_loops_preview(edit=name)
+            else:
+                name = "loop" + str(len(self.actions)+1)
+                self.loops[name] = lp
+                self.actions.append(lp)
+                self.parent.update_loops_preview()
+                # self.close()
 
     def update_sweep_instrument_parameters(self):
         """
@@ -264,10 +270,19 @@ class LoopsWidget(QWidget):
         module_name = "qcodes.loops"
         module = importlib.import_module(module_name)
         loop_class = getattr(module, "ActiveLoop")
+
         if isinstance(action, loop_class):
             action_parameter_instrument_name = self.loop.actions[0]
             index = self.action_parameter_instrument_cb.findData(action_parameter_instrument_name)
             self.action_parameter_instrument_cb.setCurrentIndex(index)
+        elif isinstance(action, VoltageDivider):
+            action_parameter_instrument_name = self.loop.actions[0].v1._instrument.name
+            index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
+            self.action_parameter_instrument_cb.setCurrentIndex(index)
+            action_parameter_name = self.loop.actions[0].v1.name
+            index = self.action_parameter_cb.findText(action_parameter_name)
+            self.action_parameter_cb.setCurrentIndex(index)
+            self.action_parameter_divider.setText(str(self.loop.actions[0].division_value))
         else:
             action_parameter_instrument_name = self.loop.actions[0]._instrument.name
             index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
@@ -277,12 +292,23 @@ class LoopsWidget(QWidget):
             self.action_parameter_cb.setCurrentIndex(index)
 
         # do the same thing for sweep parameter
-        sweep_parameter_instrument_name = self.loop.sweep_values.parameter._instrument.name
-        index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
-        self.sweep_parameter_instrument_cb.setCurrentIndex(index)
-        sweep_parameter_name = self.loop.sweep_values.parameter.name
-        index = self.sweep_parameter_cb.findText(sweep_parameter_name)
-        self.sweep_parameter_cb.setCurrentIndex(index)
+        sweep = self.loop.sweep_values.parameter
+        if isinstance(sweep, VoltageDivider):
+            sweep_parameter_instrument_name = sweep._instrument.name
+            index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
+            self.sweep_parameter_instrument_cb.setCurrentIndex(index)
+            sweep_parameter_name = self.loop.sweep_values.parameter.v1.name
+            print(self.loop.sweep_values.parameter.name)
+            index = self.sweep_parameter_cb.findText(sweep_parameter_name)
+            self.sweep_parameter_cb.setCurrentIndex(index)
+            self.sweep_parameter_divider.setText(str(self.loop.sweep_values.parameter.division_value))
+        else:
+            sweep_parameter_instrument_name = self.loop.sweep_values.parameter._instrument.name
+            index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
+            self.sweep_parameter_instrument_cb.setCurrentIndex(index)
+            sweep_parameter_name = self.loop.sweep_values.parameter.name
+            index = self.sweep_parameter_cb.findText(sweep_parameter_name)
+            self.sweep_parameter_cb.setCurrentIndex(index)
 
 
 if __name__ == '__main__':
