@@ -1,6 +1,7 @@
 from PyQt5.QtCore import pyqtSlot, QRunnable, QObject, pyqtSignal
 import traceback
 import sys
+import time
 
 
 class Worker(QRunnable):
@@ -32,20 +33,24 @@ class Worker(QRunnable):
 
     @pyqtSlot()
     def run(self):
+        self.is_running = True
         """
         Initialise the runner function with passed args, kwargs.
         """
-        # Retrieve args/kwargs here; and fire processing using them
-        try:
-            result = self.func(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)  # Return the result of the processing
-        finally:
-            self.signals.finished.emit()  # Done
+        while self.is_running:
+            # Retrieve args/kwargs here; and fire processing using them
+            try:
+                result = self.func(*self.args, **self.kwargs)
+            except:
+                traceback.print_exc()
+                exctype, value = sys.exc_info()[:2]
+                self.signals.error.emit((exctype, value, traceback.format_exc()))
+            else:
+                self.signals.result.emit(result)  # Return the result of the processing
+            finally:
+                self.signals.finished.emit()  # Done
+                self.is_running = False
+            time.sleep(0.5)
 
     @pyqtSlot()
     def stop(self):
@@ -109,4 +114,4 @@ def thread_complete():
 
 
 def destroy_worker(worker):
-    del worker
+    worker.is_running = False

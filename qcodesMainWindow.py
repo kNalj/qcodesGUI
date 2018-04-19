@@ -5,6 +5,15 @@ from PyQt5.QtCore import pyqtSlot, QThreadPool
 import sys
 import inspect
 
+
+def trap_exc_during_debug(*args):
+    # when app raises uncaught exception, print info
+    print(args)
+
+
+# install exception hook: without this, uncaught exception would cause application to exit
+sys.excepthook = trap_exc_during_debug
+
 from PyQt5.QtCore import Qt
 import qcodes as qc
 from qcodes.actions import _QcodesBreak
@@ -392,8 +401,14 @@ class MainWindow(QMainWindow):
         self.text_editor.show()
 
     def stop_all_workers(self):
+        print(self.workers)
+        print("Emmiting the signal to all workers")
         for worker in self.workers:
-            pass
+            self.thread_pool.cancel(worker)
+            worker.is_running = False
+            worker.signals.kill.emit(worker)
+            self.thread_pool.cancel(worker)
+            print(self.thread_pool)
 
     # This is a function factory (wow, i'm so cool, i made a function factory)
     def make_open_instrument_edit(self, instrument):

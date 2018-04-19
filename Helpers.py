@@ -68,6 +68,14 @@ def get_plot_parameter(loop):
         return loop.actions[0]
 
 
+def is_numeric(value):
+    try:
+        float(value)
+        return True
+    except:
+        return False
+
+
 class ViewTree(QTreeWidget):
     """
     Widget that displays content of a dictionary (including sub dicts, lists, etc.)

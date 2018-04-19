@@ -54,7 +54,7 @@ class LoopsWidget(QWidget):
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         # label above input fields and tooltips to be shown on mouseover
-        labels = ["Lower limit", "Upper limit", "Steps", "Delay"]
+        labels = ["Start", "End", "Steps", "Delay"]
         tooltips = ["Start from this value",
                     "Sweep to this value",
                     "Number of steps to be measured from lower limit to upper limit",

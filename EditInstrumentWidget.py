@@ -29,9 +29,11 @@ class EditInstrumentWidget(QWidget):
         self.instruments = instruments
         self.instrument_name = instrument_name
         self.instrument = self.instruments[instrument_name]
+        self.division = 1
 
         self.textboxes = {}
         self.textboxes_real_values = {}
+        self.textboxes_divided_values = {}
 
         self.inner_parameter_btns = {}
 
@@ -60,6 +62,21 @@ class EditInstrumentWidget(QWidget):
         self.instrument_name_txtbox.move(80, 30)
         self.instrument_name_txtbox.setDisabled(True)
 
+        label = QLabel("Division:", self)
+        label.move(310, 30)
+        self.division_textbox = QLineEdit("1", self)
+        self.division_textbox.move(360, 30)
+        self.division_textbox.resize(40, 20)
+        self.apply_division = QPushButton("Apply", self)
+        self.apply_division.move(410, 30)
+        self.apply_division.resize(40, 20)
+        self.apply_division.clicked.connect(self.update_divided_values)
+
+        label = QLabel("Real", self)
+        label.move(160, 60)
+        label = QLabel("Divided", self)
+        label.move(210, 60)
+
         start_y = 80
         for name, parameter in self.instrument.parameters.items():
             label = QLabel(name, self)
@@ -71,16 +88,21 @@ class EditInstrumentWidget(QWidget):
             self.inner_parameter_btns[name].resize(80, 20)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
-            if str(self.instrument.get(name)).replace(".", "", 1).isdigit():
-                val = str(round(self.instrument.get(name), 3))
+            if is_numeric(self.instrument.get(name)):
+                val = round(self.instrument.get(name), 3)
             else:
-                val = str(self.instrument.get(name))
-            self.textboxes_real_values[name] = QLineEdit(val, self)
+                val = self.instrument.get(name)
+            self.textboxes_real_values[name] = QLineEdit(str(val), self)
             self.textboxes_real_values[name].move(155, start_y)
             self.textboxes_real_values[name].resize(50, 20)
             self.textboxes_real_values[name].setDisabled(True)
-            self.textboxes[name] = QLineEdit(str(self.instrument.get(name)), self)
-            self.textboxes[name].move(210, start_y)
+            self.textboxes_divided_values[name] = QLineEdit(str(val/self.division) if isinstance(val, (int, float)) else str(val), self)
+            self.textboxes_divided_values[name].resize(50, 20)
+            self.textboxes_divided_values[name].move(210, start_y)
+            self.textboxes_divided_values[name].setDisabled(True)
+            self.textboxes[name] = QLineEdit(str(val), self)
+            self.textboxes[name].move(265, start_y)
+            self.textboxes[name].resize(80, 20)
             set_value_btn = QPushButton("Set", self)
             set_value_btn.move(360, start_y)
             set_value_btn.resize(40, 20)
@@ -165,16 +187,30 @@ class EditInstrumentWidget(QWidget):
         """
         if name is not None:
             self.textboxes[name].setText(str(self.instrument.get(name)))
-            self.textboxes_real_values[name].setText(str(self.instrument.get(name)))
+            self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
         else:
 
             for name, textbox in self.textboxes.items():
                 textbox.setText(str(self.instrument.get(name)))
             for name, textbox in self.textboxes_real_values.items():
-                if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+                if is_numeric(self.instrument.get(name)):
                     textbox.setText(str(round(self.instrument.get(name), 3)))
                 else:
                     textbox.setText(str(self.instrument.get(name)))
+            self.update_divided_values()
+
+    def update_divided_values(self):
+        try:
+            division = float(self.division_textbox.text())
+        except Exception as e:
+            show_error_message("Warning", str(e))
+        else:
+            for name, tb in self.textboxes_divided_values.items():
+                real_value = self.textboxes_real_values[name].text()
+                if is_numeric(tb.text()):
+                    self.textboxes_divided_values[name].setText(str(round(float(real_value)/division, 3)))
+                else:
+                    self.textboxes_divided_values[name].setText(str(real_value))
 
     def set_all_to_zero(self):
         """
