@@ -73,9 +73,9 @@ class EditInstrumentWidget(QWidget):
         self.apply_division.resize(40, 20)
         self.apply_division.clicked.connect(self.update_divided_values)"""
 
-        label = QLabel("Real", self)
+        label = QLabel("Original", self)
         label.move(160, 60)
-        label = QLabel("Divided", self)
+        label = QLabel("Applied", self)
         label.move(210, 60)
 
         start_y = 80
