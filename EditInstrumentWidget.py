@@ -16,7 +16,7 @@ from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 class EditInstrumentWidget(QWidget):
 
-    def __init__(self, instruments, parent=None, instrument_name=""):
+    def __init__(self, instruments, dividers, parent=None, instrument_name=""):
         """
         Constructor for EditInstrumentWidget window
 
@@ -27,6 +27,7 @@ class EditInstrumentWidget(QWidget):
         self.parent = parent
 
         self.instruments = instruments
+        self.dividers = dividers
         self.instrument_name = instrument_name
         self.instrument = self.instruments[instrument_name]
         self.division = 1
@@ -62,7 +63,7 @@ class EditInstrumentWidget(QWidget):
         self.instrument_name_txtbox.move(80, 30)
         self.instrument_name_txtbox.setDisabled(True)
 
-        label = QLabel("Division:", self)
+        """label = QLabel("Division:", self)
         label.move(310, 30)
         self.division_textbox = QLineEdit("1", self)
         self.division_textbox.move(360, 30)
@@ -70,7 +71,7 @@ class EditInstrumentWidget(QWidget):
         self.apply_division = QPushButton("Apply", self)
         self.apply_division.move(410, 30)
         self.apply_division.resize(40, 20)
-        self.apply_division.clicked.connect(self.update_divided_values)
+        self.apply_division.clicked.connect(self.update_divided_values)"""
 
         label = QLabel("Real", self)
         label.move(160, 60)
@@ -96,10 +97,11 @@ class EditInstrumentWidget(QWidget):
             self.textboxes_real_values[name].move(155, start_y)
             self.textboxes_real_values[name].resize(50, 20)
             self.textboxes_real_values[name].setDisabled(True)
-            self.textboxes_divided_values[name] = QLineEdit(str(val/self.division) if isinstance(val, (int, float)) else str(val), self)
-            self.textboxes_divided_values[name].resize(50, 20)
-            self.textboxes_divided_values[name].move(210, start_y)
-            self.textboxes_divided_values[name].setDisabled(True)
+            if str(parameter) in self.dividers:
+                self.textboxes_divided_values[name] = QLineEdit(str(self.dividers[str(parameter)].get_raw()), self)
+                self.textboxes_divided_values[name].resize(50, 20)
+                self.textboxes_divided_values[name].move(210, start_y)
+                self.textboxes_divided_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(val), self)
             self.textboxes[name].move(265, start_y)
             self.textboxes[name].resize(80, 20)
@@ -149,11 +151,17 @@ class EditInstrumentWidget(QWidget):
             Fetches the data from textbox belonging to the parameter (data set by user) and sets the parameter value
             to that data. Also implements some data validation
 
+            Added handling with dividers attached (add detailed explanation)
+
             :return: NoneType
             """
+            full_name = str(self.instrument.parameters[parameter])
             try:
                 value = float(self.textboxes[parameter].text())
-                self.instrument.set(parameter, value)
+                if full_name in self.dividers:
+                    self.dividers[full_name].set_raw(value)
+                else:
+                    self.instrument.set(parameter, value)
             except Exception as e:
                 show_error_message("Warning", str(e))
             else:
@@ -186,12 +194,19 @@ class EditInstrumentWidget(QWidget):
         :return: NoneType
         """
         if name is not None:
-            self.textboxes[name].setText(str(self.instrument.get(name)))
+            full_name = str(self.instrument.parameters[name])
+            if full_name in self.dividers:
+                self.textboxes[name].setText(self.dividers[full_name].get_raw())
+            else:
+                self.textboxes[name].setText(str(self.instrument.get(name)))
             self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
         else:
-
             for name, textbox in self.textboxes.items():
-                textbox.setText(str(self.instrument.get(name)))
+                full_name = str(self.instrument.parameters[name])
+                if full_name in self.dividers:
+                    self.textboxes[name].setText(str(self.dividers[full_name].get_raw()))
+                else:
+                    self.textboxes[name].setText(str(self.instrument.get(name)))
             for name, textbox in self.textboxes_real_values.items():
                 if is_numeric(self.instrument.get(name)):
                     textbox.setText(str(round(self.instrument.get(name), 3)))
@@ -200,17 +215,8 @@ class EditInstrumentWidget(QWidget):
             self.update_divided_values()
 
     def update_divided_values(self):
-        try:
-            division = float(self.division_textbox.text())
-        except Exception as e:
-            show_error_message("Warning", str(e))
-        else:
-            for name, tb in self.textboxes_divided_values.items():
-                real_value = self.textboxes_real_values[name].text()
-                if is_numeric(tb.text()):
-                    self.textboxes_divided_values[name].setText(str(round(float(real_value)/division, 3)))
-                else:
-                    self.textboxes_divided_values[name].setText(str(real_value))
+        for name, textbox in self.textboxes_divided_values.items():
+            textbox.setText(str(self.dividers[str(self.instrument.parameters[name])].get_raw()))
 
     def set_all_to_zero(self):
         """

@@ -40,6 +40,8 @@ class MainWindow(QMainWindow):
         self.station_instruments = {}
         # loops that have been created
         self.loops = {}
+        # dict of created Dividers
+        self.dividers = {}
         # displayed loops
         self.shown_loops = []
         # actions that can be ran
@@ -387,7 +389,7 @@ class MainWindow(QMainWindow):
 
         :return:
         """
-        self.setup_loops_widget = LoopsWidget(self.instruments, self.loops, self.actions, parent=self, loop_name=loop_name)
+        self.setup_loops_widget = LoopsWidget(self.instruments, self.dividers, self.loops, self.actions, parent=self, loop_name=loop_name)
         self.setup_loops_widget.show()
 
     @pyqtSlot()
@@ -426,7 +428,7 @@ class MainWindow(QMainWindow):
 
             :return: NoneType
             """
-            self.edit_instrument = EditInstrumentWidget(self.instruments, parent=self, instrument_name=instrument)
+            self.edit_instrument = EditInstrumentWidget(self.instruments, self.dividers, parent=self, instrument_name=instrument)
             self.edit_instrument.show()
         return open_instrument_edit
 

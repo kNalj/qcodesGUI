@@ -14,7 +14,7 @@ That inner delay thing is probably hidden somewhere in file: qcodes/instrument/p
 
 class LoopsWidget(QWidget):
 
-    def __init__(self, instruments, loops, actions, parent=None, loop_name=""):
+    def __init__(self, instruments, dividers, loops, actions, parent=None, loop_name=""):
         """
         Constructor for AddInstrumentWidget window
 
@@ -28,6 +28,7 @@ class LoopsWidget(QWidget):
         super(LoopsWidget, self).__init__()
 
         self.instruments = instruments
+        self.dividers = dividers
         self.loops = loops
         self.actions = actions
         self.parent = parent
@@ -54,10 +55,11 @@ class LoopsWidget(QWidget):
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         # label above input fields and tooltips to be shown on mouseover
-        labels = ["Start", "End", "Steps", "Delay"]
+        labels = ["Start", "End", "Steps", "Step size", "Delay"]
         tooltips = ["Start from this value",
                     "Sweep to this value",
                     "Number of steps to be measured from lower limit to upper limit",
+                    "Either this or steps is to be used",
                     "Wait this many seconds between each step"]
         first_location = [40, 80]
 
@@ -66,24 +68,33 @@ class LoopsWidget(QWidget):
 
         for i in range(len(labels)):
             label = QLabel(labels[i], self)
-            label.move(first_location[0] + i * 75, first_location[1] - 20)
+            label.move(first_location[0] + i * 55, first_location[1] - 20)
             label.setToolTip(tooltips[i])
 
         self.textbox_lower_limit = QLineEdit(self)
+        self.textbox_lower_limit.setText("0")
         self.textbox_lower_limit.move(first_location[0], first_location[1])
         self.textbox_lower_limit.resize(45, 20)
         self.textbox_upper_limit = QLineEdit(self)
-        self.textbox_upper_limit.move(115, 80)
+        self.textbox_upper_limit.setText("0")
+        self.textbox_upper_limit.move(95, 80)
         self.textbox_upper_limit.resize(45, 20)
         # number of steps
         self.textbox_num = QLineEdit(self)
         self.textbox_num.setText("1")
-        self.textbox_num.move(190, 80)
+        self.textbox_num.move(150, 80)
         self.textbox_num.resize(45, 20)
+        self.textbox_num.editingFinished.connect(self.update_step_size)
+        # can use this insted of number of steps
+        self.textbox_step_size = QLineEdit(self)
+        self.textbox_step_size.setText("0")
+        self.textbox_step_size.move(205, 80)
+        self.textbox_step_size.resize(45, 20)
+        self.textbox_step_size.editingFinished.connect(self.update_num_of_steps)
         # this is actualy a delay (NOT STEPS !)
         self.textbox_step = QLineEdit(self)
         self.textbox_step.setText("0")
-        self.textbox_step.move(265, 80)
+        self.textbox_step.move(260, 80)
         self.textbox_step.resize(45, 20)
         # comboboxes for selecting sweep parameter instrument. First you select the instrument that you want to sweep
         # After selecting instrument the other combobox is populated by parameters of that instrument
@@ -179,19 +190,26 @@ class LoopsWidget(QWidget):
                              + str(e)
             show_error_message("Warning", warning_string)
         else:
+            # Create dividres and add them to a dict of dividers (shared with main window)
             if sweep_division != 1 and action_division != 1:
-                sweep_divider = VoltageDivider(self.sweep_parameter_cb.currentData(), sweep_division)
-                action_divider = VoltageDivider(self.action_parameter_cb.currentData(), action_division)
+                parameter = self.sweep_parameter_cb.currentData()
+                sweep_divider = VoltageDivider(parameter, sweep_division)
+                self.dividers[str(parameter)] = sweep_divider
+                parameter = self.action_parameter_cb.currentData()
+                action_divider = VoltageDivider(parameter, action_division)
+                self.dividers[str(parameter)] = action_divider
                 lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay, progress_interval=20).each(
                     action_divider)
             elif sweep_division != 1:
-                sweep_divider = VoltageDivider(self.sweep_parameter_cb.currentData(), sweep_division)
-                print("A sweep divider was added")
+                parameter = self.sweep_parameter_cb.currentData()
+                sweep_divider = VoltageDivider(parameter, sweep_division)
+                self.dividers[str(parameter)] = sweep_divider
                 lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay, progress_interval=20).each(
                     self.action_parameter_cb.currentData())
             elif action_division != 1:
-                action_divider = VoltageDivider(self.action_parameter_cb.currentData(), action_division)
-                print("An action divider was added")
+                parameter = self.action_parameter_cb.currentData()
+                action_divider = VoltageDivider(parameter, action_division)
+                self.dividers[str(parameter)] = action_divider
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
                              progress_interval=20).each(action_divider)
             else:
@@ -309,6 +327,44 @@ class LoopsWidget(QWidget):
             sweep_parameter_name = self.loop.sweep_values.parameter.name
             index = self.sweep_parameter_cb.findText(sweep_parameter_name)
             self.sweep_parameter_cb.setCurrentIndex(index)
+
+    def update_step_size(self):
+        """
+        Updates the step size if value of steps in changed
+
+        :return: NoneType
+        """
+        try:
+            steps = float(self.textbox_num.text())
+            lower = float(self.textbox_lower_limit.text())
+            upper = float(self.textbox_upper_limit.text())
+        except Exception as e:
+            show_error_message("Warning", str(e))
+        else:
+            if steps != 0:
+                step_size = (upper - lower) / (steps - 1)
+                self.textbox_step_size.setText(str(step_size))
+            else:
+                show_error_message("HELLO !", "U cannot have zero steps, come on man, u went to school for 20 years")
+
+    def update_num_of_steps(self):
+        """
+        Updates number of steps if value of step size is changed
+
+        :return: NoneType
+        """
+        try:
+            step_size = float(self.textbox_step_size.text())
+            lower = float(self.textbox_lower_limit.text())
+            upper = float(self.textbox_upper_limit.text())
+        except Exception as e:
+            show_error_message("Warning", str(e))
+        else:
+            if step_size != 0:
+                steps = ((upper - lower) / step_size) + 1
+                self.textbox_num.setText(str(steps))
+            else:
+                show_error_message("Warning", "Haha, let's see what other funny things i can find ... ")
 
 
 if __name__ == '__main__':

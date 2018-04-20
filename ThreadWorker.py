@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSlot, QRunnable, QObject, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QRunnable, QObject, pyqtSignal, QThread
 import traceback
 import sys
 import time
@@ -81,6 +81,10 @@ class WorkerSignals(QObject):
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
     kill = pyqtSignal(object)
+
+
+class LoopThread(QThread):
+    pass
 
 
 def progress_func(progress):
