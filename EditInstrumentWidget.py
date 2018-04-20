@@ -166,7 +166,6 @@ class EditInstrumentWidget(QWidget):
                 show_error_message("Warning", str(e))
             else:
                 self.update_parameters_data()
-                self.setStatusTip("Parameter value changed to: " + str(value))
         return set_parameter
 
     def make_edit_parameter(self, parameter):
@@ -196,7 +195,7 @@ class EditInstrumentWidget(QWidget):
         if name is not None:
             full_name = str(self.instrument.parameters[name])
             if full_name in self.dividers:
-                self.textboxes[name].setText(self.dividers[full_name].get_raw())
+                self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
             else:
                 self.textboxes[name].setText(str(self.instrument.get(name)))
             self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
@@ -204,14 +203,20 @@ class EditInstrumentWidget(QWidget):
             for name, textbox in self.textboxes.items():
                 full_name = str(self.instrument.parameters[name])
                 if full_name in self.dividers:
-                    self.textboxes[name].setText(str(self.dividers[full_name].get_raw()))
+                    textbox.setText(str(round(self.dividers[full_name].get_raw(), 3)))
                 else:
-                    self.textboxes[name].setText(str(self.instrument.get(name)))
+                    if is_numeric(self.instrument.get(name)):
+                        textbox.setText(str(round(self.instrument.get(name), 3)))
+                    else:
+                        textbox.setText(str(self.instrument.get(name)))
             for name, textbox in self.textboxes_real_values.items():
                 if is_numeric(self.instrument.get(name)):
                     textbox.setText(str(round(self.instrument.get(name), 3)))
                 else:
-                    textbox.setText(str(self.instrument.get(name)))
+                    if is_numeric(self.instrument.get(name)):
+                        textbox.setText(str(round(self.instrument.get(name), 3)))
+                    else:
+                        textbox.setText(str(self.instrument.get(name)))
             self.update_divided_values()
 
     def update_divided_values(self):

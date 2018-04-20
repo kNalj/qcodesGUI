@@ -58,16 +58,16 @@ class EditInstrumentParameterWidget(QWidget):
             label.move(30, start_y)
             label.show()
             if name == "step":
-                self.textboxes_real_values[name] = QLineEdit(str(self.parameter._step), self)
+                self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
-                self.textboxes_real_values[name] = QLineEdit(str(self.parameter.get_delay()), self)
+                self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay), self)
             self.textboxes_real_values[name].move(120, start_y)
             self.textboxes_real_values[name].resize(40, 20)
             self.textboxes_real_values[name].setDisabled(True)
             if name == "step":
-                self.textboxes[name] = QLineEdit(str(self.parameter._step), self)
+                self.textboxes[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
-                self.textboxes[name] = QLineEdit(str(self.parameter.get_delay()), self)
+                self.textboxes[name] = QLineEdit(str(self.parameter.inter_delay), self)
             self.textboxes[name].move(180, start_y)
             set_value_btn = QPushButton("Set", self)
             set_value_btn.move(340, start_y)
@@ -103,21 +103,19 @@ class EditInstrumentParameterWidget(QWidget):
             if value_name == "step":
                 try:
                     value = float(self.textboxes[value_name].text())
-                    parameter.set_step(value)
+                    parameter.step = value
                 except Exception as e:
                     show_error_message("Warning", str(e))
                 else:
-                    self.setStatusTip("Parameter value changed to: " + str(value))
                     self.update_displayed_values()
 
             elif value_name == "inter_delay":
                 try:
                     value = float(self.textboxes[value_name].text())
-                    parameter.set_delay(value)
+                    parameter.inter_delay = value
                 except Exception as e:
                     show_error_message("Warning", str(e))
                 else:
-                    self.setStatusTip("Parameter value changed to: " + str(value))
                     self.update_displayed_values()
 
         return set_value
@@ -131,15 +129,15 @@ class EditInstrumentParameterWidget(QWidget):
         """
         for name, textbox in self.textboxes.items():
             if name == "step":
-                textbox.setText(str(self.parameter._step))
+                textbox.setText(str(self.parameter.step))
             elif name == "inter_delay":
-                textbox.setText(str(self.parameter.get_delay()))
+                textbox.setText(str(self.parameter.inter_delay))
 
         for name, textbox in self.textboxes_real_values.items():
             if name == "step":
-                textbox.setText(str(self.parameter._step))
+                textbox.setText(str(self.parameter.step))
             elif name == "inter_delay":
-                textbox.setText(str(self.parameter.get_delay()))
+                textbox.setText(str(self.parameter.inter_delay))
 
     """""""""""""""""""""
     Helper functions
