@@ -4,7 +4,8 @@ There u can find a set function for setting paramater defined by "name" to a val
 """
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSlot
+from AttachDividersWidget import DividerWidget
 from PyQt5 import QtGui
 
 import sys
@@ -16,7 +17,7 @@ from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 class EditInstrumentWidget(QWidget):
 
-    def __init__(self, instruments, dividers, parent=None, instrument_name=""):
+    def __init__(self, instruments, dividers, thread_pool, parent=None, instrument_name=""):
         """
         Constructor for EditInstrumentWidget window
 
@@ -28,6 +29,7 @@ class EditInstrumentWidget(QWidget):
 
         self.instruments = instruments
         self.dividers = dividers
+        self.thread_pool = thread_pool
         self.instrument_name = instrument_name
         self.instrument = self.instruments[instrument_name]
         self.division = 1
@@ -115,6 +117,11 @@ class EditInstrumentWidget(QWidget):
             get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
 
+        add_divider_btn = QPushButton("Edit dividers", self)
+        add_divider_btn.move(70, start_y + 20)
+        add_divider_btn.resize(80, 50)
+        add_divider_btn.clicked.connect(self.open_attach_divider_widget)
+
         set_all_to_zero_btn = QPushButton("All zeroes", self)
         set_all_to_zero_btn.move(380, start_y + 20)
         set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
@@ -177,7 +184,7 @@ class EditInstrumentWidget(QWidget):
         """
         def edit_parameter():
             self.edit_instrument_parameters = EditInstrumentParameterWidget(self.instruments, self.instrument,
-                                                                            parameter, parent=self)
+                                                                            parameter, self.dividers, parent=self)
             self.edit_instrument_parameters.show()
 
         return edit_parameter
@@ -233,7 +240,7 @@ class EditInstrumentWidget(QWidget):
             self.instrument.set_dacs_zero()
         else:
             for name, parameter in self.instrument.parameters.items():
-                if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+                if is_numeric(self.instrument.get(name)):
                     if name[0:3] == "dac" and len(name) == (4 or 5):
                         self.instrument.set(name, 0)
         self.update_parameters_data()
@@ -245,12 +252,15 @@ class EditInstrumentWidget(QWidget):
         :return: NoneType
         """
         for name, parameter in self.instrument.parameters.items():
-            if str(self.instrument.get(name)).replace('.', '', 1).isdigit():
+            if is_numeric(self.instrument.get(name)):
                 try:
                     value = float(self.textboxes[name].text())
                     self.instrument.set(name, value)
-                except Exception as e:
-                    show_error_message("Warning", str(e))
+                except:
+                    print()
+                    show_error_message("Warning", "Unable to set parameter {} to value {}"
+                                       .format(str(parameter), self.textboxes[name].text()))
+                    continue
                 else:
                     self.setStatusTip("Parameter value changed to: " + str(value))
         self.update_parameters_data()
@@ -271,9 +281,20 @@ class EditInstrumentWidget(QWidget):
             worker.signals.finished.connect(thread_complete)
             worker.signals.progress.connect(progress_func)
 
-            self.parent.thread_pool.start(worker)
+            self.thread_pool.start(worker)
 
         return instantiate_worker
+
+    @pyqtSlot()
+    def open_attach_divider_widget(self):
+        """
+        Open a simple text editor as a new widget (possible custom tool creation)
+
+        :return: NoneType
+        """
+        self.attach_divider_widget = DividerWidget(self.instruments, self.dividers,
+                                                   instrument_name=self.instrument_name, parent=self)
+        self.attach_divider_widget.show()
 
 
 if __name__ == '__main__':

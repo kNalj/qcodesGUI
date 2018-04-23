@@ -26,35 +26,26 @@ class Worker(QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
-        self.is_running = False
-
         # Add the callback to our kwargs
         # kwargs['progress_callback'] = self.signals.progress
 
     @pyqtSlot()
     def run(self):
-        self.is_running = True
         """
         Initialise the runner function with passed args, kwargs.
         """
-        while self.is_running:
-            # Retrieve args/kwargs here; and fire processing using them
-            try:
-                result = self.func(*self.args, **self.kwargs)
-            except:
-                traceback.print_exc()
-                exctype, value = sys.exc_info()[:2]
-                self.signals.error.emit((exctype, value, traceback.format_exc()))
-            else:
-                self.signals.result.emit(result)  # Return the result of the processing
-            finally:
-                self.signals.finished.emit()  # Done
-                self.is_running = False
-            time.sleep(0.5)
-
-    @pyqtSlot()
-    def stop(self):
-        self.is_running = False
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.func(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+        time.sleep(0.5)
 
 
 class WorkerSignals(QObject):
@@ -80,7 +71,6 @@ class WorkerSignals(QObject):
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
-    kill = pyqtSignal(object)
 
 
 class LoopThread(QThread):
@@ -115,7 +105,3 @@ def thread_complete():
     :return: NoneType
     """
     print("Thread executed successfully")
-
-
-def destroy_worker(worker):
-    worker.is_running = False

@@ -13,7 +13,7 @@ from Helpers import *
 
 class EditInstrumentParameterWidget(QWidget):
 
-    def __init__(self, instruments, instrument, parameter, parent=None):
+    def __init__(self, instruments, instrument, parameter, dividers, parent=None):
         """
         Constructor for EditInstrumentWidget window
 
@@ -28,6 +28,7 @@ class EditInstrumentParameterWidget(QWidget):
         self.instruments = instruments
         self.instrument = instrument
         self.parameter = self.instrument.parameters[parameter]
+        self.dividers = dividers
 
         self.textboxes = {}
         self.textboxes_real_values = {}
@@ -51,7 +52,7 @@ class EditInstrumentParameterWidget(QWidget):
         self.setWindowTitle("Edit " + self.parameter.name + " parameter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
-        extras = ["step", "inter_delay"]
+        extras = ["step", "inter_delay", "_min_value", "_max_value"]
         start_y = 25
         for name in extras:
             label = QLabel(name, self)
@@ -61,6 +62,8 @@ class EditInstrumentParameterWidget(QWidget):
                 self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
                 self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay), self)
+            else:
+                self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
             self.textboxes_real_values[name].move(120, start_y)
             self.textboxes_real_values[name].resize(40, 20)
             self.textboxes_real_values[name].setDisabled(True)
@@ -68,6 +71,8 @@ class EditInstrumentParameterWidget(QWidget):
                 self.textboxes[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
                 self.textboxes[name] = QLineEdit(str(self.parameter.inter_delay), self)
+            else:
+                self.textboxes[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
             self.textboxes[name].move(180, start_y)
             set_value_btn = QPushButton("Set", self)
             set_value_btn.move(340, start_y)
@@ -78,6 +83,15 @@ class EditInstrumentParameterWidget(QWidget):
             get_value_btn.resize(40, 20)
             get_value_btn.clicked.connect(self.update_displayed_values)
             start_y += 25
+
+        label = QLabel("Division", self)
+        label.move(30, start_y + 25)
+        label.show()
+        if str(self.parameter) in self.dividers:
+            self.division_value = QLineEdit(str(self.dividers[str(self.parameter)].division_value), self)
+        else:
+            self.division_value = QLineEdit("1", self)
+        self.division_value.move(120, start_y + 25)
 
         self.OK_btn = QPushButton("Close", self)
         self.OK_btn.move(400, 220)
@@ -117,6 +131,14 @@ class EditInstrumentParameterWidget(QWidget):
                     show_error_message("Warning", str(e))
                 else:
                     self.update_displayed_values()
+            else:
+                try:
+                    value = float(self.textboxes[value_name].text())
+                    setattr(self.parameter.vals, value_name, value)
+                except Exception as e:
+                    show_error_message("Warning", str(e))
+                else:
+                    self.update_displayed_values()
 
         return set_value
 
@@ -132,12 +154,16 @@ class EditInstrumentParameterWidget(QWidget):
                 textbox.setText(str(self.parameter.step))
             elif name == "inter_delay":
                 textbox.setText(str(self.parameter.inter_delay))
+            else:
+                textbox.setText(str(getattr(self.parameter.vals, name)))
 
         for name, textbox in self.textboxes_real_values.items():
             if name == "step":
                 textbox.setText(str(self.parameter.step))
             elif name == "inter_delay":
                 textbox.setText(str(self.parameter.inter_delay))
+            else:
+                textbox.setText(str(getattr(self.parameter.vals, name)))
 
     """""""""""""""""""""
     Helper functions

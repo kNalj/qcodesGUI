@@ -5,15 +5,6 @@ from PyQt5.QtCore import pyqtSlot, QThreadPool
 import sys
 import inspect
 
-
-def trap_exc_during_debug(*args):
-    # when app raises uncaught exception, print info
-    print(args)
-
-
-# install exception hook: without this, uncaught exception would cause application to exit
-#sys.excepthook = trap_exc_during_debug
-
 from PyQt5.QtCore import Qt
 import qcodes as qc
 from qcodes.actions import _QcodesBreak
@@ -23,8 +14,19 @@ from ViewTree import ViewTree
 from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
+from InstrumentData import instrument_data
 from EditInstrumentWidget import EditInstrumentWidget
-from ThreadWorker import Worker, progress_func, print_output, thread_complete, destroy_worker
+from ThreadWorker import Worker, progress_func, print_output, thread_complete
+
+
+def trap_exc_during_debug(exctype, value, traceback, *args):
+    # when app raises uncaught exception, print info
+    print(args)
+    print(exctype, value, traceback)
+
+
+# install exception hook: without this, uncaught exception would cause application to exit
+# sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -406,11 +408,7 @@ class MainWindow(QMainWindow):
         print(self.workers)
         print("Emmiting the signal to all workers")
         for worker in self.workers:
-            self.thread_pool.cancel(worker)
-            worker.is_running = False
-            worker.signals.kill.emit(worker)
-            self.thread_pool.cancel(worker)
-            print(self.thread_pool)
+            pass
 
     # This is a function factory (wow, i'm so cool, i made a function factory)
     def make_open_instrument_edit(self, instrument):
@@ -428,7 +426,7 @@ class MainWindow(QMainWindow):
 
             :return: NoneType
             """
-            self.edit_instrument = EditInstrumentWidget(self.instruments, self.dividers, parent=self, instrument_name=instrument)
+            self.edit_instrument = EditInstrumentWidget(self.instruments, self.dividers, self.thread_pool, parent=self, instrument_name=instrument)
             self.edit_instrument.show()
         return open_instrument_edit
 
@@ -438,6 +436,7 @@ class MainWindow(QMainWindow):
         loop_index = self.actions.index(loop)
         self.actions[loop_index], self.actions[-1] = self.actions[-1], self.actions[loop_index]
         self.run_with_plot()
+
 
 def main():
     app = QApplication(sys.argv)
