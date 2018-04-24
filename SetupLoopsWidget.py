@@ -158,6 +158,9 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
         self.add_loop_btn.clicked.connect(self.create_loop)
 
+        self.action_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
+        self.sweep_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
+
         # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
         if self.name != "":
             self.fill_loop_data()
@@ -243,6 +246,11 @@ class LoopsWidget(QWidget):
                     display_member_string = parameter
                     data_member = instrument.parameters[parameter]
                     self.sweep_parameter_cb.addItem(display_member_string, data_member)
+                if str(instrument.parameters[parameter]) in self.dividers:
+                    name = str(instrument.parameters[parameter])
+                    display_member_string = self.dividers[name].name
+                    data_member = instrument.parameters[parameter]
+                    self.sweep_parameter_cb.addItem(display_member_string, data_member)
 
     def update_action_instrument_parameters(self):
         """
@@ -267,6 +275,11 @@ class LoopsWidget(QWidget):
                 for parameter in action.parameters:
                     if parameter != "IDN":
                         display_member_string = parameter
+                        data_member = action.parameters[parameter]
+                        self.action_parameter_cb.addItem(display_member_string, data_member)
+                    if str(action.parameters[parameter]) in self.dividers:
+                        name = str(action.parameters[parameter])
+                        display_member_string = self.dividers[name].name
                         data_member = action.parameters[parameter]
                         self.action_parameter_cb.addItem(display_member_string, data_member)
 
@@ -361,10 +374,26 @@ class LoopsWidget(QWidget):
             show_error_message("Warning", str(e))
         else:
             if step_size != 0:
-                steps = ((upper - lower) / step_size) + 1
+                steps = abs(((upper - lower) / step_size) + 1)
                 self.textbox_num.setText(str(steps))
             else:
                 show_error_message("Warning", "Haha, let's see what other funny things i can find ... ")
+
+    def update_divider_value(self):
+        sweep_parameter = self.sweep_parameter_cb.currentData()
+        sweep_parameter_name = sweep_parameter.full_name
+        sweep_display_name = self.sweep_parameter_cb.currentText()
+        action_parameter = self.action_parameter_cb.currentData()
+        action_parameter_name = action_parameter.full_name
+        action_display_name = self.action_parameter_cb.currentText()
+
+        if sweep_parameter_name in self.dividers and sweep_display_name == self.dividers[sweep_parameter_name].name:
+            sweep_division = self.dividers[sweep_parameter_name].division_value
+            self.sweep_parameter_divider.setText(str(sweep_division))
+
+        if action_parameter_name in self.dividers and action_display_name == self.dividers[action_parameter_name].name:
+            action_division = self.dividers[action_parameter_name].division_value
+            self.action_parameter_divider.setText(str(action_division))
 
 
 if __name__ == '__main__':

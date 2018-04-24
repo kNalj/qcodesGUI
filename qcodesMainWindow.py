@@ -97,14 +97,15 @@ class MainWindow(QMainWindow):
         self.show_loop_details_btn.setIcon(icon)
         self.show_loop_details_btn.clicked.connect(self.open_tree)
 
-        self.loops_table = QTableWidget(0, 3, self)
+        self.loops_table = QTableWidget(0, 4, self)
         self.loops_table.move(45, 280)
         self.loops_table.resize(400, 100)
-        self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run"))
+        self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run", "Delete"))
         header = self.loops_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         self.btn_add_instrument = QPushButton("Add instrument", self)
@@ -287,15 +288,19 @@ class MainWindow(QMainWindow):
                 run_current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.run_specific_loop(loop_name))
                 self.loops_table.setCellWidget(rows, 2, run_current_loop_btn)
 
+                delete_current_loop = QPushButton("Delete")
+                delete_current_loop.resize(35, 20)
+                delete_current_loop.clicked.connect(lambda checked, row=rows, loop_name=name:
+                                                    self.delete_loop(loop_name, row))
+                self.loops_table.setCellWidget(rows, 3, delete_current_loop)
+
                 self.shown_loops.append(name)
 
                 key_combo_string = "Ctrl+F"+str(rows+1)
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
             elif edit == name:
-                print(edit, name)
                 rows = int(name[-1])-1
-                print(rows)
 
                 lower = str(loop.sweep_values[0])
                 upper = str(loop.sweep_values[-1])
@@ -325,7 +330,7 @@ class MainWindow(QMainWindow):
             if with_plot:
                 parameter = get_plot_parameter(loop)
                 parameter_name = str(parameter)
-                plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4)
+                plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title=self.output_file_name.text())
                 plot.add(getattr(data, parameter_name))
                 # loop.with_bg_task(plot.update, plot.save).run(use_threads=True)
                 loop.bg_task = None
@@ -339,7 +344,6 @@ class MainWindow(QMainWindow):
             worker.signals.result.connect(print_output)
             worker.signals.finished.connect(thread_complete)
             worker.signals.progress.connect(progress_func)
-            worker.signals.kill.connect(destroy_worker)
 
             self.thread_pool.start(worker)
 
@@ -455,6 +459,13 @@ class MainWindow(QMainWindow):
         self.actions[loop_index], self.actions[-1] = self.actions[-1], self.actions[loop_index]
         self.run_with_plot()
 
+    def delete_loop(self, loop, row):
+
+        self.loops_table.removeRow(row)
+        if loop in self.loops:
+            del self.loops[loop]
+            del self.actions[row-1]
+        print(self.loops)
 
 def main():
     app = QApplication(sys.argv)
