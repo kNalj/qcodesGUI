@@ -15,6 +15,7 @@ from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
 from SetupLoopsWidget import LoopsWidget
 from InstrumentData import instrument_data
+from AttachDividersWidget import DividerWidget
 from EditInstrumentWidget import EditInstrumentWidget
 from ThreadWorker import Worker, progress_func, print_output, thread_complete
 
@@ -120,21 +121,28 @@ class MainWindow(QMainWindow):
         self.btn_setup_loops.setIcon(icon)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
+        self.btn_attach_dividers = QPushButton("Attach dividers", self)
+        self.btn_attach_dividers.move(480, 140)
+        self.btn_attach_dividers.resize(140, 40)
+        icon = QtGui.QIcon("img/rheostat_icon.png")
+        self.btn_attach_dividers.setIcon(icon)
+        self.btn_attach_dividers.clicked.connect(self.open_attach_divider)
+
         label = QLabel("Output file name", self)
-        label.move(480, 185)
+        label.move(480, 225)
         self.output_file_name = QLineEdit(self)
-        self.output_file_name.move(480, 210)
+        self.output_file_name.move(480, 250)
         self.output_file_name.resize(140, 30)
 
         self.btn_select_save_location = QPushButton("Select save location", self)
-        self.btn_select_save_location.move(480, 140)
+        self.btn_select_save_location.move(480, 185)
         self.btn_select_save_location.resize(140, 40)
         icon = QtGui.QIcon("img/save_icon.png")
         self.btn_select_save_location.setIcon(icon)
         self.btn_select_save_location.clicked.connect(self.select_save_location)
 
         self.stop_btn = QPushButton("STOP", self)
-        self.stop_btn.move(480, 280)
+        self.stop_btn.move(480, 290)
         self.stop_btn.resize(140, 40)
         icon = QtGui.QIcon("img/cancel_1-512.png")
         self.stop_btn.setIcon(icon)
@@ -148,14 +156,14 @@ class MainWindow(QMainWindow):
         self.open_text_edit_btn.setIcon(icon)
 
         self.plot_btn = QPushButton("Plot", self)
-        self.plot_btn.move(480, 330)
+        self.plot_btn.move(480, 340)
         self.plot_btn.resize(60, 40)
         self.plot_btn.clicked.connect(self.run_with_plot)
         icon = QtGui.QIcon("img/plot_icon.png")
         self.plot_btn.setIcon(icon)
         
         self.btn_run = QPushButton("Run", self)
-        self.btn_run.move(560, 330)
+        self.btn_run.move(560, 340)
         self.btn_run.resize(60, 40)
         self.btn_run.clicked.connect(self.run_qcodes)
         icon = QtGui.QIcon("img/play_icon.png")
@@ -403,6 +411,16 @@ class MainWindow(QMainWindow):
         """
         self.text_editor = Notepad()
         self.text_editor.show()
+
+    @pyqtSlot()
+    def open_attach_divider(self):
+        """
+        Open a simple text editor as a new widget (possible custom tool creation)
+
+        :return: NoneType3
+        """
+        self.attach_divider_widget = DividerWidget(self.instruments, self.dividers, parent=self)
+        self.attach_divider_widget.show()
 
     def stop_all_workers(self):
         print(self.workers)

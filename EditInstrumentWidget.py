@@ -117,11 +117,6 @@ class EditInstrumentWidget(QWidget):
             get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
 
-        add_divider_btn = QPushButton("Edit dividers", self)
-        add_divider_btn.move(70, start_y + 20)
-        add_divider_btn.resize(80, 50)
-        add_divider_btn.clicked.connect(self.open_attach_divider_widget)
-
         set_all_to_zero_btn = QPushButton("All zeroes", self)
         set_all_to_zero_btn.move(380, start_y + 20)
         set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
@@ -205,7 +200,10 @@ class EditInstrumentWidget(QWidget):
                 self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
             else:
                 self.textboxes[name].setText(str(self.instrument.get(name)))
-            self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
+            if is_numeric(self.instrument.get(name)):
+                self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
+            else:
+                self.textboxes_real_values[name].setText(str(self.instrument.get(name)))
         else:
             for name, textbox in self.textboxes.items():
                 full_name = str(self.instrument.parameters[name])
@@ -284,17 +282,6 @@ class EditInstrumentWidget(QWidget):
             self.thread_pool.start(worker)
 
         return instantiate_worker
-
-    @pyqtSlot()
-    def open_attach_divider_widget(self):
-        """
-        Open a simple text editor as a new widget (possible custom tool creation)
-
-        :return: NoneType
-        """
-        self.attach_divider_widget = DividerWidget(self.instruments, self.dividers,
-                                                   instrument_name=self.instrument_name, parent=self)
-        self.attach_divider_widget.show()
 
 
 if __name__ == '__main__':
