@@ -20,6 +20,7 @@ class EditInstrumentParameterWidget(QWidget):
         :param instruments: dict of all instruments that are currently in the station (shared with the mainWindow)
         :param instrument: Instance of an instrument to be edited
         :param parameter: name of the parameter that is being edited with current instance of this widget
+        :param dividers: dict of all dividers created in this session of using this GUI
         :param parent: specify object that created this widget
         """
         super(EditInstrumentParameterWidget, self).__init__()
@@ -42,7 +43,10 @@ class EditInstrumentParameterWidget(QWidget):
 
     def init_ui(self):
         """
-        Hello
+        “In a closed society where everybody's guilty, the only crime is getting caught.
+        In a world of thieves, the only final sin is stupidity.”
+
+        Hunter S. Thompson
 
         :return: NoneType
         """
@@ -113,6 +117,11 @@ class EditInstrumentParameterWidget(QWidget):
         :return: function set_value that updates the requested value (read from QLineEdit)
         """
         def set_value():
+            """
+            IT SETS A VALUE TO SOMETHING, WHAT DID U THINK IT WOULD DO !?
+
+            :return:
+            """
             parameter = self.parameter
             if value_name == "step":
                 try:

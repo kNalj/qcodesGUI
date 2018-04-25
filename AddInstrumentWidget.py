@@ -29,10 +29,16 @@ class Widget(QWidget):
         :param default: instrument data (type, name, address) is filled based on what is passed as a default instrument
         """
         super(Widget, self).__init__()
+        # list of instruments shared with the mainWindow (contains all instruments created so far)
         self.instruments = instruments
+
+        # dictionary containing pointers to all available instrument classes with instrument type as keys
         self.premade_instruments = {}
+        # call to a function that fills the above dict
         self.populate_premade_instruments()
+        # pointer to a parent widget
         self.parent = parent
+        # specifies an instrument to be show in the combobox by default
         self.default = default
         self.init_ui()
         self.show()
@@ -162,7 +168,11 @@ class Widget(QWidget):
 
     def populate_premade_instruments(self):
         """
-        Walks through folder structure and fetches instruments and their classes for further use
+        Walks through folder structure and fetches instruments and their classes for further use. To be more specific
+        to be able to populate the dropdown for selecting an instrument to create and also holds pointers to classes
+        of all the instruments so that instantiating an instrument from class name is posible by looking into the
+        premade_instruments dictionary and from the key that is a string representing the name of the class it fetches
+        the class stored under that key.
 
         NOTE: Contains a list of instruments (not_working[]) that specifies instruments that throw errors (possibly they
         require some extra drivers made by instrument manufacturer, instruments starting with "Infiniium" ending with
@@ -205,8 +215,10 @@ class Widget(QWidget):
 
         Implements most of the error proofing for creating of the instrument object
 
-        Name of the instrument is taken from current text in the QLineEdit.
-        Type of the instrument exctracted after selecting instrument from combobox containing all instruments.
+        Name of the instrument:
+            is taken from current text in the QLineEdit.
+        Type of the instrument:
+            exctracted after selecting instrument from combobox containing all instruments.
         Instrument objects are created with help of the dict in instrument_imports.py file.
         Each key->value pair in that file is a combination of instrument type and the name of the class representing
         that instrument (as set by qcodes development team)

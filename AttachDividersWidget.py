@@ -12,11 +12,14 @@ from qcodes.instrument_drivers.devices import VoltageDivider
 class DividerWidget(QWidget):
     def __init__(self, instruments, dividers, parameter=None, instrument_name=None, parent=None):
         """
-        Constructor for AddInstrumentWidget window
+        Constructor for the AttachDividerWidget class
 
-        :param instruments: Dictionary shared with parent (MainWindow) to be able to add instruments to instruments
-        dictionary in the MainWindow
-        :param parent: specify object that created this widget
+        :param instruments: dictionary shared with the mainWindow, contains all instruments created so far
+        :param dividers: dictionary shared with the mainWindow, contains all dividers attached so far
+        :param parameter:
+        :param instrument_name: if instrument_name is passed to the constructor, only parameters of that particular
+                instrument will be selectable from the combobox
+        :param parent: pointer to the parent widget
         """
         super(DividerWidget, self).__init__()
         self.instruments = instruments
@@ -37,7 +40,9 @@ class DividerWidget(QWidget):
 
     def init_ui(self):
         """
-        Initialisation of the user interface (as the function name suggests)
+        Initialisation of the user interface (as the function name suggests). This is where i like to write useless
+        comments in case someone ever decides to read this. One might think that this contains some usefull information
+        when in reality its just me typing random stuff to make it look pretty.
 
         :return: NoneType
         """
@@ -116,6 +121,20 @@ class DividerWidget(QWidget):
             self.dividers_table.setCellWidget(rows, 2, current_parameter_btn)
 
     def attach_divider(self):
+        """
+        Instantiates a VoltageDivider with specified data (only if division_value_textbox is not equal to 1, in case of
+        it being 1 there is no need for a voltage divider, therefor its not added.
+        Additionaly it adds the newly created divider to a dictionary (dividers) shared with mainWindow
+
+        parameter:
+            parameter that is gonna get a divider attched to it
+            obtained from the parameter_cb combobox
+        division value:
+            if you dont know what this is, consider other professions
+            obtained from division_value_textbox
+
+        :return: NoneType
+        """
 
         parameter = self.parameter_cb.currentData()
 
@@ -128,10 +147,16 @@ class DividerWidget(QWidget):
                 vd = VoltageDivider(parameter, division)
                 self.dividers[str(parameter)] = vd
                 self.close()
-        else:
-            self.remove_divider()
 
     def remove_divider(self, name=None, row=None):
+        """
+        Removes a divider from the dictionary of dividers (shared with the mainWindow), also removes a row from the
+        divider_table widget in this window.
+
+        :param name: full name of a parameter (example: IVVI_dac1)
+        :param row: row number to be removed from the table
+        :return: NoneType
+        """
         if name is None:
             parameter = self.parameter_cb.currentData()
             if str(parameter) in self.dividers:
@@ -142,6 +167,12 @@ class DividerWidget(QWidget):
         self.dividers_table.removeRow(row)
 
     def update_parameters(self):
+        """
+        Updates parameter combobox by removing all parameters from it, and then re adding those belongig to the
+        instrument selected in the instrument combobox
+
+        :return: NoneType
+        """
         if len(self.instruments):
             self.parameter_cb.clear()
             instrument = self.instrument_cb.currentData()

@@ -69,6 +69,12 @@ def get_plot_parameter(loop):
 
 
 def is_numeric(value):
+    """
+    Function that quickly checks if some variable can be casted to float
+
+    :param value: check if this can be casted to float
+    :return:
+    """
     try:
         float(value)
         return True

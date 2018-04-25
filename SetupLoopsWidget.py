@@ -405,6 +405,15 @@ class LoopsWidget(QWidget):
                 show_error_message("Warning", "Haha, let's see what other funny things i can find ... ")
 
     def update_divider_value(self):
+        """
+        After selecting a parameter, if that parameter is a voltage divider then show current division applied to that
+        divider.
+
+        If SetupLoopsWidget is opened to edit existing loop, show division that were set when the loop was created,
+        otherwise, show 1 as division value.
+
+        :return: NoneType
+        """
         sweep_parameter = self.sweep_parameter_cb.currentData()
         sweep_parameter_name = sweep_parameter.full_name
         sweep_display_name = self.sweep_parameter_cb.currentText()

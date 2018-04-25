@@ -123,7 +123,8 @@ class EditInstrumentWidget(QWidget):
 
         set_all_btn = QPushButton("SET ALL", self)
         set_all_btn.move(290, start_y + 20)
-        set_all_btn.clicked.connect(self.call_worker(self.set_all))
+        # set_all_btn.clicked.connect(self.call_worker(self.set_all))
+        set_all_btn.clicked.connect(self.set_all)
 
         set_all_btn = QPushButton("GET ALL", self)
         set_all_btn.move(290, start_y + 50)
@@ -250,14 +251,20 @@ class EditInstrumentWidget(QWidget):
         :return: NoneType
         """
         for name, parameter in self.instrument.parameters.items():
+            full_name = str(parameter)
             if is_numeric(self.instrument.get(name)):
                 try:
                     value = float(self.textboxes[name].text())
-                    self.instrument.set(name, value)
-                except:
-                    print()
-                    show_error_message("Warning", "Unable to set parameter {} to value {}"
-                                       .format(str(parameter), self.textboxes[name].text()))
+                    # self.instrument.set(name, value)
+                    if full_name in self.dividers:
+                        self.dividers[full_name].set_raw(value)
+                    else:
+                        self.instrument.set(name, value)
+                    print(name)
+                except Exception as e:
+                    show_error_message("Warning", str(e))
+                    #show_error_message("Warning", "Unable to set parameter {} to value {}"
+                    #                   .format(str(parameter), self.textboxes[name].text()))
                     continue
                 else:
                     self.setStatusTip("Parameter value changed to: " + str(value))

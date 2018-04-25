@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
         # Thread pool for adding separate threads
         # (execute qcodes in another thread [to not freeze GUI thread while executing])
         self.thread_pool = QThreadPool()
+        # Handles to all active workers
         self.workers = []
 
         self.statusBar().showMessage("Ready")
@@ -229,8 +230,8 @@ class MainWindow(QMainWindow):
     """""""""""""""""""""
     def update_station_preview(self):
         """
-        When new instrument is added, updates the main window to display data about most recent instrument
-         added to the instruments dictionary.
+        When new instrument is added, add a line to instrument_table widget containing some data (name and type) about
+        the instrument, as well as button to edit the instrument.
 
         :return: NoneType
         """
@@ -261,7 +262,16 @@ class MainWindow(QMainWindow):
     def update_loops_preview(self, edit=False):
         """
         This function is called from child class (SetupLoopsWidget) each time a new loop is created.
-        Displays all loops on the MainWindow
+        Adds a loop to a loops_table widget which contains all loops as well as buttons to "Edit", "Run" and "Delete"
+        a loop.
+
+        Edit:
+            opens "SetupLoopsWidget" with data from specified loop
+        Run:
+            runs the loop with current data (with plot)
+        Delete:
+            removes a loop from the table and from the self.loops dictionary, and also deletes action from self.actions
+            that coresponds to this loop.
 
         :return: NoneType
         """
@@ -314,8 +324,12 @@ class MainWindow(QMainWindow):
     def run_qcodes(self, with_plot=False):
         """
         Runs qcodes with specified instruments and parameters. Checks for errors in data prior to runing qcodes
+        Adds all instruments to qc.Station and runs the last created loop (i think this is not good, but hey theres a
+        button for each loop to run that specific loop)
 
-        :param with_plot: if set to true, runs (and saves) live plot while measurment is running
+        Loop is ran in a separate thread so that it does not block GUI thread (and the program)
+
+        :param with_plot: if set to true, runs (and saves) live plot while measurement is running
         :return: NoneType
         """
         station = qc.Station()
@@ -352,10 +366,21 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Measurement done")
 
     def run_with_plot(self):
+        """
+        Call self.run_qcodes() with parameter with_plot set to True
+
+        :return: NoneType
+        """
         self.run_qcodes(with_plot=True)
 
     @pyqtSlot()
     def select_save_location(self):
+        """
+        Opens a QFileDialog for selecting a location on local machine, path to the selected location is set as a save
+        location for results of the measurment
+
+        :return: NoneType
+        """
         save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         loc_provider = qc.data.location.FormatLocation(fmt=save_location + '/{date}/#{counter}_{name}_{time}')
         qc.data.data_set.DataSet.location_provider = loc_provider
@@ -419,14 +444,24 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def open_attach_divider(self):
         """
-        Open a simple text editor as a new widget (possible custom tool creation)
+        Opens a new widget for setting up  dividers. Can attach a divider to any parameter of any instrument
+        People are gonna add dividers to parameters that cannot have divider (like IDN) im sure of this.
+        God help them.
 
-        :return: NoneType3
+        :return: NoneType
         """
         self.attach_divider_widget = DividerWidget(self.instruments, self.dividers, parent=self)
         self.attach_divider_widget.show()
 
     def stop_all_workers(self):
+        """
+        Intention is to stop all workers (separate Threads) that are currently running, since the only workers that im
+        keeping a handle to are the ones that run loops those are the ones that should be stopped. Since qcodes doesnt
+        implement loop.stop and i dont really want to use thread.terminate i think im gonna commit suicide because this
+        SHOULD BE REALLY SIMPLE !!
+
+        :return:
+        """
         print(self.workers)
         print("Emmiting the signal to all workers")
         for worker in self.workers:
@@ -453,6 +488,13 @@ class MainWindow(QMainWindow):
         return open_instrument_edit
 
     def run_specific_loop(self, loop_name):
+        """
+        Place the action that coresponds to this loop to the last place in the actions queue so that its the one that
+        gets ran by the run button, and then run it ... d'oh
+
+        :param loop_name: name of the loop that is supposed to be ran
+        :return: NoneType
+        """
 
         loop = self.loops[loop_name]
         loop_index = self.actions.index(loop)
@@ -460,12 +502,23 @@ class MainWindow(QMainWindow):
         self.run_with_plot()
 
     def delete_loop(self, loop, row):
+        """
+        Remove a loop from loops_table widget
+
+        :param loop: loop name (example: loop1), loop name is automatically assigned to the loop to be able to keep
+                track of loops in the main window dictionary. Loops names are created by taking a number of loops
+                in loops dictonary and adding 1 to it and appending that to the word loop (loop1, loop2, loop3, ...)
+
+        :param row: row of the table where that specific loop is displayed, used for deleting that specific row from the
+                loops_table widget
+        :return: NoneType
+        """
 
         self.loops_table.removeRow(row)
         if loop in self.loops:
             del self.loops[loop]
             del self.actions[row-1]
-        print(self.loops)
+
 
 def main():
     app = QApplication(sys.argv)
