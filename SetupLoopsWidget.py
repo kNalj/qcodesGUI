@@ -4,8 +4,10 @@ from PyQt5.QtCore import Qt
 import sys
 import importlib
 
+
 from Helpers import *
 import qcodes as qc
+from qcodes.loops import ActiveLoop
 from qcodes.instrument_drivers.devices import VoltageDivider
 """"
 That inner delay thing is probably hidden somewhere in file: qcodes/instrument/parameter.py between lines 474 and 596
@@ -35,6 +37,8 @@ class LoopsWidget(QWidget):
         self.name = loop_name
         if self.name != "":
             self.loop = self.loops[self.name]
+            self.loop_values = []
+            # [lower, upper, steps, delay, sweep, sweep_division, action, action_division]
         self.init_ui()
         self.show()
 
@@ -263,11 +267,11 @@ class LoopsWidget(QWidget):
             self.action_parameter_cb.clear()
             action = self.action_parameter_instrument_cb.currentData()
 
-            module_name = "qcodes.loops"
+            """module_name = "qcodes.loops"
             module = importlib.import_module(module_name)
-            loop_class = getattr(module, "ActiveLoop")
+            loop_class = getattr(module, "ActiveLoop")"""
 
-            if isinstance(action, loop_class):
+            if isinstance(action, ActiveLoop):
                 display_member_string = self.action_parameter_instrument_cb.currentText()
                 data_member = self.action_parameter_instrument_cb.currentData()
                 self.action_parameter_cb.addItem(display_member_string, data_member)
@@ -290,19 +294,29 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
-        self.textbox_lower_limit.setText(str(self.loop.sweep_values[0]))
-        self.textbox_upper_limit.setText(str(self.loop.sweep_values[-1]))
-        self.textbox_num.setText(str(len(self.loop.sweep_values)))
-        self.textbox_step.setText(str(self.loop.delay))
+        lower = self.loop.sweep_values[0]
+        upper = self.loop.sweep_values[-1]
+        number_of_steps = len(self.loop.sweep_values)
+        loop_delay = self.loop.delay
+
+        self.loop_values.append(lower)
+        self.loop_values.append(upper)
+        self.loop_values.append(number_of_steps)
+        self.loop_values.append(loop_delay)
+
+        self.textbox_lower_limit.setText(str(lower))
+        self.textbox_upper_limit.setText(str(upper))
+        self.textbox_num.setText(str(number_of_steps))
+        self.textbox_step.setText(str(loop_delay))
 
         # if action is a loop, display it as a loop
         # else display selected instrument and parameter
         action = self.loop.actions[0]
-        module_name = "qcodes.loops"
+        """module_name = "qcodes.loops"
         module = importlib.import_module(module_name)
-        loop_class = getattr(module, "ActiveLoop")
+        loop_class = getattr(module, "ActiveLoop")"""
 
-        if isinstance(action, loop_class):
+        if isinstance(action, ActiveLoop):
             action_parameter_instrument_name = self.loop.actions[0]
             index = self.action_parameter_instrument_cb.findData(action_parameter_instrument_name)
             self.action_parameter_instrument_cb.setCurrentIndex(index)
@@ -310,10 +324,10 @@ class LoopsWidget(QWidget):
             action_parameter_instrument_name = self.loop.actions[0].v1._instrument.name
             index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
             self.action_parameter_instrument_cb.setCurrentIndex(index)
-            action_parameter_name = self.loop.actions[0].v1.name
+            action_parameter_name = action.v1.name
             index = self.action_parameter_cb.findText(action_parameter_name)
             self.action_parameter_cb.setCurrentIndex(index)
-            self.action_parameter_divider.setText(str(self.loop.actions[0].division_value))
+            self.action_parameter_divider.setText(str(action.division_value))
         else:
             action_parameter_instrument_name = self.loop.actions[0]._instrument.name
             index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
@@ -328,11 +342,10 @@ class LoopsWidget(QWidget):
             sweep_parameter_instrument_name = sweep._instrument.name
             index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
             self.sweep_parameter_instrument_cb.setCurrentIndex(index)
-            sweep_parameter_name = self.loop.sweep_values.parameter.v1.name
-            print(self.loop.sweep_values.parameter.name)
+            sweep_parameter_name = sweep.v1.name
             index = self.sweep_parameter_cb.findText(sweep_parameter_name)
             self.sweep_parameter_cb.setCurrentIndex(index)
-            self.sweep_parameter_divider.setText(str(self.loop.sweep_values.parameter.division_value))
+            self.sweep_parameter_divider.setText(str(sweep.division_value))
         else:
             sweep_parameter_instrument_name = self.loop.sweep_values.parameter._instrument.name
             index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
@@ -340,6 +353,18 @@ class LoopsWidget(QWidget):
             sweep_parameter_name = self.loop.sweep_values.parameter.name
             index = self.sweep_parameter_cb.findText(sweep_parameter_name)
             self.sweep_parameter_cb.setCurrentIndex(index)
+
+        self.loop_values.append(sweep)
+        if isinstance(sweep, VoltageDivider):
+            self.loop_values[-1] = sweep.v1.full_name
+            self.loop_values.append(sweep.division_value)
+        else:
+            self.loop_values.append(1)
+        self.loop_values.append(action)
+        if isinstance(action, VoltageDivider):
+            self.loop_values.append(action.division_value)
+        else:
+            self.loop_values.append(1)
 
     def update_step_size(self):
         """
@@ -383,17 +408,16 @@ class LoopsWidget(QWidget):
         sweep_parameter = self.sweep_parameter_cb.currentData()
         sweep_parameter_name = sweep_parameter.full_name
         sweep_display_name = self.sweep_parameter_cb.currentText()
-        action_parameter = self.action_parameter_cb.currentData()
-        action_parameter_name = action_parameter.full_name
-        action_display_name = self.action_parameter_cb.currentText()
 
-        if sweep_parameter_name in self.dividers and sweep_display_name == self.dividers[sweep_parameter_name].name:
+        if (sweep_parameter_name in self.dividers) and (sweep_display_name == self.dividers[sweep_parameter_name].name):
             sweep_division = self.dividers[sweep_parameter_name].division_value
             self.sweep_parameter_divider.setText(str(sweep_division))
-
-        if action_parameter_name in self.dividers and action_display_name == self.dividers[action_parameter_name].name:
-            action_division = self.dividers[action_parameter_name].division_value
-            self.action_parameter_divider.setText(str(action_division))
+        elif (self.name != "") and (str(self.loop_values[4]) == sweep_parameter_name):
+            sweep_division = self.loop_values[5]
+            self.sweep_parameter_divider.setText(str(sweep_division))
+        else:
+            sweep_division = 1
+            self.sweep_parameter_divider.setText(str(sweep_division))
 
 
 if __name__ == '__main__':
