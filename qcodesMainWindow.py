@@ -49,6 +49,8 @@ class MainWindow(QMainWindow):
         self.shown_loops = []
         # actions that can be ran
         self.actions = []
+        self.active_isntruments = []
+        self.instrument_workers = []
 
         # contains references to buttons for editing
         self.edit_button_dict = {}
@@ -348,15 +350,15 @@ class MainWindow(QMainWindow):
                 plot.add(getattr(data, parameter_name))
                 # loop.with_bg_task(plot.update, plot.save).run(use_threads=True)
                 loop.bg_task = None
-                worker = Worker(loop.with_bg_task(plot.update, plot.save).run)
+                worker = Worker(loop.with_bg_task(plot.update, plot.save).run, False)
             else:
                 # loop.run(use_threads=True) -> this has something to do with multiple gets at the same time
                 #                               i guess it would get them all at the same time instead of one by one
-                worker = Worker(loop.run)
+                worker = Worker(loop.run, False)
             self.workers.append(worker)
 
             worker.signals.result.connect(print_output)
-            worker.signals.finished.connect(thread_complete)
+            worker.signals.finished.connect(self.stop_all_workers)
             worker.signals.progress.connect(progress_func)
 
             self.thread_pool.start(worker)
@@ -371,6 +373,10 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
+        for widget in self.active_isntruments:
+            worker = Worker(widget.update_parameters_data, True)
+            self.instrument_workers.append(worker)
+            self.thread_pool.start(worker)
         self.run_qcodes(with_plot=True)
 
     @pyqtSlot()
@@ -397,7 +403,8 @@ class MainWindow(QMainWindow):
         for name, instrument in self.instruments.items():
             print("Closing", instrument)
             instrument.close()
-
+        app = QtGui.QGuiApplication.instance()
+        app.closeAllWindows()
         self.close()
 
     @pyqtSlot()
@@ -464,8 +471,8 @@ class MainWindow(QMainWindow):
         """
         print(self.workers)
         print("Emmiting the signal to all workers")
-        for worker in self.workers:
-            pass
+        for worker in self.instrument_workers:
+            worker.stop_requested = True
 
     # This is a function factory (wow, i'm so cool, i made a function factory)
     def make_open_instrument_edit(self, instrument):
@@ -483,7 +490,9 @@ class MainWindow(QMainWindow):
 
             :return: NoneType
             """
-            self.edit_instrument = EditInstrumentWidget(self.instruments, self.dividers, self.thread_pool, parent=self, instrument_name=instrument)
+            self.edit_instrument = EditInstrumentWidget(self.instruments, self.dividers, self.active_isntruments,
+                                                        self.thread_pool, parent=self, instrument_name=instrument)
+            self.active_isntruments.append(self.edit_instrument)
             self.edit_instrument.show()
         return open_instrument_edit
 

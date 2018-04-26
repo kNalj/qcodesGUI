@@ -380,8 +380,12 @@ class LoopsWidget(QWidget):
             show_error_message("Warning", str(e))
         else:
             if steps != 0:
-                step_size = (upper - lower) / (steps - 1)
-                self.textbox_step_size.setText(str(step_size))
+                if steps > 1:
+                    step_size = (upper - lower) / (steps - 1)
+                    self.textbox_step_size.setText(str(step_size))
+                else:
+                    step_size = (upper - lower)
+                    self.textbox_step_size.setText(str(step_size))
             else:
                 show_error_message("HELLO !", "U cannot have zero steps, come on man, u went to school for 20 years")
 

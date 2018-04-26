@@ -17,7 +17,7 @@ from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 class EditInstrumentWidget(QWidget):
 
-    def __init__(self, instruments, dividers, thread_pool, parent=None, instrument_name=""):
+    def __init__(self, instruments, dividers, active, thread_pool, parent=None, instrument_name=""):
         """
         Constructor for EditInstrumentWidget window
 
@@ -29,6 +29,7 @@ class EditInstrumentWidget(QWidget):
 
         self.instruments = instruments
         self.dividers = dividers
+        self.active = active
         self.thread_pool = thread_pool
         self.instrument_name = instrument_name
         self.instrument = self.instruments[instrument_name]
@@ -281,7 +282,7 @@ class EditInstrumentWidget(QWidget):
         :return:
         """
         def instantiate_worker():
-            worker = Worker(func)
+            worker = Worker(func, False)
             worker.signals.result.connect(print_output)
             worker.signals.finished.connect(thread_complete)
             worker.signals.progress.connect(progress_func)
@@ -289,6 +290,9 @@ class EditInstrumentWidget(QWidget):
             self.thread_pool.start(worker)
 
         return instantiate_worker
+
+    def closeEvent(self, a0: QtGui.QCloseEvent):
+        self.active.remove(self)
 
 
 if __name__ == '__main__':

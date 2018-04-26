@@ -10,7 +10,7 @@ class Worker(QRunnable):
 
     """
 
-    def __init__(self, func, *args, **kwargs):
+    def __init__(self, func, repeat, *args, **kwargs):
         """
         This is a constructor for the worker class, it runs any function passed to it as a separate thread
 
@@ -26,6 +26,12 @@ class Worker(QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
+        self.stop_requested = False
+        if repeat == True:
+            self.repeat = True
+        else:
+            self.repeat = False
+
         # Add the callback to our kwargs
         # kwargs['progress_callback'] = self.signals.progress
 
@@ -35,18 +41,32 @@ class Worker(QRunnable):
         Initialise the runner function with passed args, kwargs.
         """
         # Retrieve args/kwargs here; and fire processing using them
-        try:
-            result = self.func(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        if self.repeat:
+            while not self.stop_requested:
+                try:
+                    result = self.func(*self.args, **self.kwargs)
+                except:
+                    traceback.print_exc()
+                    exctype, value = sys.exc_info()[:2]
+                    self.signals.error.emit((exctype, value, traceback.format_exc()))
+                else:
+                    self.signals.result.emit(result)  # Return the result of the processing
+                finally:
+                    self.signals.finished.emit()  # Done
+                time.sleep(0.5)
+            else:
+                print("Stop has been requested !")
         else:
-            self.signals.result.emit(result)  # Return the result of the processing
-        finally:
-            self.signals.finished.emit()  # Done
-        time.sleep(0.5)
-
+            try:
+                result = self.func(*self.args, **self.kwargs)
+            except:
+                traceback.print_exc()
+                exctype, value = sys.exc_info()[:2]
+                self.signals.error.emit((exctype, value, traceback.format_exc()))
+            else:
+                self.signals.result.emit(result)  # Return the result of the processing
+            finally:
+                self.signals.finished.emit()  # Done
 
 class WorkerSignals(QObject):
     """
