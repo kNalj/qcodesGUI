@@ -374,9 +374,7 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         for widget in self.active_isntruments:
-            worker = Worker(widget.update_parameters_data, True)
-            self.instrument_workers.append(worker)
-            self.thread_pool.start(worker)
+            widget.toggle_live()
         self.run_qcodes(with_plot=True)
 
     @pyqtSlot()
@@ -473,6 +471,9 @@ class MainWindow(QMainWindow):
         print("Emmiting the signal to all workers")
         for worker in self.instrument_workers:
             worker.stop_requested = True
+        for widget in self.active_isntruments:
+            if widget.live:
+                widget.toggle_live()
 
     # This is a function factory (wow, i'm so cool, i made a function factory)
     def make_open_instrument_edit(self, instrument):

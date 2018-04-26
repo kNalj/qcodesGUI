@@ -35,6 +35,10 @@ class EditInstrumentWidget(QWidget):
         self.instrument = self.instruments[instrument_name]
         self.division = 1
 
+        # keep track of workers messing with this window
+        self.live = False
+        self.worker = None
+
         self.textboxes = {}
         self.textboxes_real_values = {}
         self.textboxes_divided_values = {}
@@ -54,7 +58,7 @@ class EditInstrumentWidget(QWidget):
         :return: NoneType
         """
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
-        window_height = len(self.instrument.parameters)*30 + 100
+        window_height = len(self.instrument.parameters)*30 + 200
         self.setGeometry((width - 500), int(0.05*height), 480, window_height)
         self.setMinimumSize(320, 260)
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
@@ -65,6 +69,11 @@ class EditInstrumentWidget(QWidget):
         self.instrument_name_txtbox = QLineEdit(self.instrument_name, self)
         self.instrument_name_txtbox.move(80, 30)
         self.instrument_name_txtbox.setDisabled(True)
+
+        self.go_live_btn = QPushButton("Go live", self)
+        self.go_live_btn.move(360, 30)
+        self.go_live_btn.resize(90, 40)
+        self.go_live_btn.clicked.connect(self.toggle_live)
 
         """label = QLabel("Division:", self)
         label.move(310, 30)
@@ -293,6 +302,22 @@ class EditInstrumentWidget(QWidget):
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
         self.active.remove(self)
+
+    def toggle_live(self):
+        if self.live:
+            self.worker.stop_requested = True
+            self.go_live_btn.setText("Go live")
+            self.worker = None
+            for tb in self.textboxes:
+                self.textboxes[tb].setDisabled(False)
+            self.live = False
+        else:
+            self.go_live_btn.setText("STOP")
+            for tb in self.textboxes:
+                self.textboxes[tb].setDisabled(True)
+            self.worker = Worker(self.update_parameters_data, True)
+            self.thread_pool.start(self.worker)
+            self.live = True
 
 
 if __name__ == '__main__':

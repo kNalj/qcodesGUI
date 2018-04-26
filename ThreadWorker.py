@@ -53,7 +53,7 @@ class Worker(QRunnable):
                     self.signals.result.emit(result)  # Return the result of the processing
                 finally:
                     self.signals.finished.emit()  # Done
-                time.sleep(0.5)
+                time.sleep(3)
             else:
                 print("Stop has been requested !")
         else:
@@ -67,6 +67,7 @@ class Worker(QRunnable):
                 self.signals.result.emit(result)  # Return the result of the processing
             finally:
                 self.signals.finished.emit()  # Done
+
 
 class WorkerSignals(QObject):
     """
