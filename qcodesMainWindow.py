@@ -373,8 +373,10 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
+        del self.workers[:]
         for widget in self.active_isntruments:
-            widget.toggle_live()
+            if self.actions[-1].sweep_values.name in widget.textboxes.keys():
+                widget.toggle_live()
         self.run_qcodes(with_plot=True)
 
     @pyqtSlot()

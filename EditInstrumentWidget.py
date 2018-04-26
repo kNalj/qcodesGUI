@@ -17,7 +17,7 @@ from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 class EditInstrumentWidget(QWidget):
 
-    def __init__(self, instruments, dividers, active, thread_pool, parent=None, instrument_name=""):
+    def __init__(self, instruments, dividers, active, thread_pool, tracked_parameter=None, parent=None, instrument_name=""):
         """
         Constructor for EditInstrumentWidget window
 
@@ -38,6 +38,7 @@ class EditInstrumentWidget(QWidget):
         # keep track of workers messing with this window
         self.live = False
         self.worker = None
+        self.tracked_parameter = tracked_parameter
 
         self.textboxes = {}
         self.textboxes_real_values = {}
@@ -235,6 +236,10 @@ class EditInstrumentWidget(QWidget):
                         textbox.setText(str(self.instrument.get(name)))
             self.update_divided_values()
 
+    def single_update(self):
+        if self.tracked_parameter is not None:
+            self.update_parameters_data(self.tracked_parameter)
+
     def update_divided_values(self):
         for name, textbox in self.textboxes_divided_values.items():
             textbox.setText(str(self.dividers[str(self.instrument.parameters[name])].get_raw()))
@@ -313,9 +318,11 @@ class EditInstrumentWidget(QWidget):
             self.live = False
         else:
             self.go_live_btn.setText("STOP")
+            if len(self.parent.actions):
+                self.tracked_parameter = self.parent.actions[-1].sweep_values.name
             for tb in self.textboxes:
                 self.textboxes[tb].setDisabled(True)
-            self.worker = Worker(self.update_parameters_data, True)
+            self.worker = Worker(self.single_update, True)
             self.thread_pool.start(self.worker)
             self.live = True
 
