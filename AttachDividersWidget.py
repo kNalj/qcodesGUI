@@ -47,11 +47,14 @@ class DividerWidget(QWidget):
         :return: NoneType
         """
 
+        # define starting size and position of the widget
         self.setGeometry(256, 256, 320, 260)
         self.setMinimumSize(320, 260)
+        # define title and icon of the widget
         self.setWindowTitle("Attach divider")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        # Create two separate tabs of this widget, one for adding and one for deleting existing dividers
         self.tabs = QTabWidget(self)
         self.tab1 = QWidget()
         self.tab2 = QWidget()
@@ -65,6 +68,7 @@ class DividerWidget(QWidget):
         """""""""""""""""""""
         label = QLabel("Parameter:", self.tab1)
         label.move(25, 40)
+        # combo boxes for instrument and parameter
         self.instrument_cb = QComboBox(self.tab1)
         self.instrument_cb.move(45, 60)
         self.instrument_cb.resize(90, 30)
@@ -78,12 +82,14 @@ class DividerWidget(QWidget):
         self.instrument_cb.currentIndexChanged.connect(self.update_parameters)
         self.update_parameters()
 
+        # text box for division value
         label = QLabel("Division", self.tab1)
         label.move(25, 100)
         self.division_value_textbox = QLineEdit(self.tab1)
         self.division_value_textbox.move(40, 120)
         self.division_value_textbox.resize(190, 30)
 
+        # button to confirm adding divider
         self.attach_divider_btn = QPushButton("Add", self.tab1)
         self.attach_divider_btn.resize(60, 30)
         self.attach_divider_btn.move(240, 180)
@@ -92,6 +98,7 @@ class DividerWidget(QWidget):
         """""""""""""""""""""
         Second tab, removing dividers
         """""""""""""""""""""
+        # table containing all dividers created so far
         self.dividers_table = QTableWidget(0, 3, self.tab2)
         self.dividers_table.move(0, 0)
         self.dividers_table.resize(300, 240)
@@ -102,6 +109,7 @@ class DividerWidget(QWidget):
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.dividers_table.setSelectionBehavior(QTableView.SelectRows)
 
+        # add all dividers to the table
         for name, parameter in self.dividers.items():
             rows = self.dividers_table.rowCount()
             self.dividers_table.insertRow(rows)
@@ -114,6 +122,7 @@ class DividerWidget(QWidget):
             item = QTableWidgetItem(name)
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
             self.dividers_table.setItem(rows, 0, item)
+            # add a delete button for every divider in the table
             current_parameter_btn = QPushButton("Delete")
             current_parameter_btn.resize(35, 20)
             current_parameter_btn.clicked.connect(lambda checked, param_name=name: self.remove_divider(name=param_name,
@@ -135,15 +144,17 @@ class DividerWidget(QWidget):
 
         :return: NoneType
         """
-
+        # fetch the selected parameter from the combo box
         parameter = self.parameter_cb.currentData()
-
+        # fetch the division value from the text box
         if self.division_value_textbox.text() != "1":
             try:
+                # try to cast division value to float
                 division = float(self.division_value_textbox.text())
             except Exception as e:
                 show_error_message("Warning", str(e))
             else:
+                # if no exception was raised, create a new divider
                 vd = VoltageDivider(parameter, division)
                 self.dividers[str(parameter)] = vd
                 self.close()
@@ -157,6 +168,7 @@ class DividerWidget(QWidget):
         :param row: row number to be removed from the table
         :return: NoneType
         """
+        # if name is passed delete the divider with that name, otherwise delete currently selected divider
         if name is None:
             parameter = self.parameter_cb.currentData()
             if str(parameter) in self.dividers:
@@ -173,6 +185,7 @@ class DividerWidget(QWidget):
 
         :return: NoneType
         """
+        # get all parameters that belong to this instrument and add them to a combo box so that they can be selected
         if len(self.instruments):
             self.parameter_cb.clear()
             instrument = self.instrument_cb.currentData()

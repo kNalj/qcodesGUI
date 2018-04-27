@@ -54,11 +54,14 @@ class Widget(QWidget):
         :return: NoneType
         """
 
+        # define the starting position and dimensions of the widget
         self.setGeometry(256, 256, 320, 260)
         self.setMinimumSize(320, 260)
+        # define name and the icon of the widget
         self.setWindowTitle("Add new instrument")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
-        
+
+        # combobox filled with all instrument classes that were found in the qcodes directory: "instrument drivers"
         self.cb = QComboBox(self)
         self.cb.move(20, 20)
         self.cb.resize(280, 30)
@@ -67,35 +70,42 @@ class Widget(QWidget):
         index = self.cb.findText(self.default)
         self.cb.setCurrentIndex(index)
         self.cb.currentIndexChanged.connect(self.update_instrument_data)
-        
+
+        # text box that displays the type of the instrument currently selected
         type_label = QLabel("Type", self)
         type_label.move(20, 65)
         self.instrument_type = QLineEdit(self)
         self.instrument_type.move(20, 80)
         self.instrument_type.setEnabled(False)
-        
+
+        # text box for choosing a name of the instrument (if it exists in the InstrumentData.py then it will be filled
+        # automatically
         name_label = QLabel("Name", self)
         name_label.move(20, 115)
         self.instrument_name = QLineEdit(self)
         self.instrument_name.move(20, 130)
-        
+
+        # tex box for address, filled automatically if instrument exists in InstrumentData.py
         address_label = QLabel("Address", self)
         address_label.move(20, 165)
         address_label.resize(400, 15)
         self.instrument_address = QLineEdit(self)
         self.instrument_address.move(20, 180)
 
+        # It's a button, that says OK, what do u think it does ?
         self.ok_button = QPushButton("OK", self)
         self.ok_button.move(20, 220)
         self.ok_button.clicked.connect(self.add_instrument)
 
+        # Define some shortcuts
         add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Return), self)
         add_shortcut.activated.connect(self.add_instrument)
         add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Enter), self)
         add_shortcut.activated.connect(self.add_instrument)
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
         close_shortcut.activated.connect(self.close)
-        
+
+        # After initializing the window, fill the boxes with data if it exists
         self.update_instrument_data()
 
     def add_instrument(self):
@@ -104,16 +114,21 @@ class Widget(QWidget):
         Data structure -> {name : instrument object}
         """
 
+        # Validate data, if validation returns True then some mistake was found, abort further execution
         if self.validate_instrument_input():
             return
-                
+
+        # fetch the name of the instrument
         name = self.instrument_name.text()
         instrument = None
         try:
+            # Try to create an instance of the instrument class
             instrument = self.create_object()
         except Exception as e:
             show_error_message("Warning", str(e))
 
+        # if some instrument was created, add it to a dict of instruments shared with the main window and update
+        # preview of the instruments in the main window
         if instrument is not None:
             self.instruments[name] = instrument
             self.parent.update_station_preview()
@@ -127,7 +142,13 @@ class Widget(QWidget):
         :return: NoneType
         """
 
+        # grab the type of the instrument from the dropdown (combobox)
         instrument_type = self.cb.currentText()
+        # if this type exists in InstrumentData.py fill the other fields with data found in that file.
+        # InstrumentData.Py file contains a dict of instrument type with names and addresses as their values.
+        # From there it is assumed that whenever an instrument of that class is being created that it will allways have
+        # the same desired name and address, therefor they are automatically filled in from the file
+        # Of course data can be changed after if necessary.
         if instrument_type in instrument_data:
             instrument_name = instrument_data[instrument_type][0]
             instrument_address = instrument_data[instrument_type][1]
@@ -147,19 +168,25 @@ class Widget(QWidget):
 
         :return: True if there is an error, False if there is no errors
         """
+        # Fetch the name and the address provided by user
         name = self.instrument_name.text()
         address = self.instrument_address.text()
 
+        # if name is shorter then 1 (meaning no name was provided) request user to input a name
         if len(name) < 1:
             error_message = "Please specify instrument name."
+        # if name already exists in instruments (another instrument has that name) request user to change a name
         elif name in self.instruments:
             error_message = "Another instrument already has name: {}" + name + \
                             ". Please change the name of your isntrument"
+        # If address was not provided, request address
         elif len(address) < 1:
             error_message = "Please specify instrument address"
+        # In all other cases keep your mouth shut u goddamn boring shit program
         else:
             error_message = ""
-        
+
+        # if error message exists, show it and return True, otherwise just return false
         if error_message != "":
             show_error_message("Warning", error_message)
             return True

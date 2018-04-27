@@ -2,16 +2,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabe
 from PyQt5.QtCore import Qt
 
 import sys
-import importlib
-
 
 from Helpers import *
 import qcodes as qc
 from qcodes.loops import ActiveLoop
 from qcodes.instrument_drivers.devices import VoltageDivider
-""""
-That inner delay thing is probably hidden somewhere in file: qcodes/instrument/parameter.py between lines 474 and 596
-"""
 
 
 class LoopsWidget(QWidget):
@@ -75,6 +70,7 @@ class LoopsWidget(QWidget):
             label.move(first_location[0] + i * 55, first_location[1] - 20)
             label.setToolTip(tooltips[i])
 
+        # add text boxes for parameters of the loop
         self.textbox_lower_limit = QLineEdit(self)
         self.textbox_lower_limit.setText("0")
         self.textbox_lower_limit.move(first_location[0], first_location[1])
@@ -129,7 +125,7 @@ class LoopsWidget(QWidget):
 
         label = QLabel("Loop action parameter:", self)
         label.move(25, 200)
-        # same logic as sweep parameter (see line 88)
+        # same logic as sweep parameter (see line 104)
         self.action_parameter_instrument_cb = QComboBox(self)
         self.action_parameter_instrument_cb.resize(80, 30)
         self.action_parameter_instrument_cb.move(45, 220)
@@ -220,6 +216,7 @@ class LoopsWidget(QWidget):
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
                              progress_interval=20).each(action_divider)
             else:
+                # or if there are no dividers attached just create a loop from selected parameters
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
                              progress_interval=20).each(self.action_parameter_cb.currentData())
 
@@ -242,10 +239,14 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
+        # upon selecting one of the instruments from the combo box update the other combo box with the parameters that
+        # this particular instrument has. Meaning only parameters of this instrument will now be selectable from this
+        # combobox
         if len(self.instruments):
             self.sweep_parameter_cb.clear()
             instrument = self.sweep_parameter_instrument_cb.currentData()
             for parameter in instrument.parameters:
+                # i guess i dont need to show IDN parameter
                 if parameter != "IDN":
                     display_member_string = parameter
                     data_member = instrument.parameters[parameter]
@@ -263,14 +264,13 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
+        # Upon selecting one of possible instruments, update the parameter combo box to only display parameters that
+        # belong to this instrument meaning only those parameters will now be selectable
         if len(self.instruments):
             self.action_parameter_cb.clear()
             action = self.action_parameter_instrument_cb.currentData()
 
-            """module_name = "qcodes.loops"
-            module = importlib.import_module(module_name)
-            loop_class = getattr(module, "ActiveLoop")"""
-
+            # if action is a loop, then just show loop name, loop has no parameters so for params also show loop name
             if isinstance(action, ActiveLoop):
                 display_member_string = self.action_parameter_instrument_cb.currentText()
                 data_member = self.action_parameter_instrument_cb.currentData()
@@ -294,16 +294,19 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
+        # fetch all data required to completely fill in this widgets
         lower = self.loop.sweep_values[0]
         upper = self.loop.sweep_values[-1]
         number_of_steps = len(self.loop.sweep_values)
         loop_delay = self.loop.delay
 
+        # save the fetched data for easier extraction
         self.loop_values.append(lower)
         self.loop_values.append(upper)
         self.loop_values.append(number_of_steps)
         self.loop_values.append(loop_delay)
 
+        # set textboxes to show extracted values
         self.textbox_lower_limit.setText(str(lower))
         self.textbox_upper_limit.setText(str(upper))
         self.textbox_num.setText(str(number_of_steps))
@@ -312,14 +315,13 @@ class LoopsWidget(QWidget):
         # if action is a loop, display it as a loop
         # else display selected instrument and parameter
         action = self.loop.actions[0]
-        """module_name = "qcodes.loops"
-        module = importlib.import_module(module_name)
-        loop_class = getattr(module, "ActiveLoop")"""
-
+        # action can be a loop, then just show loop name
         if isinstance(action, ActiveLoop):
             action_parameter_instrument_name = self.loop.actions[0]
             index = self.action_parameter_instrument_cb.findData(action_parameter_instrument_name)
             self.action_parameter_instrument_cb.setCurrentIndex(index)
+        # if action is a voltage divider then get the parameter that this divider is attached to and also show
+        # correct division that has been applied to this divider
         elif isinstance(action, VoltageDivider):
             action_parameter_instrument_name = self.loop.actions[0].v1._instrument.name
             index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
@@ -328,6 +330,7 @@ class LoopsWidget(QWidget):
             index = self.action_parameter_cb.findText(action_parameter_name)
             self.action_parameter_cb.setCurrentIndex(index)
             self.action_parameter_divider.setText(str(action.division_value))
+        # if its a regular parameter then find if there was a division applied to it and display that insted of 1
         else:
             action_parameter_instrument_name = self.loop.actions[0]._instrument.name
             index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
@@ -368,7 +371,7 @@ class LoopsWidget(QWidget):
 
     def update_step_size(self):
         """
-        Updates the step size if value of steps in changed
+        Updates the step size if number of steps in changed
 
         :return: NoneType
         """

@@ -7,7 +7,6 @@ import inspect
 
 from PyQt5.QtCore import Qt
 import qcodes as qc
-from qcodes.actions import _QcodesBreak
 
 from Helpers import *
 from ViewTree import ViewTree
@@ -17,7 +16,7 @@ from SetupLoopsWidget import LoopsWidget
 from InstrumentData import instrument_data
 from AttachDividersWidget import DividerWidget
 from EditInstrumentWidget import EditInstrumentWidget
-from ThreadWorker import Worker, progress_func, print_output, thread_complete
+from ThreadWorker import Worker, progress_func, print_output
 
 
 def trap_exc_during_debug(exctype, value, traceback, *args):
@@ -27,7 +26,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-# sys.excepthook = trap_exc_during_debug
+sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -37,19 +36,41 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.init_menu_bar()
 
-        # list of instruments shared by all windows
+        # self.instruments is a dictionary containing all instruments that have been connected so far. Form of the dict is
+        # key : value where key is the name of the instrument assigned by you when creating the instrument, and value
+        # contains that particular instance of that instrument.
         self.instruments = {}
-        # instruments that are added to station
+
+        # station instruments are used to keep track of the instruments that were added to the instruments table on the
+        # main window, each time an instrument is added to the table it is also added to this dict to keep track of
+        # which instruments are already displayed
         self.station_instruments = {}
-        # loops that have been created
+
+        # loops dictionary contaning all loops that have been created so far. Form: key : value where key is the name
+        # of the loop that is assigned automaticly in order of creation of loops (loop1, loop2, loop3, ...), and the
+        # value is an instance of that loop
         self.loops = {}
-        # dict of created Dividers
+
+        # dividers dict holds data about all dividers created so far. Form of the data inside: key : value where key
+        # is name of the parameter that the divider is attached to, and value is instance of that particular divider.
         self.dividers = {}
-        # displayed loops
+
+        # Keeping track of the loops that are already displayed in table on the main window (to avoid duplicate adding)
         self.shown_loops = []
-        # actions that can be ran
+
+        # actions is a list containing list of all loops and the last loop added to this list is the one that will get
+        # ran by the run/plot button. I have created this because dictionaries do not have predefined way of puting data
+        # into it, meaning that the order of adding items to the dictionary may or may not be the same as the order of
+        # getting that same data from the dictionary
         self.actions = []
+
+        # list of references to the EditInstrumentWidget windows that are currently open, used to start live updating
+        # of parameters of each of those windows after a measurement has been started. That way only the ones that are
+        # currently opened will be automaticaly self updating
         self.active_isntruments = []
+
+        # instrument workers is a list of handles to the workers that do the above explained actions. Reason for keeping
+        # this list is because these workers have to be stopped at some point.
         self.instrument_workers = []
 
         # contains references to buttons for editing
@@ -58,7 +79,9 @@ class MainWindow(QMainWindow):
         # Thread pool for adding separate threads
         # (execute qcodes in another thread [to not freeze GUI thread while executing])
         self.thread_pool = QThreadPool()
-        # Handles to all active workers
+
+        # Handles to all active workers (with the idea of stoping them). Contains only workers that run loops, other
+        # other workers are stored in different lists
         self.workers = []
 
         self.statusBar().showMessage("Ready")
@@ -72,15 +95,17 @@ class MainWindow(QMainWindow):
         Initializes the main window user interface, sets dimensions, position, etc. of a main window
         :return: NoneType
         """
+        # get dimensions of the monitor, and position the window accordingly
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
         self.setGeometry(int(0.02 * width), int(0.05 * height), 640, 400)
+        # define the size, title and icon of the window
         self.setMinimumSize(640, 400)
         self.setWindowTitle("qcodes starter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
-        
+
+        # Create and define table for displaying instruments added to the self.instruments dictionary
         label = QLabel("Instruments:", self)
         label.move(25,  30)
-
         self.instruments_table = QTableWidget(0, 3, self)
         self.instruments_table.move(45, 65)
         self.instruments_table.resize(400, 160)
@@ -91,8 +116,7 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
-        label = QLabel("Loops", self)
-        label.move(25, 240)
+        # Button for displaying data structure of each created loop
         self.show_loop_details_btn = QPushButton("Show tree", self)
         self.show_loop_details_btn.move(80, 240)
         self.show_loop_details_btn.resize(100, 30)
@@ -100,6 +124,9 @@ class MainWindow(QMainWindow):
         self.show_loop_details_btn.setIcon(icon)
         self.show_loop_details_btn.clicked.connect(self.open_tree)
 
+        # Create and define table for displaying loops added to the self.loops dictionary
+        label = QLabel("Loops", self)
+        label.move(25, 240)
         self.loops_table = QTableWidget(0, 4, self)
         self.loops_table.move(45, 280)
         self.loops_table.resize(400, 100)
@@ -111,6 +138,7 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
+        # Button for opening a new window that is used for connecting to instruments
         self.btn_add_instrument = QPushButton("Add instrument", self)
         self.btn_add_instrument.move(480, 50)
         self.btn_add_instrument.resize(140, 40)
@@ -118,6 +146,7 @@ class MainWindow(QMainWindow):
         self.btn_add_instrument.setIcon(icon)
         self.btn_add_instrument.clicked.connect(lambda checked, name="DummyInstrument": self.add_new_instrument(name))
 
+        # Button to open a window that is used to create and manage loops (measurements)
         self.btn_setup_loops = QPushButton("Setup loops", self)
         self.btn_setup_loops.move(480, 95)
         self.btn_setup_loops.resize(140, 40)
@@ -125,6 +154,7 @@ class MainWindow(QMainWindow):
         self.btn_setup_loops.setIcon(icon)
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
+        # Button to open a new window that is used for creating, editing and deleting dividers
         self.btn_attach_dividers = QPushButton("Attach dividers", self)
         self.btn_attach_dividers.move(480, 140)
         self.btn_attach_dividers.resize(140, 40)
@@ -132,12 +162,14 @@ class MainWindow(QMainWindow):
         self.btn_attach_dividers.setIcon(icon)
         self.btn_attach_dividers.clicked.connect(self.open_attach_divider)
 
+        # text box used to input the desired name of your output file produced by the loop
         label = QLabel("Output file name", self)
         label.move(480, 225)
         self.output_file_name = QLineEdit(self)
         self.output_file_name.move(480, 250)
         self.output_file_name.resize(140, 30)
 
+        # btn that opens file dialog for selecting a desired location where to save the ouput file of the loop
         self.btn_select_save_location = QPushButton("Select save location", self)
         self.btn_select_save_location.move(480, 185)
         self.btn_select_save_location.resize(140, 40)
@@ -145,6 +177,7 @@ class MainWindow(QMainWindow):
         self.btn_select_save_location.setIcon(icon)
         self.btn_select_save_location.clicked.connect(self.select_save_location)
 
+        # btn for stoping all currently active loops
         self.stop_btn = QPushButton("STOP", self)
         self.stop_btn.move(480, 290)
         self.stop_btn.resize(140, 40)
@@ -152,6 +185,7 @@ class MainWindow(QMainWindow):
         self.stop_btn.setIcon(icon)
         self.stop_btn.clicked.connect(self.stop_all_workers)
 
+        # simple text editor
         self.open_text_edit_btn = QPushButton("Text", self)
         self.open_text_edit_btn.move(200, 240)
         self.open_text_edit_btn.resize(100, 30)
@@ -159,13 +193,15 @@ class MainWindow(QMainWindow):
         icon = QtGui.QIcon("img/text_icon.png")
         self.open_text_edit_btn.setIcon(icon)
 
+        # run a loop with live ploting as a backgroud task (new window with self updating plot will be opened)
         self.plot_btn = QPushButton("Plot", self)
         self.plot_btn.move(480, 340)
         self.plot_btn.resize(60, 40)
         self.plot_btn.clicked.connect(self.run_with_plot)
         icon = QtGui.QIcon("img/plot_icon.png")
         self.plot_btn.setIcon(icon)
-        
+
+        # run a loop without displaying the live plot
         self.btn_run = QPushButton("Run", self)
         self.btn_run.move(560, 340)
         self.btn_run.resize(60, 40)
@@ -175,6 +211,7 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage("Ready")
 
+        # Defining all shortcuts
         add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_F12), self)
         add_shortcut.activated.connect(self.setup_loops)
 
@@ -185,12 +222,13 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
-
+        # Create action and bind it to a function that exits the application and closes all of its windows
         exit_action = QAction("&Exit", self)
         exit_action.setShortcut("Ctrl+Q")
         exit_action.setStatusTip("Exit the application")
         exit_action.triggered.connect(self.exit)
 
+        # Action for adding a new instrument
         start_new_measurement_menu = QMenu("Add instrument", self)
         start_new_measurement_action = QAction("New", self)
         start_new_measurement_action.setShortcut("Ctrl+M")
@@ -200,6 +238,8 @@ class MainWindow(QMainWindow):
         start_new_measurement_menu.addAction(start_new_measurement_action)
         start_new_measurement_menu.addSeparator()
 
+        # fetch all instruments defined in qcodes and add then to the Add Instrument menu. Clicking any of these will
+        # open AddInstrumentWidget with data for this instrument already filled in that window
         path = os.path.dirname(inspect.getfile(qc)) + "\\instrument_drivers"
         brands = get_subfolders(path, True)
         for brand in brands:
@@ -237,6 +277,8 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
+        # Go ahead and iterate through all instruments that have been created so far and if any of those instruments
+        # hasn't been added to the table , add it to the table
         for instrument in self.instruments:
             if instrument not in self.station_instruments:
                 current_instrument = self.instruments[instrument]
@@ -255,6 +297,8 @@ class MainWindow(QMainWindow):
                 self.edit_button_dict[instrument] = current_instrument_btn
                 self.station_instruments[instrument] = self.instruments[instrument]
 
+                # Also bind a shortcut for opening that instrument coresponding to the number of the row that the
+                # instrument is displayed in (Example: instrument in row 1 will have shortcut F1, row 2 -> F2, ....)
                 key = "Key_F" + str(rows+1)
                 key_class = getattr(Qt, key)
 
@@ -277,11 +321,15 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
+        # Iterate through all loops that have been created and added to self.loops dictionary, if any of those has not
+        # been added to loops table (and shown loops dict) then add it to both so that it is visible in the window
         for name, loop in self.loops.items():
             if name not in self.shown_loops:
                 rows = self.loops_table.rowCount()
                 self.loops_table.insertRow(rows)
 
+                # Model a string that will display loop values in the table.
+                # Format: loop_name[lower_limit, upper_limit, num_of_steps, delay].action_parameter
                 lower = str(loop.sweep_values[0])
                 upper = str(loop.sweep_values[-1])
                 steps = str(len(loop.sweep_values))
@@ -295,11 +343,13 @@ class MainWindow(QMainWindow):
                 current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.setup_loops(loop_name))
                 self.loops_table.setCellWidget(rows, 1, current_loop_btn)
 
+                # Button within a table that runs a loop that is in the same table row as the button
                 run_current_loop_btn = QPushButton("Run")
                 run_current_loop_btn.resize(35, 20)
                 run_current_loop_btn.clicked.connect(lambda checked, loop_name=name: self.run_specific_loop(loop_name))
                 self.loops_table.setCellWidget(rows, 2, run_current_loop_btn)
 
+                # Button within the table that removes a loop that is in the same row as the button
                 delete_current_loop = QPushButton("Delete")
                 delete_current_loop.resize(35, 20)
                 delete_current_loop.clicked.connect(lambda checked, row=rows, loop_name=name:
@@ -308,12 +358,14 @@ class MainWindow(QMainWindow):
 
                 self.shown_loops.append(name)
 
+                # Create a shortcut for opening each loop. Loop in row1 opens with key combo: CTRL + F1, row2: CTRL+F2
                 key_combo_string = "Ctrl+F"+str(rows+1)
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
             elif edit == name:
                 rows = int(name[-1])-1
 
+                # if a loop is being edited, just update the values of the edited loop
                 lower = str(loop.sweep_values[0])
                 upper = str(loop.sweep_values[-1])
                 steps = str(len(loop.sweep_values))
@@ -334,15 +386,22 @@ class MainWindow(QMainWindow):
         :param with_plot: if set to true, runs (and saves) live plot while measurement is running
         :return: NoneType
         """
+        # first create a station and add all instruments to it, to have the data available in the output files
         station = qc.Station()
         for name, instrument in self.instruments.items():
             station.add_component(instrument, name)
 
+        # grab the last action added to the actions list. Set its data_set to None in case that loop has already been
+        # ran. Create a new data set with the name and location provided by user input
         if len(self.actions):
             loop = self.actions[-1]
             loop.data_set = None
             data = loop.get_data_set(name=self.output_file_name.text())
 
+            # Check if the function was called with plot in background, if it was, create a new plot, delete backgroud
+            # action of the loop (if a loop has been ran before with a background action [loop cannot have more then
+            # 1 background action]), attach a new background action and run a loop by calling a worker to run it in a
+            # separate thread
             if with_plot:
                 parameter = get_plot_parameter(loop)
                 parameter_name = str(parameter)
@@ -354,18 +413,26 @@ class MainWindow(QMainWindow):
             else:
                 # loop.run(use_threads=True) -> this has something to do with multiple gets at the same time
                 #                               i guess it would get them all at the same time instead of one by one
+
+                # otherwise if plot was not requested, just run a loop (also in separate thread)
                 worker = Worker(loop.run, False)
             self.workers.append(worker)
 
+            # connect the signals of a worker
             worker.signals.result.connect(print_output)
             worker.signals.finished.connect(self.stop_all_workers)
             worker.signals.progress.connect(progress_func)
 
+            # start the worker
+            del self.workers[:]
+            for widget in self.active_isntruments:
+                if self.actions[-1].sweep_values.name in widget.textboxes.keys():
+                    widget.toggle_live()
             self.thread_pool.start(worker)
 
+        # Just in case someone presses run with no loops created
         else:
             show_error_message("Oops !", "Looks like there is no loop to be ran !")
-        self.statusBar().showMessage("Measurement done")
 
     def run_with_plot(self):
         """
@@ -373,10 +440,6 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
-        del self.workers[:]
-        for widget in self.active_isntruments:
-            if self.actions[-1].sweep_values.name in widget.textboxes.keys():
-                widget.toggle_live()
         self.run_qcodes(with_plot=True)
 
     @pyqtSlot()
@@ -400,9 +463,11 @@ class MainWindow(QMainWindow):
         Close the main window
         :return: NoneType
         """
+        # Close all the instruments not to leave any hanging tails
         for name, instrument in self.instruments.items():
             print("Closing", instrument)
             instrument.close()
+        # Close all other windows that are currently opened
         app = QtGui.QGuiApplication.instance()
         app.closeAllWindows()
         self.close()
@@ -413,6 +478,8 @@ class MainWindow(QMainWindow):
         Opens a new Widget (window) with text inputs for parameters of an instrument, creates new instrument(s)
         :return: NoneType
         """
+        # AddInstrumentWidget need access to self.instruments dictionary in order to be able to add any newly created
+        # instruments to it
         self.add_instrument = Widget(self.instruments, parent=self, default=name)
         self.add_instrument.show()
 
@@ -435,7 +502,8 @@ class MainWindow(QMainWindow):
 
         :return:
         """
-        self.setup_loops_widget = LoopsWidget(self.instruments, self.dividers, self.loops, self.actions, parent=self, loop_name=loop_name)
+        self.setup_loops_widget = LoopsWidget(self.instruments, self.dividers, self.loops, self.actions, parent=self,
+                                              loop_name=loop_name)
         self.setup_loops_widget.show()
 
     @pyqtSlot()
@@ -462,10 +530,7 @@ class MainWindow(QMainWindow):
 
     def stop_all_workers(self):
         """
-        Intention is to stop all workers (separate Threads) that are currently running, since the only workers that im
-        keeping a handle to are the ones that run loops those are the ones that should be stopped. Since qcodes doesnt
-        implement loop.stop and i dont really want to use thread.terminate i think im gonna commit suicide because this
-        SHOULD BE REALLY SIMPLE !!
+        Reworked: Stops all instruments that are currently being live updated and returns them to static mode
 
         :return:
         """
@@ -493,8 +558,18 @@ class MainWindow(QMainWindow):
 
             :return: NoneType
             """
+            # Parameters:
+            # self. instruments: widget needs access to all instruments to be able to edit them and add new ones
+            # self.dividers: widget needs access to dividers to be able to display them if they are attached
+            # self.active_instruments: list of instrument edit windows that are opened, to be able to remove self
+            # from that list when closing the window
+            # self.thread_pool: To be able to run functions in a shared thread pool (get_all, set_all)
+            # parent: reference to this widget
+            # instrument_name: name of the instrument that is being edited, to be able to fetch it from instruments
+            # dictionary that is also being passed to this widget
             self.edit_instrument = EditInstrumentWidget(self.instruments, self.dividers, self.active_isntruments,
                                                         self.thread_pool, parent=self, instrument_name=instrument)
+            # Add newly created window to a list of active windows
             self.active_isntruments.append(self.edit_instrument)
             self.edit_instrument.show()
         return open_instrument_edit
@@ -508,6 +583,8 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
 
+        # since name of the loop is a parameter of this function, get the loop from loops, find it in the actions list
+        # put it in the last place of that list (remember, the last one is the one that get run), and then run it
         loop = self.loops[loop_name]
         loop_index = self.actions.index(loop)
         self.actions[loop_index], self.actions[-1] = self.actions[-1], self.actions[loop_index]

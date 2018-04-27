@@ -27,12 +27,20 @@ class EditInstrumentWidget(QWidget):
         super(EditInstrumentWidget, self).__init__()
         self.parent = parent
 
+        # a dict of all instruments that have been created so far
         self.instruments = instruments
+        # a dict of all dividers that have been created so far (to be able to display them if any of them is attached to
+        # currently observed instrument
         self.dividers = dividers
+        # a list of EditInstrumentWidgets that are currently opened (to be able to remove self from that list)
         self.active = active
+        # shared thread pool to be able to run longer actions in separate threads
         self.thread_pool = thread_pool
+        # name of the instrument that is currently being edited
         self.instrument_name = instrument_name
+        # instance of the instrument that is currently being edited
         self.instrument = self.instruments[instrument_name]
+        # i dont remember what was the idea for this one, i dont think i need it, i'll have to check
         self.division = 1
 
         # keep track of workers messing with this window
@@ -40,10 +48,13 @@ class EditInstrumentWidget(QWidget):
         self.worker = None
         self.tracked_parameter = tracked_parameter
 
+        # references to textboxes, because they need to be accessed often, to updated the values if live monitoring of
+        # the instrument is turned on
         self.textboxes = {}
         self.textboxes_real_values = {}
         self.textboxes_divided_values = {}
 
+        # references to buttons for editing inner parameters of each instrument parameter
         self.inner_parameter_btns = {}
 
         self.init_ui()
@@ -58,19 +69,24 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
+        # define initial position and size of this widget
+        # position is defined in relative size to the size of the monitor
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
         window_height = len(self.instrument.parameters)*30 + 200
         self.setGeometry((width - 500), int(0.05*height), 480, window_height)
         self.setMinimumSize(320, 260)
+        # define title and icon of the widget
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        # show the name of the instrument that is being edited
         label = QLabel("Name:", self)
         label.move(30, 30)
         self.instrument_name_txtbox = QLineEdit(self.instrument_name, self)
         self.instrument_name_txtbox.move(80, 30)
         self.instrument_name_txtbox.setDisabled(True)
 
+        # button to start live updating of the parameters of this instrument
         self.go_live_btn = QPushButton("Go live", self)
         self.go_live_btn.move(360, 30)
         self.go_live_btn.resize(90, 40)
@@ -91,6 +107,8 @@ class EditInstrumentWidget(QWidget):
         label = QLabel("Applied", self)
         label.move(210, 60)
 
+        # create a row for each of the parameters of this instrument with fields for displaying original and applied
+        # values, also field for editing, and buttons for geting and seting a value
         start_y = 80
         for name, parameter in self.instrument.parameters.items():
             label = QLabel(name, self)
@@ -128,19 +146,24 @@ class EditInstrumentWidget(QWidget):
             get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
 
+        # U can read right ?
         set_all_to_zero_btn = QPushButton("All zeroes", self)
         set_all_to_zero_btn.move(380, start_y + 20)
         set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
 
+        # Sets all to values currently displayed in the text boxes that are editable
         set_all_btn = QPushButton("SET ALL", self)
         set_all_btn.move(290, start_y + 20)
         # set_all_btn.clicked.connect(self.call_worker(self.set_all))
         set_all_btn.clicked.connect(self.set_all)
 
+        # gets all parameters and updates the displayed values
         set_all_btn = QPushButton("GET ALL", self)
         set_all_btn.move(290, start_y + 50)
         set_all_btn.clicked.connect(self.call_worker(self.update_parameters_data))
 
+        # if u click this button u get a house and a car on Bahamas, also your partner suddenly becomes the most
+        # attractive person in the world, in addition to this you get a Nobel prize for whatever u want ... Easy life
         ok_btn = QPushButton("Close", self)
         ok_btn.move(380, start_y + 50)
         ok_btn.clicked.connect(self.close)
@@ -169,6 +192,7 @@ class EditInstrumentWidget(QWidget):
 
             :return: NoneType
             """
+            # full name is composed of the instrument name and parameter name (Example: IVVI_dac1)
             full_name = str(self.instrument.parameters[parameter])
             try:
                 value = float(self.textboxes[parameter].text())
@@ -237,11 +261,13 @@ class EditInstrumentWidget(QWidget):
             self.update_divided_values()
 
     def single_update(self):
+        # used to live update only a single parameter that is being swept by the currently running loop
         if self.tracked_parameter is not None:
             self.update_parameters_data(self.tracked_parameter)
 
     def update_divided_values(self):
         for name, textbox in self.textboxes_divided_values.items():
+            # get values from the divider
             textbox.setText(str(self.dividers[str(self.instrument.parameters[name])].get_raw()))
 
     def set_all_to_zero(self):
@@ -250,6 +276,8 @@ class EditInstrumentWidget(QWidget):
 
         :return: NoneType
         """
+        # some instruments already have this method implemented, so why bother, on the other hand, some instruments
+        # dont have it so i have to implement it anyway, wow, im so smart
         if hasattr(self.instrument, "set_dacs_zero"):
             self.instrument.set_dacs_zero()
         else:
@@ -270,7 +298,6 @@ class EditInstrumentWidget(QWidget):
             if is_numeric(self.instrument.get(name)):
                 try:
                     value = float(self.textboxes[name].text())
-                    # self.instrument.set(name, value)
                     if full_name in self.dividers:
                         self.dividers[full_name].set_raw(value)
                     else:
@@ -278,8 +305,6 @@ class EditInstrumentWidget(QWidget):
                     print(name)
                 except Exception as e:
                     show_error_message("Warning", str(e))
-                    #show_error_message("Warning", "Unable to set parameter {} to value {}"
-                    #                   .format(str(parameter), self.textboxes[name].text()))
                     continue
                 else:
                     self.setStatusTip("Parameter value changed to: " + str(value))
@@ -296,6 +321,7 @@ class EditInstrumentWidget(QWidget):
         :return:
         """
         def instantiate_worker():
+            # creata a new worker, False meaning that it is not a looping worker, it only does its thing once
             worker = Worker(func, False)
             worker.signals.result.connect(print_output)
             worker.signals.finished.connect(thread_complete)
@@ -306,9 +332,12 @@ class EditInstrumentWidget(QWidget):
         return instantiate_worker
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
+        # overriding close method to remove self from list of active windows, obviously if one is closed, one is no
+        # longer active, is that obvious only to me ? It should be to everyone right ? Right ?
         self.active.remove(self)
 
     def toggle_live(self):
+        # if the widget is currently in live mode, turn of the live mode and kill all+delete all workers.
         if self.live:
             self.worker.stop_requested = True
             self.go_live_btn.setText("Go live")
@@ -316,6 +345,7 @@ class EditInstrumentWidget(QWidget):
             for tb in self.textboxes:
                 self.textboxes[tb].setDisabled(False)
             self.live = False
+        # if the widget is currently in non-live mode, go live mode, create worker, and start it
         else:
             self.go_live_btn.setText("STOP")
             if len(self.parent.actions):

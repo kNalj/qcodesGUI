@@ -51,13 +51,17 @@ class EditInstrumentParameterWidget(QWidget):
         :return: NoneType
         """
 
+        # set initial size and position od the widget
         self.setGeometry(256, 256, 480, 260)
         self.setMinimumSize(320, 260)
+        # set window title and icon of the widget
         self.setWindowTitle("Edit " + self.parameter.name + " parameter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        # parameters that can be edited with this window are it the list below
         extras = ["step", "inter_delay", "_min_value", "_max_value"]
         start_y = 25
+        # for each parameter in the list create text box and get + set buttons
         for name in extras:
             label = QLabel(name, self)
             label.move(30, start_y)
@@ -88,6 +92,7 @@ class EditInstrumentParameterWidget(QWidget):
             get_value_btn.clicked.connect(self.update_displayed_values)
             start_y += 25
 
+        # if there is a divider attched to this parameter show division value of that thingy
         label = QLabel("Division", self)
         label.move(30, start_y + 25)
         label.show()
@@ -97,6 +102,7 @@ class EditInstrumentParameterWidget(QWidget):
             self.division_value = QLineEdit("1", self)
         self.division_value.move(120, start_y + 25)
 
+        # Its just an CLOSE button man, dont read this
         self.OK_btn = QPushButton("Close", self)
         self.OK_btn.move(400, 220)
         self.OK_btn.clicked.connect(self.close)
@@ -122,7 +128,9 @@ class EditInstrumentParameterWidget(QWidget):
 
             :return:
             """
+            # parameter is passed to the widgets constructor, and widget at any point know what parameter is he editing
             parameter = self.parameter
+            # depending on which of possible parameters is being modified do the appropriate action
             if value_name == "step":
                 try:
                     value = float(self.textboxes[value_name].text())
@@ -158,6 +166,7 @@ class EditInstrumentParameterWidget(QWidget):
 
         :return: NoneType
         """
+        # update editable texbox with the new value
         for name, textbox in self.textboxes.items():
             if name == "step":
                 textbox.setText(str(self.parameter.step))
@@ -166,6 +175,7 @@ class EditInstrumentParameterWidget(QWidget):
             else:
                 textbox.setText(str(getattr(self.parameter.vals, name)))
 
+        # update non-editable textbox with the new value
         for name, textbox in self.textboxes_real_values.items():
             if name == "step":
                 textbox.setText(str(self.parameter.step))
