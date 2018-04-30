@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSlot, QRunnable, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import pyqtSlot, QRunnable, QObject, pyqtSignal
 import traceback
 import sys
 import time
@@ -57,7 +57,7 @@ class Worker(QRunnable):
                     self.signals.result.emit(result)  # Return the result of the processing
                 finally:
                     self.signals.finished.emit()  # Done
-                # this time sleep determines how often will this action be executed (every n seconds)
+                # this time sleep determines how long to wait before continuing with the loop
                 time.sleep(3)
             else:
                 print("Stop has been requested !")
@@ -99,10 +99,6 @@ class WorkerSignals(QObject):
     error = pyqtSignal(tuple)
     result = pyqtSignal(object)
     progress = pyqtSignal(int)
-
-
-class LoopThread(QThread):
-    pass
 
 
 def progress_func(progress):

@@ -7,6 +7,8 @@ import inspect
 
 from PyQt5.QtCore import Qt
 import qcodes as qc
+from qcodes.actions import _QcodesBreak
+from qcodes.actions import Task
 
 from Helpers import *
 from ViewTree import ViewTree
@@ -83,6 +85,9 @@ class MainWindow(QMainWindow):
         # Handles to all active workers (with the idea of stoping them). Contains only workers that run loops, other
         # other workers are stored in different lists
         self.workers = []
+
+        # check this to see if stop has been requested
+        self.stop_loop_requested = True
 
         self.statusBar().showMessage("Ready")
         self.show()
@@ -251,6 +256,7 @@ class MainWindow(QMainWindow):
                                        "Keysight_33500B_channels", "Infiniium", "KeysightAgilent_33XXX", "Model_336",
                                        "Base_SPDT", "RC_SP4T", "RC_SPDT", "USB_SPDT", "QDac_channels", "RTO1000", "ZNB",
                                        "SR860", "SR86x", "AWG5208", "AWG70000A", "AWG70002A", "Keithley_2600_channels"]:
+                    # above is the list of instruments that produce error when attempting to create them
                     current_model_action = QAction(model[0:-3], self)
                     current_model_action.setData(model[0:-3])
                     current_brand_menu.addAction(current_model_action)
@@ -386,6 +392,8 @@ class MainWindow(QMainWindow):
         :param with_plot: if set to true, runs (and saves) live plot while measurement is running
         :return: NoneType
         """
+        self.stop_loop_requested = False
+
         # first create a station and add all instruments to it, to have the data available in the output files
         station = qc.Station()
         for name, instrument in self.instruments.items():
@@ -541,8 +549,10 @@ class MainWindow(QMainWindow):
         for widget in self.active_isntruments:
             if widget.live:
                 widget.toggle_live()
+        self.stop_loop_requested = True
 
     # This is a function factory (wow, i'm so cool, i made a function factory)
+
     def make_open_instrument_edit(self, instrument):
         """
         Hi, i am a function factory, and for each button you see next to an instrument i create a new function to edit
@@ -608,6 +618,9 @@ class MainWindow(QMainWindow):
             del self.loops[loop]
             del self.actions[row-1]
 
+    def check_stop_request(self):
+        if self.stop_loop_requested is True:
+            raise _QcodesBreak
 
 def main():
     app = QApplication(sys.argv)

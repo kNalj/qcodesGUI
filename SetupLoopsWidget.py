@@ -5,6 +5,8 @@ import sys
 
 from Helpers import *
 import qcodes as qc
+from qcodes.actions import _QcodesBreak
+from qcodes.actions import Task
 from qcodes.loops import ActiveLoop
 from qcodes.instrument_drivers.devices import VoltageDivider
 
@@ -30,6 +32,13 @@ class LoopsWidget(QWidget):
         self.actions = actions
         self.parent = parent
         self.name = loop_name
+
+        # dictionary contining all loop actions that should be appended to the loop. Format: key : value
+        # where: key is a string composed of word action and a number of that action (action1, action2, ...
+        #           (this is not that important),
+        #        value is a list in format: [instrument, parameter, division] containing reference to an instrument,
+        #           and the parameter of that instrument (i might not need both of these) and finally a division value
+        self.current_loop_actions_dictionary = {}
         if self.name != "":
             self.loop = self.loops[self.name]
             self.loop_values = []
@@ -48,7 +57,9 @@ class LoopsWidget(QWidget):
         """
         # set starting position of window relative to the size of the screen
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
-        self.setGeometry(int(0.05*width) + 620, int(0.05*height), 360, 340)
+        self.width = 360
+        self.height = 340
+        self.setGeometry(int(0.05*width) + 620, int(0.05*height), self.width, self.height)
         self.setMinimumSize(360, 340)
         self.setWindowTitle("Setup loops")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
@@ -125,6 +136,10 @@ class LoopsWidget(QWidget):
 
         label = QLabel("Loop action parameter:", self)
         label.move(25, 200)
+        add_parameter = QPushButton("+", self)
+        add_parameter.move(140, 195)
+        add_parameter.resize(20, 20)
+        add_parameter.clicked.connect(self.add_parameter)
         # same logic as sweep parameter (see line 104)
         self.action_parameter_instrument_cb = QComboBox(self)
         self.action_parameter_instrument_cb.resize(80, 30)
@@ -181,6 +196,7 @@ class LoopsWidget(QWidget):
         # Try to fetch user input data and cast it to floats
         # If it fails, throw an exception
         # Otherwise, create a loop, add it to the shared dict
+        task = Task(self.parent.check_stop_request)
         try:
             lower = float(self.textbox_lower_limit.text())
             upper = float(self.textbox_upper_limit.text())
@@ -202,23 +218,23 @@ class LoopsWidget(QWidget):
                 action_divider = VoltageDivider(parameter, action_division)
                 self.dividers[str(parameter)] = action_divider
                 lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay, progress_interval=20).each(
-                    action_divider)
+                    action_divider, task)
             elif sweep_division != 1:
                 parameter = self.sweep_parameter_cb.currentData()
                 sweep_divider = VoltageDivider(parameter, sweep_division)
                 self.dividers[str(parameter)] = sweep_divider
                 lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay, progress_interval=20).each(
-                    self.action_parameter_cb.currentData())
+                    self.action_parameter_cb.currentData(), task)
             elif action_division != 1:
                 parameter = self.action_parameter_cb.currentData()
                 action_divider = VoltageDivider(parameter, action_division)
                 self.dividers[str(parameter)] = action_divider
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
-                             progress_interval=20).each(action_divider)
+                             progress_interval=20).each(action_divider, task)
             else:
                 # or if there are no dividers attached just create a loop from selected parameters
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
-                             progress_interval=20).each(self.action_parameter_cb.currentData())
+                             progress_interval=20).each(self.action_parameter_cb.currentData(), task)
 
             if self.name != "":
                 name = self.name
@@ -434,6 +450,43 @@ class LoopsWidget(QWidget):
         else:
             sweep_division = 1
             self.sweep_parameter_divider.setText(str(sweep_division))
+
+    def add_parameter(self):
+
+        # increase the window height by 60 (should be enough to add another set of controls for adding extra actions)
+        self.resize(self.width, self.height + 60)
+        self.height += 60
+
+        # find and change the current position of the add loop button (keep it on the bottom of the window)
+        add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
+        add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
+        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate + 60)
+
+        self.action_parameter_instrument_cb = QComboBox(self)
+        self.action_parameter_instrument_cb.resize(80, 30)
+        self.action_parameter_instrument_cb.move(45, 220)
+        for name, instrument in self.instruments.items():
+            display_member = name
+            value_member = instrument
+            self.action_parameter_instrument_cb.addItem(display_member, value_member)
+        self.action_parameter_instrument_cb.currentIndexChanged.connect(self.update_action_instrument_parameters)
+        # combobox for selecting parameter
+        self.action_parameter_cb = QComboBox(self)
+        self.action_parameter_cb.resize(80, 30)
+        self.action_parameter_cb.move(135, 220)
+        self.update_action_instrument_parameters()
+        # add loops to combobox (loop can also be an action of another loop)
+        for name, loop in self.loops.items():
+            display_member_string = "[" + name + "]"
+            data_member = loop
+            self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
+        # divider for action parameter
+        label = QLabel("Divider", self)
+        label.move(240, 200)
+        label.setToolTip("Add division/amplification to the instrument")
+        self.action_parameter_divider = QLineEdit("1", self)
+        self.action_parameter_divider.move(240, 220)
+        self.action_parameter_divider.resize(30, 30)
 
 
 if __name__ == '__main__':
