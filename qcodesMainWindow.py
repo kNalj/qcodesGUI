@@ -619,8 +619,16 @@ class MainWindow(QMainWindow):
             del self.actions[row-1]
 
     def check_stop_request(self):
+        """
+        This function is passed to a qcodes Task() to be checked on every measure point of the loop. Function checks if
+        the class member stop_loop_requested is set to true, and if it is it raises an exception that stops the qcodes
+        loop.
+
+        :return:
+        """
         if self.stop_loop_requested is True:
             raise _QcodesBreak
+
 
 def main():
     app = QApplication(sys.argv)
