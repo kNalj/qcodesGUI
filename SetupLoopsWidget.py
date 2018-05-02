@@ -19,6 +19,7 @@ class LoopsWidget(QWidget):
 
         :param instruments: Dictionary shared with parent (MainWindow) to be able to add instruments to instruments
         dictionary in the MainWindow
+        :param dividers: dictionary shared with main window, contains all dividers created so far
         :param loops: shared with main window, dict of all created loops
         :param actions: list of loops that can be ran in order of creation
         :param parent: specify object that created this widget
@@ -140,7 +141,7 @@ class LoopsWidget(QWidget):
         add_parameter.move(140, 195)
         add_parameter.resize(20, 20)
         add_parameter.clicked.connect(self.add_parameter)
-        # same logic as sweep parameter (see line 104)
+        # same logic as sweep parameter (see line 110)
         self.action_parameter_instrument_cb = QComboBox(self)
         self.action_parameter_instrument_cb.resize(80, 30)
         self.action_parameter_instrument_cb.move(45, 220)
@@ -153,7 +154,6 @@ class LoopsWidget(QWidget):
         self.action_parameter_cb = QComboBox(self)
         self.action_parameter_cb.resize(80, 30)
         self.action_parameter_cb.move(135, 220)
-        self.update_action_instrument_parameters()
         # add loops to combobox (loop can also be an action of another loop)
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
@@ -167,6 +167,12 @@ class LoopsWidget(QWidget):
         self.action_parameter_divider.move(240, 220)
         self.action_parameter_divider.resize(30, 30)
         # Creates a loop from user input data
+        action_name = "action" + str(len(self.current_loop_actions_dictionary))
+        self.current_loop_actions_dictionary[action_name] = [self.action_parameter_instrument_cb,
+                                                             self.action_parameter_cb,
+                                                             self.action_parameter_divider]
+        self.update_action_instrument_parameters()
+
         self.add_loop_btn = QPushButton("Create loop", self)
         self.add_loop_btn.move(45, 270)
         self.add_loop_btn.resize(260, 40)
@@ -188,8 +194,8 @@ class LoopsWidget(QWidget):
     """""""""""""""""""""
     def create_loop(self):
         """
-        Creates a new loop from data inputed by user. Adds newly created loop to "loops" dictionary in MainWindow.
-        Creates action to be executed upon runing qcodes and adds it to "actions" list in MainWindow
+        Creates a new loop from data input by user. Adds newly created loop to "loops" dictionary in MainWindow.
+        Creates action to be executed upon running qcodes and adds it to "actions" list in MainWindow
 
         :return: NoneType
         """
@@ -203,14 +209,14 @@ class LoopsWidget(QWidget):
             num = float(self.textbox_num.text())
             delay = float(self.textbox_step.text())
             sweep_division = float(self.sweep_parameter_divider.text())
-            action_division = float(self.action_parameter_divider.text())
+            # action_division = float(self.action_parameter_divider.text())
         except Exception as e:
             warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
                              + str(e)
             show_error_message("Warning", warning_string)
         else:
             # Create dividres and add them to a dict of dividers (shared with main window)
-            if sweep_division != 1 and action_division != 1:
+            """if sweep_division != 1 and action_division != 1:
                 parameter = self.sweep_parameter_cb.currentData()
                 sweep_divider = VoltageDivider(parameter, sweep_division)
                 self.dividers[str(parameter)] = sweep_divider
@@ -234,7 +240,27 @@ class LoopsWidget(QWidget):
             else:
                 # or if there are no dividers attached just create a loop from selected parameters
                 lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
-                             progress_interval=20).each(self.action_parameter_cb.currentData(), task)
+                             progress_interval=20).each(self.action_parameter_cb.currentData(), task)"""
+
+            sweep_parameter = self.sweep_parameter_cb.currentData()
+            if sweep_division != 1:
+                sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
+
+            actions = []
+            for name, action_array in self.current_loop_actions_dictionary.items():
+                action_parameter = action_array[1].currentData()
+                try:
+                    division = float(action_array[2].text())
+                except Exception as e:
+                    show_error_message("Warning", str(e))
+                else:
+                    if division != 1:
+                        action_parameter = VoltageDivider(action_parameter, division)
+                    actions.append(action_parameter)
+
+            actions.append(task)
+
+            lp = qc.Loop(sweep_parameter.sweep(lower, upper, num=num), delay, progress_interval=20).each(*actions)
 
             if self.name != "":
                 name = self.name
@@ -283,25 +309,26 @@ class LoopsWidget(QWidget):
         # Upon selecting one of possible instruments, update the parameter combo box to only display parameters that
         # belong to this instrument meaning only those parameters will now be selectable
         if len(self.instruments):
-            self.action_parameter_cb.clear()
-            action = self.action_parameter_instrument_cb.currentData()
+            for name, action_array in self.current_loop_actions_dictionary.items():
+                action_array[1].clear()
+                action = action_array[0].currentData()
 
-            # if action is a loop, then just show loop name, loop has no parameters so for params also show loop name
-            if isinstance(action, ActiveLoop):
-                display_member_string = self.action_parameter_instrument_cb.currentText()
-                data_member = self.action_parameter_instrument_cb.currentData()
-                self.action_parameter_cb.addItem(display_member_string, data_member)
-            else:
-                for parameter in action.parameters:
-                    if parameter != "IDN":
-                        display_member_string = parameter
-                        data_member = action.parameters[parameter]
-                        self.action_parameter_cb.addItem(display_member_string, data_member)
-                    if str(action.parameters[parameter]) in self.dividers:
-                        name = str(action.parameters[parameter])
-                        display_member_string = self.dividers[name].name
-                        data_member = action.parameters[parameter]
-                        self.action_parameter_cb.addItem(display_member_string, data_member)
+                # if action is loop, then just show loop name, loop has no parameters so for params also show loop name
+                if isinstance(action, ActiveLoop):
+                    display_member_string = action_array[0].currentText()
+                    data_member = action_array[0].currentData()
+                    action_array[1].addItem(display_member_string, data_member)
+                else:
+                    for parameter in action.parameters:
+                        if parameter != "IDN":
+                            display_member_string = parameter
+                            data_member = action.parameters[parameter]
+                            action_array[1].addItem(display_member_string, data_member)
+                        if str(action.parameters[parameter]) in self.dividers:
+                            param_name = str(action.parameters[parameter])
+                            display_member_string = self.dividers[param_name].name
+                            data_member = action.parameters[parameter]
+                            action_array[1].addItem(display_member_string, data_member)
 
     def fill_loop_data(self):
         """
@@ -438,7 +465,10 @@ class LoopsWidget(QWidget):
         :return: NoneType
         """
         sweep_parameter = self.sweep_parameter_cb.currentData()
-        sweep_parameter_name = sweep_parameter.full_name
+        if hasattr(sweep_parameter, "full_name"):
+            sweep_parameter_name = sweep_parameter.full_name
+        else:
+            sweep_parameter_name = ""
         sweep_display_name = self.sweep_parameter_cb.currentText()
 
         if (sweep_parameter_name in self.dividers) and (sweep_display_name == self.dividers[sweep_parameter_name].name):
@@ -454,26 +484,28 @@ class LoopsWidget(QWidget):
     def add_parameter(self):
 
         # increase the window height by 60 (should be enough to add another set of controls for adding extra actions)
-        self.resize(self.width, self.height + 60)
-        self.height += 60
+        self.height += 40
+        self.resize(self.width, self.height)
 
         # find and change the current position of the add loop button (keep it on the bottom of the window)
         add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
         add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
-        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate + 60)
+        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate + 40)
 
-        self.action_parameter_instrument_cb = QComboBox(self)
-        self.action_parameter_instrument_cb.resize(80, 30)
-        self.action_parameter_instrument_cb.move(45, 220)
+        action_parameter_instrument_cb = QComboBox(self)
+        action_parameter_instrument_cb.resize(80, 30)
+        action_parameter_instrument_cb.move(45, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_instrument_cb.show()
         for name, instrument in self.instruments.items():
             display_member = name
             value_member = instrument
-            self.action_parameter_instrument_cb.addItem(display_member, value_member)
-        self.action_parameter_instrument_cb.currentIndexChanged.connect(self.update_action_instrument_parameters)
+            action_parameter_instrument_cb.addItem(display_member, value_member)
+        action_parameter_instrument_cb.currentIndexChanged.connect(self.update_action_instrument_parameters)
         # combobox for selecting parameter
-        self.action_parameter_cb = QComboBox(self)
-        self.action_parameter_cb.resize(80, 30)
-        self.action_parameter_cb.move(135, 220)
+        action_parameter_cb = QComboBox(self)
+        action_parameter_cb.resize(80, 30)
+        action_parameter_cb.move(135, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_cb.show()
         self.update_action_instrument_parameters()
         # add loops to combobox (loop can also be an action of another loop)
         for name, loop in self.loops.items():
@@ -482,11 +514,18 @@ class LoopsWidget(QWidget):
             self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
         # divider for action parameter
         label = QLabel("Divider", self)
-        label.move(240, 200)
+        label.move(240, 200 + 40*len(self.current_loop_actions_dictionary))
         label.setToolTip("Add division/amplification to the instrument")
-        self.action_parameter_divider = QLineEdit("1", self)
-        self.action_parameter_divider.move(240, 220)
-        self.action_parameter_divider.resize(30, 30)
+        action_parameter_divider = QLineEdit("1", self)
+        action_parameter_divider.move(240, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_divider.resize(30, 30)
+        action_parameter_divider.show()
+
+        action_name = "action" + str(len(self.current_loop_actions_dictionary))
+        self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
+                                                             action_parameter_cb,
+                                                             action_parameter_divider]
+        self.update_action_instrument_parameters()
 
 
 if __name__ == '__main__':

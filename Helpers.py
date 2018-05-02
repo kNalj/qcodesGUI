@@ -3,6 +3,7 @@ from PyQt5 import QtGui
 
 import os
 import importlib
+from qcodes.loops import ActiveLoop
 
 
 def show_error_message(title, message):
@@ -58,14 +59,11 @@ def get_plot_parameter(loop):
     :return: full name of loops action parameter
     """
     action = loop.actions[0]
-    module_name = "qcodes.loops"
-    module = importlib.import_module(module_name)
-    loop_class = getattr(module, "ActiveLoop")
 
-    if isinstance(action, loop_class):
+    if isinstance(action, ActiveLoop):
         return get_plot_parameter(action)
     else:
-        return loop.actions[0]
+        return action
 
 
 def is_numeric(value):

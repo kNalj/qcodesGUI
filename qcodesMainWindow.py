@@ -28,7 +28,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-sys.excepthook = trap_exc_during_debug
+# sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -412,8 +412,8 @@ class MainWindow(QMainWindow):
             # separate thread
             if with_plot:
                 parameter = get_plot_parameter(loop)
-                parameter_name = str(parameter)
                 plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title=self.output_file_name.text())
+                parameter_name = str(parameter)
                 plot.add(getattr(data, parameter_name))
                 # loop.with_bg_task(plot.update, plot.save).run(use_threads=True)
                 loop.bg_task = None
