@@ -43,6 +43,7 @@ class LoopsWidget(QWidget):
         if self.name != "":
             self.loop = self.loops[self.name]
             self.loop_values = []
+            self.get_loop_data()
             # [lower, upper, steps, delay, sweep, sweep_division, action, action_division]
         self.init_ui()
         self.show()
@@ -185,6 +186,7 @@ class LoopsWidget(QWidget):
         # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
         if self.name != "":
             self.fill_loop_data()
+
         # shortcuts for certain actions
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
         close_shortcut.activated.connect(self.close)
@@ -216,32 +218,6 @@ class LoopsWidget(QWidget):
             show_error_message("Warning", warning_string)
         else:
             # Create dividres and add them to a dict of dividers (shared with main window)
-            """if sweep_division != 1 and action_division != 1:
-                parameter = self.sweep_parameter_cb.currentData()
-                sweep_divider = VoltageDivider(parameter, sweep_division)
-                self.dividers[str(parameter)] = sweep_divider
-                parameter = self.action_parameter_cb.currentData()
-                action_divider = VoltageDivider(parameter, action_division)
-                self.dividers[str(parameter)] = action_divider
-                lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay, progress_interval=20).each(
-                    action_divider, task)
-            elif sweep_division != 1:
-                parameter = self.sweep_parameter_cb.currentData()
-                sweep_divider = VoltageDivider(parameter, sweep_division)
-                self.dividers[str(parameter)] = sweep_divider
-                lp = qc.Loop(sweep_divider.sweep(lower, upper, num=num), delay, progress_interval=20).each(
-                    self.action_parameter_cb.currentData(), task)
-            elif action_division != 1:
-                parameter = self.action_parameter_cb.currentData()
-                action_divider = VoltageDivider(parameter, action_division)
-                self.dividers[str(parameter)] = action_divider
-                lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
-                             progress_interval=20).each(action_divider, task)
-            else:
-                # or if there are no dividers attached just create a loop from selected parameters
-                lp = qc.Loop(self.sweep_parameter_cb.currentData().sweep(lower, upper, num=num), delay,
-                             progress_interval=20).each(self.action_parameter_cb.currentData(), task)"""
-
             sweep_parameter = self.sweep_parameter_cb.currentData()
             if sweep_division != 1:
                 sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
@@ -337,23 +313,16 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
-        # fetch all data required to completely fill in this widgets
-        lower = self.loop.sweep_values[0]
-        upper = self.loop.sweep_values[-1]
-        number_of_steps = len(self.loop.sweep_values)
-        loop_delay = self.loop.delay
-
-        # save the fetched data for easier extraction
-        self.loop_values.append(lower)
-        self.loop_values.append(upper)
-        self.loop_values.append(number_of_steps)
-        self.loop_values.append(loop_delay)
 
         # set textboxes to show extracted values
-        self.textbox_lower_limit.setText(str(lower))
-        self.textbox_upper_limit.setText(str(upper))
-        self.textbox_num.setText(str(number_of_steps))
-        self.textbox_step.setText(str(loop_delay))
+        self.textbox_lower_limit.setText(str(self.loop_values[0]))
+        self.textbox_upper_limit.setText(str(self.loop_values[1]))
+        self.textbox_num.setText(str(self.loop_values[2]))
+        self.textbox_step.setText(str(self.loop_values[3]))
+
+        for index, action in enumerate(self.loop.actions):
+            if index != 0 and (not isinstance(action, Task)):
+                self.add_parameter()
 
         # if action is a loop, display it as a loop
         # else display selected instrument and parameter
@@ -399,18 +368,6 @@ class LoopsWidget(QWidget):
             sweep_parameter_name = self.loop.sweep_values.parameter.name
             index = self.sweep_parameter_cb.findText(sweep_parameter_name)
             self.sweep_parameter_cb.setCurrentIndex(index)
-
-        self.loop_values.append(sweep)
-        if isinstance(sweep, VoltageDivider):
-            self.loop_values[-1] = sweep.v1.full_name
-            self.loop_values.append(sweep.division_value)
-        else:
-            self.loop_values.append(1)
-        self.loop_values.append(action)
-        if isinstance(action, VoltageDivider):
-            self.loop_values.append(action.division_value)
-        else:
-            self.loop_values.append(1)
 
     def update_step_size(self):
         """
@@ -526,6 +483,36 @@ class LoopsWidget(QWidget):
                                                              action_parameter_cb,
                                                              action_parameter_divider]
         self.update_action_instrument_parameters()
+
+    def get_loop_data(self):
+
+        # fetch all data required to completely fill in this widgets
+        lower = self.loop.sweep_values[0]
+        upper = self.loop.sweep_values[-1]
+        number_of_steps = len(self.loop.sweep_values)
+        loop_delay = self.loop.delay
+
+        # save the fetched data for easier extraction
+        self.loop_values.append(lower)
+        self.loop_values.append(upper)
+        self.loop_values.append(number_of_steps)
+        self.loop_values.append(loop_delay)
+
+        sweep = self.loop.sweep_values.parameter
+        action = self.loop.actions[0]
+
+        self.loop_values.append(sweep)
+        if isinstance(sweep, VoltageDivider):
+            self.loop_values[-1] = sweep.v1.full_name
+            self.loop_values.append(sweep.division_value)
+        else:
+            self.loop_values.append(1)
+
+        self.loop_values.append(action)
+        if isinstance(action, VoltageDivider):
+            self.loop_values.append(action.division_value)
+        else:
+            self.loop_values.append(1)
 
 
 if __name__ == '__main__':
