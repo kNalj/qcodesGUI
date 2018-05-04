@@ -307,7 +307,6 @@ class LoopsWidget(QWidget):
                             data_member = action.parameters[parameter]
                             action_array[1].addItem(display_member_string, data_member)
         elif (len(self.instruments)) and (new is not None):
-            print("Value of new is: ", new)
             action_array = self.current_loop_actions_dictionary[new]
             action_array[1].clear()
             action = action_array[0].currentData()
@@ -358,15 +357,11 @@ class LoopsWidget(QWidget):
             # correct division that has been applied to this divider
             elif isinstance(action, VoltageDivider):
                 action_parameter_instrument_name = action.v1._instrument.name
-                print("Instrument name: ", action_parameter_instrument_name)
                 action_name = "action" + str(index)
-                print("Action name: ", action_name)
                 action_array = self.current_loop_actions_dictionary[action_name]
-                print("Array: ", action_array)
                 instrument_index = action_array[0].findText(
                     action_parameter_instrument_name
                 )
-                print("index", instrument_index)
                 action_array[0].setCurrentIndex(instrument_index)
                 action_parameter_name = action.v1.name
                 parameter_index = action_array[1].findText(action_parameter_name)
@@ -511,7 +506,6 @@ class LoopsWidget(QWidget):
         self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
                                                              action_parameter_cb,
                                                              action_parameter_divider]
-        print("Action name is: ", action_name)
         self.update_action_instrument_parameters(new=action_name)
 
     def get_loop_data(self):
