@@ -40,6 +40,12 @@ class LoopsWidget(QWidget):
         #        value is a list in format: [instrument, parameter, division] containing reference to an instrument,
         #           and the parameter of that instrument (i might not need both of these) and finally a division value
         self.current_loop_actions_dictionary = {}
+
+        # dict of remove buttons
+        self.remove_buttons = {}
+
+        # if loop name has been passed then grab that loop from loops dictionary, create a list to hold loop values, and
+        # call a method that gets that data
         if self.name != "":
             self.loop = self.loops[self.name]
             self.loop_values = []
@@ -150,7 +156,9 @@ class LoopsWidget(QWidget):
             display_member = name
             value_member = instrument
             self.action_parameter_instrument_cb.addItem(display_member, value_member)
-        self.action_parameter_instrument_cb.currentIndexChanged.connect(self.update_action_instrument_parameters)
+        self.action_parameter_instrument_cb.currentIndexChanged.connect(lambda checked,
+                                                                               act_name="action0":
+                                                                        self.update_action_instrument_parameters(act_name))
         # combobox for selecting parameter
         self.action_parameter_cb = QComboBox(self)
         self.action_parameter_cb.resize(80, 30)
@@ -191,6 +199,107 @@ class LoopsWidget(QWidget):
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
         close_shortcut.activated.connect(self.close)
 
+    def add_parameter(self):
+        """
+        Expand the window to with new elements that will represent new action. After adding elements for a new action
+        fill those elements with data (to be able to select the instrument/parameter/division), and add pointers to
+        those elements to a dictionary (self.current_loop_actions_dictionary) to be able to access them later
+
+        :return: NoneType
+        """
+
+        # increase the window height by 40 (should be enough to add another set of controls for adding extra actions)
+        self.height += 40
+        self.resize(self.width, self.height)
+
+        # find and change the current position of the add loop button (keep it on the bottom of the window)
+        add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
+        add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
+        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate + 40)
+
+        # remove action button
+        remove_action_btn = QPushButton("x", self)
+        remove_action_btn.move(20, 225 + 40*len(self.current_loop_actions_dictionary))
+        remove_action_btn.resize(20, 20)
+        remove_action_btn.show()
+
+
+        # create combo box for selecting an instrument
+        action_parameter_instrument_cb = QComboBox(self)
+        action_parameter_instrument_cb.resize(80, 30)
+        action_parameter_instrument_cb.move(45, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_instrument_cb.show()
+        # fill instrument combo box with instrument names
+        for name, instrument in self.instruments.items():
+            display_member = name
+            value_member = instrument
+            action_parameter_instrument_cb.addItem(display_member, value_member)
+
+        # combobox for selecting parameter
+        action_parameter_cb = QComboBox(self)
+        action_parameter_cb.resize(80, 30)
+        action_parameter_cb.move(135, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_cb.show()
+
+        # add loops to combobox (loop can also be an action of another loop)
+        for name, loop in self.loops.items():
+            display_member_string = "[" + name + "]"
+            data_member = loop
+            self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
+
+        # divider for action parameter
+        action_parameter_divider = QLineEdit("1", self)
+        action_parameter_divider.move(240, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_divider.resize(30, 30)
+        action_parameter_divider.show()
+
+        # save action with a name: action# where # is number of loops created so far
+
+        index = str(len(self.current_loop_actions_dictionary))
+        action_name = "action" + index
+        action_parameter_instrument_cb.currentIndexChanged.connect(lambda checked,
+                                                                          act_name=action_name:
+                                                                   self.update_action_instrument_parameters(act_name))
+        remove_action_btn.clicked.connect(lambda checked,
+                                                 act_name=action_name:
+                                          self.remove_parameter(act_name))
+
+        self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
+                                                             action_parameter_cb,
+                                                             action_parameter_divider]
+        self.remove_buttons[action_name] = remove_action_btn
+
+        # update only newly created combo boxes
+        self.update_action_instrument_parameters(action_name=action_name)
+
+    def remove_parameter(self, action_name):
+        """
+        If a parameter needs to be removed from the loop this method gets all elements that are used to represent that
+        parameter and removes them from the UI. Repositions other elements and resizes the window
+
+        :param action_name: a list of elements that will be removed from the UI
+        :return:
+        """
+        for element in self.current_loop_actions_dictionary[action_name]:
+            element.deleteLater()
+        self.current_loop_actions_dictionary[action_name] = None
+        self.remove_buttons[action_name].deleteLater()
+
+        for name, parameter_elements in self.current_loop_actions_dictionary.items():
+            if int(action_name[6:]) < int(name[6:]):
+                # if the param has been added to the window later then one deleted, move it up by 40 (or smtn)
+                if parameter_elements is not None:
+                    for element in parameter_elements:
+                        element.move(element.pos().x(), element.pos().y() - 40)
+                    rm_btn = self.remove_buttons[name]
+                    rm_btn.move(rm_btn.pos().x(), rm_btn.pos().y() - 40)
+
+        add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
+        add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
+        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate - 40)
+        self.height -= 40
+        self.resize(self.width, self.height)
+
     """""""""""""""""""""
     Data manipulation
     """""""""""""""""""""
@@ -204,14 +313,16 @@ class LoopsWidget(QWidget):
         # Try to fetch user input data and cast it to floats
         # If it fails, throw an exception
         # Otherwise, create a loop, add it to the shared dict
+
+        # Create a task that checks if loop stop has been request on each measure point of the loop
         task = Task(self.parent.check_stop_request)
+        # grab data for creating a loop from elements of the widget
         try:
             lower = float(self.textbox_lower_limit.text())
             upper = float(self.textbox_upper_limit.text())
             num = float(self.textbox_num.text())
             delay = float(self.textbox_step.text())
             sweep_division = float(self.sweep_parameter_divider.text())
-            # action_division = float(self.action_parameter_divider.text())
         except Exception as e:
             warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
                              + str(e)
@@ -222,28 +333,33 @@ class LoopsWidget(QWidget):
             if sweep_division != 1:
                 sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
 
+            # create a list and fill it with actions created by user (dividers if they are attached)
             actions = []
             for i in range(len(self.current_loop_actions_dictionary)):
                 action_array = self.current_loop_actions_dictionary["action" + str(i)]
-                action_parameter = action_array[1].currentData()
-                try:
-                    division = float(action_array[2].text())
-                except Exception as e:
-                    show_error_message("Warning", str(e))
-                else:
-                    if division != 1:
-                        action_parameter = VoltageDivider(action_parameter, division)
-                    actions.append(action_parameter)
-
+                if action_array is not None:
+                    action_parameter = action_array[1].currentData()
+                    try:
+                        division = float(action_array[2].text())
+                    except Exception as e:
+                        show_error_message("Warning", str(e))
+                    else:
+                        if division != 1:
+                            action_parameter = VoltageDivider(action_parameter, division)
+                        actions.append(action_parameter)
+            # append a task that checks for loop stop request
             actions.append(task)
 
+            # pass dereferenced list of actions to a loops each method
             lp = qc.Loop(sweep_parameter.sweep(lower, upper, num=num), delay, progress_interval=20).each(*actions)
 
+            # if a loop name has been passed to this widget then overwrite that loop in the loops dictionary
             if self.name != "":
                 name = self.name
                 self.loops[name] = lp
                 self.actions.append(lp)
                 self.parent.update_loops_preview(edit=name)
+            # otherwise create a new loop and save it to the loops dictionary
             else:
                 name = "loop" + str(len(self.actions)+1)
                 self.loops[name] = lp
@@ -276,7 +392,7 @@ class LoopsWidget(QWidget):
                     data_member = instrument.parameters[parameter]
                     self.sweep_parameter_cb.addItem(display_member_string, data_member)
 
-    def update_action_instrument_parameters(self, new=None):
+    def update_action_instrument_parameters(self, action_name=None):
         """
         Replaces data in parameters combo box. Fetch all parameters of an instrument selected in a instrument combo box
         and display them as options in parameters combo box
@@ -285,17 +401,22 @@ class LoopsWidget(QWidget):
         """
         # Upon selecting one of possible instruments, update the parameter combo box to only display parameters that
         # belong to this instrument meaning only those parameters will now be selectable
-        if (len(self.instruments)) and (new is None):
+        if (len(self.instruments)) and (action_name is None):
             for name, action_array in self.current_loop_actions_dictionary.items():
+                # action_array looks like [instrument_cb, parameter_cb, divider_textbox], therefor,
+                # action_array[1].clear removes all elements currently in the parameters_combobox (parameter_cb)
                 action_array[1].clear()
                 action = action_array[0].currentData()
 
                 # if action is loop, then just show loop name, loop has no parameters so for params also show loop name
                 if isinstance(action, ActiveLoop):
+                    # action_array[0] grabs instrument (or in this case -> loop)
                     display_member_string = action_array[0].currentText()
                     data_member = action_array[0].currentData()
+                    # since its a loop, it doesnt have parameters, therefor, just display loop name as parameter
                     action_array[1].addItem(display_member_string, data_member)
                 else:
+                    # if it's not a loop, then its an instrument, in that case display all of it's parameters
                     for parameter in action.parameters:
                         if parameter != "IDN":
                             display_member_string = parameter
@@ -306,8 +427,9 @@ class LoopsWidget(QWidget):
                             display_member_string = self.dividers[param_name].name
                             data_member = action.parameters[parameter]
                             action_array[1].addItem(display_member_string, data_member)
-        elif (len(self.instruments)) and (new is not None):
-            action_array = self.current_loop_actions_dictionary[new]
+        # This block will get executed only if this function is called from method self.add_parameter
+        elif (len(self.instruments)) and (action_name is not None):
+            action_array = self.current_loop_actions_dictionary[action_name]
             action_array[1].clear()
             action = action_array[0].currentData()
             for parameter in action.parameters:
@@ -335,6 +457,8 @@ class LoopsWidget(QWidget):
         self.textbox_num.setText(str(self.loop_values[2]))
         self.textbox_step.setText(str(self.loop_values[3]))
 
+        # add all actions that are not the first one or a Task, since the first one is added by default, and we don't
+        # want to display a Task in list of actions
         for index, action in enumerate(self.loop.actions):
             if index != 0 and (not isinstance(action, Task)):
                 self.add_parameter()
@@ -343,7 +467,7 @@ class LoopsWidget(QWidget):
         # else display selected instrument and parameter
         actions = self.loop.actions
         for index, action in enumerate(actions):
-        # action can be a loop, then just show loop name
+            # action can be a loop, then just show loop name
             if isinstance(action, ActiveLoop):
                 action_parameter_instrument_name = action
                 action_name = "action"+str(index)
@@ -466,49 +590,13 @@ class LoopsWidget(QWidget):
             sweep_division = 1
             self.sweep_parameter_divider.setText(str(sweep_division))
 
-    def add_parameter(self):
-
-        # increase the window height by 40 (should be enough to add another set of controls for adding extra actions)
-        self.height += 40
-        self.resize(self.width, self.height)
-
-        # find and change the current position of the add loop button (keep it on the bottom of the window)
-        add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
-        add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
-        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate + 40)
-
-        action_parameter_instrument_cb = QComboBox(self)
-        action_parameter_instrument_cb.resize(80, 30)
-        action_parameter_instrument_cb.move(45, 220 + 40*len(self.current_loop_actions_dictionary))
-        action_parameter_instrument_cb.show()
-        for name, instrument in self.instruments.items():
-            display_member = name
-            value_member = instrument
-            action_parameter_instrument_cb.addItem(display_member, value_member)
-        action_parameter_instrument_cb.currentIndexChanged.connect(self.update_action_instrument_parameters)
-        # combobox for selecting parameter
-        action_parameter_cb = QComboBox(self)
-        action_parameter_cb.resize(80, 30)
-        action_parameter_cb.move(135, 220 + 40*len(self.current_loop_actions_dictionary))
-        action_parameter_cb.show()
-        # add loops to combobox (loop can also be an action of another loop)
-        for name, loop in self.loops.items():
-            display_member_string = "[" + name + "]"
-            data_member = loop
-            self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
-        # divider for action parameter
-        action_parameter_divider = QLineEdit("1", self)
-        action_parameter_divider.move(240, 220 + 40*len(self.current_loop_actions_dictionary))
-        action_parameter_divider.resize(30, 30)
-        action_parameter_divider.show()
-
-        action_name = "action" + str(len(self.current_loop_actions_dictionary))
-        self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
-                                                             action_parameter_cb,
-                                                             action_parameter_divider]
-        self.update_action_instrument_parameters(new=action_name)
-
     def get_loop_data(self):
+        """
+        Gets all data required to set up the same loop. That includes lower and upper values of sweep, number of steps
+        and delay. Additionaly grabs the first action of the loop (only one that has to exists)
+
+        :return:
+        """
 
         # fetch all data required to completely fill in this widgets
         lower = self.loop.sweep_values[0]
