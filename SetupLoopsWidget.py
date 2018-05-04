@@ -223,7 +223,8 @@ class LoopsWidget(QWidget):
                 sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
 
             actions = []
-            for name, action_array in self.current_loop_actions_dictionary.items():
+            for i in range(len(self.current_loop_actions_dictionary)):
+                action_array = self.current_loop_actions_dictionary["action" + str(i)]
                 action_parameter = action_array[1].currentData()
                 try:
                     division = float(action_array[2].text())
@@ -275,7 +276,7 @@ class LoopsWidget(QWidget):
                     data_member = instrument.parameters[parameter]
                     self.sweep_parameter_cb.addItem(display_member_string, data_member)
 
-    def update_action_instrument_parameters(self):
+    def update_action_instrument_parameters(self, new=None):
         """
         Replaces data in parameters combo box. Fetch all parameters of an instrument selected in a instrument combo box
         and display them as options in parameters combo box
@@ -284,7 +285,7 @@ class LoopsWidget(QWidget):
         """
         # Upon selecting one of possible instruments, update the parameter combo box to only display parameters that
         # belong to this instrument meaning only those parameters will now be selectable
-        if len(self.instruments):
+        if (len(self.instruments)) and (new is None):
             for name, action_array in self.current_loop_actions_dictionary.items():
                 action_array[1].clear()
                 action = action_array[0].currentData()
@@ -305,6 +306,21 @@ class LoopsWidget(QWidget):
                             display_member_string = self.dividers[param_name].name
                             data_member = action.parameters[parameter]
                             action_array[1].addItem(display_member_string, data_member)
+        elif (len(self.instruments)) and (new is not None):
+            print("Value of new is: ", new)
+            action_array = self.current_loop_actions_dictionary[new]
+            action_array[1].clear()
+            action = action_array[0].currentData()
+            for parameter in action.parameters:
+                if parameter != "IDN":
+                    display_member_string = parameter
+                    data_member = action.parameters[parameter]
+                    action_array[1].addItem(display_member_string, data_member)
+                if str(action.parameters[parameter]) in self.dividers:
+                    param_name = str(action.parameters[parameter])
+                    display_member_string = self.dividers[param_name].name
+                    data_member = action.parameters[parameter]
+                    action_array[1].addItem(display_member_string, data_member)
 
     def fill_loop_data(self):
         """
@@ -326,30 +342,47 @@ class LoopsWidget(QWidget):
 
         # if action is a loop, display it as a loop
         # else display selected instrument and parameter
-        action = self.loop.actions[0]
+        actions = self.loop.actions
+        for index, action in enumerate(actions):
         # action can be a loop, then just show loop name
-        if isinstance(action, ActiveLoop):
-            action_parameter_instrument_name = self.loop.actions[0]
-            index = self.action_parameter_instrument_cb.findData(action_parameter_instrument_name)
-            self.action_parameter_instrument_cb.setCurrentIndex(index)
-        # if action is a voltage divider then get the parameter that this divider is attached to and also show
-        # correct division that has been applied to this divider
-        elif isinstance(action, VoltageDivider):
-            action_parameter_instrument_name = self.loop.actions[0].v1._instrument.name
-            index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
-            self.action_parameter_instrument_cb.setCurrentIndex(index)
-            action_parameter_name = action.v1.name
-            index = self.action_parameter_cb.findText(action_parameter_name)
-            self.action_parameter_cb.setCurrentIndex(index)
-            self.action_parameter_divider.setText(str(action.division_value))
-        # if its a regular parameter then find if there was a division applied to it and display that insted of 1
-        else:
-            action_parameter_instrument_name = self.loop.actions[0]._instrument.name
-            index = self.action_parameter_instrument_cb.findText(action_parameter_instrument_name)
-            self.action_parameter_instrument_cb.setCurrentIndex(index)
-            action_parameter_name = self.loop.actions[0].name
-            index = self.action_parameter_cb.findText(action_parameter_name)
-            self.action_parameter_cb.setCurrentIndex(index)
+            if isinstance(action, ActiveLoop):
+                action_parameter_instrument_name = action
+                action_name = "action"+str(index)
+                action_array = self.current_loop_actions_dictionary[action_name]
+                instrument_index = action_array[0].findData(
+                    action_parameter_instrument_name
+                )
+                action_array[0].setCurrentIndex(instrument_index)
+
+            # if action is a voltage divider then get the parameter that this divider is attached to and also show
+            # correct division that has been applied to this divider
+            elif isinstance(action, VoltageDivider):
+                action_parameter_instrument_name = action.v1._instrument.name
+                print("Instrument name: ", action_parameter_instrument_name)
+                action_name = "action" + str(index)
+                print("Action name: ", action_name)
+                action_array = self.current_loop_actions_dictionary[action_name]
+                print("Array: ", action_array)
+                instrument_index = action_array[0].findText(
+                    action_parameter_instrument_name
+                )
+                print("index", instrument_index)
+                action_array[0].setCurrentIndex(instrument_index)
+                action_parameter_name = action.v1.name
+                parameter_index = action_array[1].findText(action_parameter_name)
+                action_array[1].setCurrentIndex(parameter_index)
+                action_array[2].setText(str(action.division_value))
+            # if its a regular parameter then find if there was a division applied to it and display that insted of 1
+            else:
+                if not isinstance(action, Task):
+                    action_parameter_instrument_name = action._instrument.name
+                    action_name = "action" + str(index)
+                    action_array = self.current_loop_actions_dictionary[action_name]
+                    instrument_index = action_array[0].findText(action_parameter_instrument_name)
+                    action_array[0].setCurrentIndex(instrument_index)
+                    action_parameter_name = action.name
+                    parameter_index = action_array[1].findText(action_parameter_name)
+                    action_array[1].setCurrentIndex(parameter_index)
 
         # do the same thing for sweep parameter
         sweep = self.loop.sweep_values.parameter
@@ -440,7 +473,7 @@ class LoopsWidget(QWidget):
 
     def add_parameter(self):
 
-        # increase the window height by 60 (should be enough to add another set of controls for adding extra actions)
+        # increase the window height by 40 (should be enough to add another set of controls for adding extra actions)
         self.height += 40
         self.resize(self.width, self.height)
 
@@ -463,16 +496,12 @@ class LoopsWidget(QWidget):
         action_parameter_cb.resize(80, 30)
         action_parameter_cb.move(135, 220 + 40*len(self.current_loop_actions_dictionary))
         action_parameter_cb.show()
-        self.update_action_instrument_parameters()
         # add loops to combobox (loop can also be an action of another loop)
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
             data_member = loop
             self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
         # divider for action parameter
-        label = QLabel("Divider", self)
-        label.move(240, 200 + 40*len(self.current_loop_actions_dictionary))
-        label.setToolTip("Add division/amplification to the instrument")
         action_parameter_divider = QLineEdit("1", self)
         action_parameter_divider.move(240, 220 + 40*len(self.current_loop_actions_dictionary))
         action_parameter_divider.resize(30, 30)
@@ -482,7 +511,8 @@ class LoopsWidget(QWidget):
         self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
                                                              action_parameter_cb,
                                                              action_parameter_divider]
-        self.update_action_instrument_parameters()
+        print("Action name is: ", action_name)
+        self.update_action_instrument_parameters(new=action_name)
 
     def get_loop_data(self):
 
