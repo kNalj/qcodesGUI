@@ -194,7 +194,7 @@ class EditInstrumentWidget(QWidget):
             """
             # full name is composed of the instrument name and parameter name (Example: IVVI_dac1)
             full_name = str(self.instrument.parameters[parameter])
-            try:
+            try: # look into qcodes/utils/validators, think of a way
                 value = float(self.textboxes[parameter].text())
                 if full_name in self.dividers:
                     self.dividers[full_name].set_raw(value)
@@ -235,7 +235,7 @@ class EditInstrumentWidget(QWidget):
             if full_name in self.dividers:
                 self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
             else:
-                self.textboxes[name].setText(str(self.instrument.get(name)))
+                self.textboxes[name].setText(str(round(self.instrument.get(name), 3)))
             if is_numeric(self.instrument.get(name)):
                 self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
             else:
