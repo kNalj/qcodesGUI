@@ -275,7 +275,7 @@ class LoopsWidget(QWidget):
     def remove_parameter(self, action_name):
         """
         If a parameter needs to be removed from the loop this method gets all elements that are used to represent that
-        parameter and removes them from the UI. Repositions other elements and resizes the window
+        parameter and removes them from the UI. Repositions other elements and resizes the window.
 
         :param action_name: a list of elements that will be removed from the UI
         :return:
