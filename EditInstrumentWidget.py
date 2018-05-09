@@ -22,6 +22,11 @@ class EditInstrumentWidget(QWidget):
         """
         Constructor for EditInstrumentWidget window
 
+        :param instruments: dictionary containing all instruments created in this instance of GUI
+        :param dividers: dict of all divider created in this instance of GUI
+        :param active: list of all opened instruments windows (one must be able to remove self from that list)
+        :param thread_pool: thread managing pool of threads (shared with mainWindow)
+        :param tracked_parameter: used for live mode of the instrument, only updates value of this parameter
         :param instrument_name: Name of an instrument to be edited
         :param parent: specify object that created this widget
         """

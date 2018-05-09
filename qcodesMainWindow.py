@@ -28,7 +28,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-# sys.excepthook = trap_exc_during_debug
+sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -38,8 +38,8 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.init_menu_bar()
 
-        # self.instruments is a dictionary containing all instruments that have been connected so far. Form of the dict is
-        # key : value where key is the name of the instrument assigned by you when creating the instrument, and value
+        # self.instruments is a dictionary containing all instruments that have been connected so far. Form of the dict
+        # is: key:value where key is the name of the instrument assigned by you when creating the instrument, and value
         # contains that particular instance of that instrument.
         self.instruments = {}
 
@@ -48,8 +48,8 @@ class MainWindow(QMainWindow):
         # which instruments are already displayed
         self.station_instruments = {}
 
-        # loops dictionary contaning all loops that have been created so far. Form: key : value where key is the name
-        # of the loop that is assigned automaticly in order of creation of loops (loop1, loop2, loop3, ...), and the
+        # loops dictionary containing all loops that have been created so far. Form: key : value where key is the name
+        # of the loop that is assigned automatically in order of creation of loops (loop1, loop2, loop3, ...), and the
         # value is an instance of that loop
         self.loops = {}
 
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
 
         # list of references to the EditInstrumentWidget windows that are currently open, used to start live updating
         # of parameters of each of those windows after a measurement has been started. That way only the ones that are
-        # currently opened will be automaticaly self updating
+        # currently opened will be automatically self updating
         self.active_isntruments = []
 
         # instrument workers is a list of handles to the workers that do the above explained actions. Reason for keeping
@@ -82,13 +82,14 @@ class MainWindow(QMainWindow):
         # (execute qcodes in another thread [to not freeze GUI thread while executing])
         self.thread_pool = QThreadPool()
 
-        # Handles to all active workers (with the idea of stoping them). Contains only workers that run loops, other
+        # Handles to all active workers (with the idea of stopping them). Contains only workers that run loops, other
         # other workers are stored in different lists
         self.workers = []
 
         # check this to see if stop has been requested
         self.stop_loop_requested = True
 
+        # holds string representation of folder in which to save measurement data
         self.save_location = ""
 
         self.statusBar().showMessage("Ready")
@@ -441,7 +442,9 @@ class MainWindow(QMainWindow):
 
             # start the worker
             del self.workers[:]
+            # starting live mode of all opened instruments
             for widget in self.active_isntruments:
+                # only if that instrument has this parameter, then start its live mode
                 if self.actions[-1].sweep_values.name in widget.textboxes.keys():
                     widget.toggle_live()
             self.thread_pool.start(worker)
