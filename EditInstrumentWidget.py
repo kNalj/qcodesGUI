@@ -17,7 +17,8 @@ from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 
 class EditInstrumentWidget(QWidget):
 
-    def __init__(self, instruments, dividers, active, thread_pool, tracked_parameter=None, parent=None, instrument_name=""):
+    def __init__(self, instruments, dividers, active, thread_pool,
+                 tracked_parameter=None, parent=None, instrument_name=""):
         """
         Constructor for EditInstrumentWidget window
 
@@ -40,8 +41,6 @@ class EditInstrumentWidget(QWidget):
         self.instrument_name = instrument_name
         # instance of the instrument that is currently being edited
         self.instrument = self.instruments[instrument_name]
-        # i dont remember what was the idea for this one, i dont think i need it, i'll have to check
-        self.division = 1
 
         # keep track of workers messing with this window
         self.live = False
@@ -91,16 +90,6 @@ class EditInstrumentWidget(QWidget):
         self.go_live_btn.move(360, 30)
         self.go_live_btn.resize(90, 40)
         self.go_live_btn.clicked.connect(self.toggle_live)
-
-        """label = QLabel("Division:", self)
-        label.move(310, 30)
-        self.division_textbox = QLineEdit("1", self)
-        self.division_textbox.move(360, 30)
-        self.division_textbox.resize(40, 20)
-        self.apply_division = QPushButton("Apply", self)
-        self.apply_division.move(410, 30)
-        self.apply_division.resize(40, 20)
-        self.apply_division.clicked.connect(self.update_divided_values)"""
 
         label = QLabel("Original", self)
         label.move(160, 60)

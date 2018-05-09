@@ -63,44 +63,38 @@ class EditInstrumentParameterWidget(QWidget):
         start_y = 25
         # for each parameter in the list create text box and get + set buttons
         for name in extras:
-            label = QLabel(name, self)
-            label.move(30, start_y)
-            label.show()
             if name == "step":
                 self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
                 self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay), self)
             else:
-                self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
-            self.textboxes_real_values[name].move(120, start_y)
-            self.textboxes_real_values[name].resize(40, 20)
-            self.textboxes_real_values[name].setDisabled(True)
+                if hasattr(self.parameter.vals, name):
+                    self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
+            if name in self.textboxes_real_values:
+                label = QLabel(name, self)
+                label.move(30, start_y)
+                label.show()
+                self.textboxes_real_values[name].move(120, start_y)
+                self.textboxes_real_values[name].resize(40, 20)
+                self.textboxes_real_values[name].setDisabled(True)
             if name == "step":
                 self.textboxes[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
                 self.textboxes[name] = QLineEdit(str(self.parameter.inter_delay), self)
             else:
-                self.textboxes[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
-            self.textboxes[name].move(180, start_y)
-            set_value_btn = QPushButton("Set", self)
-            set_value_btn.move(340, start_y)
-            set_value_btn.resize(40, 20)
-            set_value_btn.clicked.connect(self.make_set_value(name))
-            get_value_btn = QPushButton("Get", self)
-            get_value_btn.move(390, start_y)
-            get_value_btn.resize(40, 20)
-            get_value_btn.clicked.connect(self.update_displayed_values)
+                if hasattr(self.parameter.vals, name):
+                    self.textboxes[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
+            if name in self.textboxes:
+                self.textboxes[name].move(180, start_y)
+                set_value_btn = QPushButton("Set", self)
+                set_value_btn.move(340, start_y)
+                set_value_btn.resize(40, 20)
+                set_value_btn.clicked.connect(self.make_set_value(name))
+                get_value_btn = QPushButton("Get", self)
+                get_value_btn.move(390, start_y)
+                get_value_btn.resize(40, 20)
+                get_value_btn.clicked.connect(self.update_displayed_values)
             start_y += 25
-
-        # if there is a divider attched to this parameter show division value of that thingy
-        label = QLabel("Division", self)
-        label.move(30, start_y + 25)
-        label.show()
-        if str(self.parameter) in self.dividers:
-            self.division_value = QLineEdit(str(self.dividers[str(self.parameter)].division_value), self)
-        else:
-            self.division_value = QLineEdit("1", self)
-        self.division_value.move(120, start_y + 25)
 
         # Its just an CLOSE button man, dont read this
         self.OK_btn = QPushButton("Close", self)
