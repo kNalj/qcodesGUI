@@ -89,6 +89,8 @@ class MainWindow(QMainWindow):
         # check this to see if stop has been requested
         self.stop_loop_requested = True
 
+        self.save_location = ""
+
         self.statusBar().showMessage("Ready")
         self.show()
 
@@ -404,6 +406,12 @@ class MainWindow(QMainWindow):
         if len(self.actions):
             loop = self.actions[-1]
             loop.data_set = None
+
+            # adjust save location of the file
+            if self.save_location != "":
+                loc_provider = qc.data.location.FormatLocation(fmt=self.save_location +
+                                                                        '/{date}/#{counter}_{name}_{time}')
+                qc.data.data_set.DataSet.location_provider = loc_provider
             data = loop.get_data_set(name=self.output_file_name.text())
 
             # Check if the function was called with plot in background, if it was, create a new plot, delete backgroud
@@ -458,9 +466,7 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
-        save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-        loc_provider = qc.data.location.FormatLocation(fmt=save_location + '/{date}/#{counter}_{name}_{time}')
-        qc.data.data_set.DataSet.location_provider = loc_provider
+        self.save_location = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
     """""""""""""""""""""
     Helper functions
