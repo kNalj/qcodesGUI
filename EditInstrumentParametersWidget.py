@@ -64,9 +64,11 @@ class EditInstrumentParameterWidget(QWidget):
         # for each parameter in the list create text box and get + set buttons
         for name in extras:
             if name == "step":
-                self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step), self)
+                if hasattr(self.parameter, name):
+                    self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step), self)
             elif name == "inter_delay":
-                self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay), self)
+                if hasattr(self.parameter, name):
+                    self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay), self)
             else:
                 if hasattr(self.parameter.vals, name):
                     self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
@@ -86,10 +88,11 @@ class EditInstrumentParameterWidget(QWidget):
                     self.textboxes[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
             if name in self.textboxes:
                 self.textboxes[name].move(180, start_y)
-                set_value_btn = QPushButton("Set", self)
-                set_value_btn.move(340, start_y)
-                set_value_btn.resize(40, 20)
-                set_value_btn.clicked.connect(self.make_set_value(name))
+                if hasattr(self.parameter, "set"):
+                    set_value_btn = QPushButton("Set", self)
+                    set_value_btn.move(340, start_y)
+                    set_value_btn.resize(40, 20)
+                    set_value_btn.clicked.connect(self.make_set_value(name))
                 get_value_btn = QPushButton("Get", self)
                 get_value_btn.move(390, start_y)
                 get_value_btn.resize(40, 20)

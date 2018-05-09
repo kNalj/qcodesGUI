@@ -77,7 +77,7 @@ class EditInstrumentWidget(QWidget):
         # position is defined in relative size to the size of the monitor
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
         window_height = len(self.instrument.parameters)*30 + 200
-        self.setGeometry((width - 500), int(0.05*height), 480, window_height)
+        self.setGeometry((width - 600), int(0.05*height), 580, window_height)
         self.setMinimumSize(320, 260)
         # define title and icon of the widget
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
@@ -92,14 +92,14 @@ class EditInstrumentWidget(QWidget):
 
         # button to start live updating of the parameters of this instrument
         self.go_live_btn = QPushButton("Go live", self)
-        self.go_live_btn.move(360, 30)
+        self.go_live_btn.move(460, 30)
         self.go_live_btn.resize(90, 40)
         self.go_live_btn.clicked.connect(self.toggle_live)
 
         label = QLabel("Original", self)
-        label.move(160, 60)
+        label.move(260, 60)
         label = QLabel("Applied", self)
-        label.move(210, 60)
+        label.move(310, 60)
 
         # create a row for each of the parameters of this instrument with fields for displaying original and applied
         # values, also field for editing, and buttons for geting and seting a value
@@ -110,56 +110,58 @@ class EditInstrumentWidget(QWidget):
             label.show()
 
             self.inner_parameter_btns[name] = QPushButton("Edit " + name, self)
-            self.inner_parameter_btns[name].move(70, start_y)
-            self.inner_parameter_btns[name].resize(80, 20)
+            self.inner_parameter_btns[name].move(140, start_y)
+            self.inner_parameter_btns[name].resize(110, 20)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
             if is_numeric(self.instrument.get(name)):
-                val = round(self.instrument.get(name), 3)
+                val = round(float(self.instrument.get(name)), 3)
             else:
                 val = self.instrument.get(name)
             self.textboxes_real_values[name] = QLineEdit(str(val), self)
-            self.textboxes_real_values[name].move(155, start_y)
+            self.textboxes_real_values[name].move(255, start_y)
             self.textboxes_real_values[name].resize(50, 20)
             self.textboxes_real_values[name].setDisabled(True)
             if str(parameter) in self.dividers:
                 self.textboxes_divided_values[name] = QLineEdit(str(self.dividers[str(parameter)].get_raw()), self)
                 self.textboxes_divided_values[name].resize(50, 20)
-                self.textboxes_divided_values[name].move(210, start_y)
+                self.textboxes_divided_values[name].move(310, start_y)
                 self.textboxes_divided_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(val), self)
-            self.textboxes[name].move(265, start_y)
+            self.textboxes[name].move(365, start_y)
             self.textboxes[name].resize(80, 20)
-            set_value_btn = QPushButton("Set", self)
-            set_value_btn.move(360, start_y)
-            set_value_btn.resize(40, 20)
-            set_value_btn.clicked.connect(self.make_set_parameter(name))
-            get_value_btn = QPushButton("Get", self)
-            get_value_btn.move(410, start_y)
-            get_value_btn.resize(40, 20)
-            get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
+            if hasattr(parameter, "set"):
+                set_value_btn = QPushButton("Set", self)
+                set_value_btn.move(460, start_y)
+                set_value_btn.resize(40, 20)
+                set_value_btn.clicked.connect(self.make_set_parameter(name))
+            if hasattr(parameter, "get"):
+                get_value_btn = QPushButton("Get", self)
+                get_value_btn.move(510, start_y)
+                get_value_btn.resize(40, 20)
+                get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
 
         # U can read right ?
         set_all_to_zero_btn = QPushButton("All zeroes", self)
-        set_all_to_zero_btn.move(380, start_y + 20)
+        set_all_to_zero_btn.move(480, start_y + 20)
         set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
 
         # Sets all to values currently displayed in the text boxes that are editable
         set_all_btn = QPushButton("SET ALL", self)
-        set_all_btn.move(290, start_y + 20)
+        set_all_btn.move(390, start_y + 20)
         # set_all_btn.clicked.connect(self.call_worker(self.set_all))
         set_all_btn.clicked.connect(self.set_all)
 
         # gets all parameters and updates the displayed values
         set_all_btn = QPushButton("GET ALL", self)
-        set_all_btn.move(290, start_y + 50)
+        set_all_btn.move(390, start_y + 50)
         set_all_btn.clicked.connect(self.call_worker(self.update_parameters_data))
 
         # if u click this button u get a house and a car on Bahamas, also your partner suddenly becomes the most
         # attractive person in the world, in addition to this you get a Nobel prize for whatever u want ... Easy life
         ok_btn = QPushButton("Close", self)
-        ok_btn.move(380, start_y + 50)
+        ok_btn.move(480, start_y + 50)
         ok_btn.clicked.connect(self.close)
 
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
@@ -229,7 +231,10 @@ class EditInstrumentWidget(QWidget):
             if full_name in self.dividers:
                 self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
             else:
-                self.textboxes[name].setText(str(round(self.instrument.get(name), 3)))
+                if is_numeric(self.instrument.get(name)):
+                    self.textboxes[name].setText(str(round(self.instrument.get(name), 3)))
+                else:
+                    self.textboxes[name].setText(str(self.instrument.get(name)))
             if is_numeric(self.instrument.get(name)):
                 self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
             else:
@@ -241,15 +246,15 @@ class EditInstrumentWidget(QWidget):
                     textbox.setText(str(round(self.dividers[full_name].get_raw(), 3)))
                 else:
                     if is_numeric(self.instrument.get(name)):
-                        textbox.setText(str(round(self.instrument.get(name), 3)))
+                        textbox.setText(str(round(float(self.instrument.get(name)), 3)))
                     else:
                         textbox.setText(str(self.instrument.get(name)))
             for name, textbox in self.textboxes_real_values.items():
                 if is_numeric(self.instrument.get(name)):
-                    textbox.setText(str(round(self.instrument.get(name), 3)))
+                    textbox.setText(str(round(float(self.instrument.get(name)), 3)))
                 else:
                     if is_numeric(self.instrument.get(name)):
-                        textbox.setText(str(round(self.instrument.get(name), 3)))
+                        textbox.setText(str(round(float(self.instrument.get(name)), 3)))
                     else:
                         textbox.setText(str(self.instrument.get(name)))
             self.update_divided_values()

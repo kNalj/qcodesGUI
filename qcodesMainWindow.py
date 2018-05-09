@@ -28,7 +28,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-sys.excepthook = trap_exc_during_debug
+# sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
