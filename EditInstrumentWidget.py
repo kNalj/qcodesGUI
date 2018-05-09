@@ -5,14 +5,13 @@ There u can find a set function for setting paramater defined by "name" to a val
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget
 from PyQt5.QtCore import Qt, pyqtSlot
-from AttachDividersWidget import DividerWidget
-from PyQt5 import QtGui
 
 import sys
 
 from Helpers import *
 from ThreadWorker import Worker, progress_func, print_output, thread_complete
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
+from qcodes.instrument_drivers.QuTech.IVVI import IVVI
 
 
 class EditInstrumentWidget(QWidget):
@@ -101,10 +100,19 @@ class EditInstrumentWidget(QWidget):
         label = QLabel("Applied", self)
         label.move(210, 60)
 
+        if isinstance(self.instrument, IVVI):
+            params_to_show = {}
+            for i in range(self.instrument._numdacs):
+                name = "dac" + str(i + 1)
+                params_to_show[name] = getattr(self.instrument, name)
+        else:
+            params_to_show = self.instrument.parameters
+
+
         # create a row for each of the parameters of this instrument with fields for displaying original and applied
         # values, also field for editing, and buttons for geting and seting a value
         start_y = 80
-        for name, parameter in self.instrument.parameters.items():
+        for name, parameter in params_to_show.items():
             label = QLabel(name, self)
             label.move(30, start_y)
             label.show()
@@ -130,10 +138,11 @@ class EditInstrumentWidget(QWidget):
             self.textboxes[name] = QLineEdit(str(val), self)
             self.textboxes[name].move(265, start_y)
             self.textboxes[name].resize(80, 20)
-            set_value_btn = QPushButton("Set", self)
-            set_value_btn.move(360, start_y)
-            set_value_btn.resize(40, 20)
-            set_value_btn.clicked.connect(self.make_set_parameter(name))
+            if hasattr(parameter, "set"):
+                set_value_btn = QPushButton("Set", self)
+                set_value_btn.move(360, start_y)
+                set_value_btn.resize(40, 20)
+                set_value_btn.clicked.connect(self.make_set_parameter(name))
             get_value_btn = QPushButton("Get", self)
             get_value_btn.move(410, start_y)
             get_value_btn.resize(40, 20)
@@ -188,7 +197,7 @@ class EditInstrumentWidget(QWidget):
             """
             # full name is composed of the instrument name and parameter name (Example: IVVI_dac1)
             full_name = str(self.instrument.parameters[parameter])
-            try: # look into qcodes/utils/validators, think of a way
+            try:  # look into qcodes/utils/validators, think of a way
                 value = float(self.textboxes[parameter].text())
                 if full_name in self.dividers:
                     self.dividers[full_name].set_raw(value)
