@@ -443,10 +443,12 @@ class MainWindow(QMainWindow):
             # start the worker
             del self.workers[:]
             # starting live mode of all opened instruments
-            for widget in self.active_isntruments:
+            # commented cause it causes collision in the instrument when two different sources send commands to the
+            # instrument. Sometimes this causes crashing of the loop.
+            """for widget in self.active_isntruments:
                 # only if that instrument has this parameter, then start its live mode
                 if self.actions[-1].sweep_values.name in widget.textboxes.keys():
-                    widget.toggle_live()
+                    widget.toggle_live()"""
             self.thread_pool.start(worker)
 
         # Just in case someone presses run with no loops created
