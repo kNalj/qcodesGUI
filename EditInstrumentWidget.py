@@ -308,7 +308,8 @@ class EditInstrumentWidget(QWidget):
                     if full_name in self.dividers:
                         self.dividers[full_name].set_raw(value)
                     else:
-                        self.instrument.set(name, value)
+                        if hasattr(parameter, "set"):
+                            self.instrument.set(name, value)
                     print(name)
                 except Exception as e:
                     show_error_message("Warning", str(e))
