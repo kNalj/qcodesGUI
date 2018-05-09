@@ -5,14 +5,13 @@ There u can find a set function for setting paramater defined by "name" to a val
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget
 from PyQt5.QtCore import Qt, pyqtSlot
-from AttachDividersWidget import DividerWidget
-from PyQt5 import QtGui
 
 import sys
 
 from Helpers import *
 from ThreadWorker import Worker, progress_func, print_output, thread_complete
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
+from qcodes.instrument_drivers.QuTech.IVVI import IVVI
 
 
 class EditInstrumentWidget(QWidget):
@@ -101,10 +100,19 @@ class EditInstrumentWidget(QWidget):
         label = QLabel("Applied", self)
         label.move(310, 60)
 
+        if isinstance(self.instrument, IVVI):
+            params_to_show = {}
+            for i in range(self.instrument._numdacs):
+                name = "dac" + str(i + 1)
+                params_to_show[name] = getattr(self.instrument, name)
+        else:
+            params_to_show = self.instrument.parameters
+
+
         # create a row for each of the parameters of this instrument with fields for displaying original and applied
         # values, also field for editing, and buttons for geting and seting a value
         start_y = 80
-        for name, parameter in self.instrument.parameters.items():
+        for name, parameter in params_to_show.items():
             label = QLabel(name, self)
             label.move(30, start_y)
             label.show()
@@ -123,7 +131,7 @@ class EditInstrumentWidget(QWidget):
             self.textboxes_real_values[name].resize(50, 20)
             self.textboxes_real_values[name].setDisabled(True)
             if str(parameter) in self.dividers:
-                self.textboxes_divided_values[name] = QLineEdit(str(self.dividers[str(parameter)].get_raw()), self)
+                self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)), self)
                 self.textboxes_divided_values[name].resize(50, 20)
                 self.textboxes_divided_values[name].move(310, start_y)
                 self.textboxes_divided_values[name].setDisabled(True)
@@ -267,7 +275,7 @@ class EditInstrumentWidget(QWidget):
     def update_divided_values(self):
         for name, textbox in self.textboxes_divided_values.items():
             # get values from the divider
-            textbox.setText(str(self.dividers[str(self.instrument.parameters[name])].get_raw()))
+            textbox.setText(str(round(self.dividers[str(self.instrument.parameters[name])].get_raw(), 3)))
 
     def set_all_to_zero(self):
         """

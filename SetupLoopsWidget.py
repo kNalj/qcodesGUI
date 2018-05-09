@@ -331,7 +331,9 @@ class LoopsWidget(QWidget):
             # Create dividres and add them to a dict of dividers (shared with main window)
             sweep_parameter = self.sweep_parameter_cb.currentData()
             if sweep_division != 1:
+                full_name = str(sweep_parameter)
                 sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
+                self.dividers[full_name] = sweep_parameter
 
             # create a list and fill it with actions created by user (dividers if they are attached)
             actions = []
