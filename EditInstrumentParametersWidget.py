@@ -61,7 +61,7 @@ class EditInstrumentParameterWidget(QWidget):
         # parameters that can be edited with this window are it the list below
         extras = ["step", "inter_delay", "_min_value", "_max_value"]
         start_y = 25
-        # for each parameter in the list create text box and get + set buttons
+        # for each parameter in the list create text box and get/set buttons
         for name in extras:
             if name == "step":
                 if hasattr(self.parameter, name):
