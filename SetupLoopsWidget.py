@@ -103,13 +103,11 @@ class LoopsWidget(QWidget):
         self.textbox_num.setText("1")
         self.textbox_num.move(170, 80)
         self.textbox_num.resize(45, 20)
-        self.textbox_num.editingFinished.connect(self.update_step_size)
         # can use this insted of number of steps
         self.textbox_step_size = QLineEdit(self)
         self.textbox_step_size.setText("0")
         self.textbox_step_size.move(235, 80)
         self.textbox_step_size.resize(45, 20)
-        self.textbox_step_size.editingFinished.connect(self.update_num_of_steps)
         # this is actualy a delay (NOT STEPS !)
         self.textbox_step = QLineEdit(self)
         self.textbox_step.setText("0")
@@ -127,13 +125,12 @@ class LoopsWidget(QWidget):
             display_member = name
             value_member = instrument
             self.sweep_parameter_instrument_cb.addItem(display_member, value_member)
-        self.sweep_parameter_instrument_cb.currentIndexChanged.connect(self.update_sweep_instrument_parameters)
         # combobox for selecting parameter
         self.sweep_parameter_cb = QComboBox(self)
         self.sweep_parameter_cb.resize(110, 30)
         self.sweep_parameter_cb.move(145, 140)
         self.sweep_parameter_cb.setToolTip("Please select parameter to sweep")
-        self.update_sweep_instrument_parameters()
+        # ####self.update_sweep_instrument_parameters()
         # Add divider to sweep parameter
         label = QLabel("Divider", self)
         label.move(280, 120)
@@ -141,6 +138,7 @@ class LoopsWidget(QWidget):
         self.sweep_parameter_divider = QLineEdit("1", self)
         self.sweep_parameter_divider.move(280, 140)
         self.sweep_parameter_divider.resize(30, 30)
+        self.sweep_parameter_divider.setDisabled(True)
 
         label = QLabel("Loop action parameter:", self)
         label.move(25, 200)
@@ -156,9 +154,7 @@ class LoopsWidget(QWidget):
             display_member = name
             value_member = instrument
             self.action_parameter_instrument_cb.addItem(display_member, value_member)
-        self.action_parameter_instrument_cb.currentIndexChanged.connect(lambda checked,
-                                                                               act_name="action0":
-                                                                        self.update_action_instrument_parameters(act_name))
+
         # combobox for selecting parameter
         self.action_parameter_cb = QComboBox(self)
         self.action_parameter_cb.resize(110, 30)
@@ -175,19 +171,29 @@ class LoopsWidget(QWidget):
         self.action_parameter_divider = QLineEdit("1", self)
         self.action_parameter_divider.move(280, 220)
         self.action_parameter_divider.resize(30, 30)
+        self.action_parameter_divider.setDisabled(True)
         # Creates a loop from user input data
         action_name = "action" + str(len(self.current_loop_actions_dictionary))
         self.current_loop_actions_dictionary[action_name] = [self.action_parameter_instrument_cb,
                                                              self.action_parameter_cb,
                                                              self.action_parameter_divider]
         self.update_action_instrument_parameters()
+        self.update_sweep_instrument_parameters()
+
 
         self.add_loop_btn = QPushButton("Create loop", self)
         self.add_loop_btn.move(45, 270)
         self.add_loop_btn.resize(300, 40)
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
-        self.add_loop_btn.clicked.connect(self.create_loop)
 
+        self.add_loop_btn.clicked.connect(self.create_loop)
+        self.textbox_num.editingFinished.connect(self.update_step_size)
+        self.textbox_step_size.editingFinished.connect(self.update_num_of_steps)
+        self.sweep_parameter_instrument_cb.currentIndexChanged.connect(self.update_sweep_instrument_parameters)
+        self.action_parameter_instrument_cb.currentIndexChanged.connect(lambda checked,
+                                                                        act_name="action0":
+                                                                        self.update_action_instrument_parameters(
+                                                                            act_name))
         self.action_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
         self.sweep_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
 
@@ -230,7 +236,7 @@ class LoopsWidget(QWidget):
 
         # create combo box for selecting an instrument
         action_parameter_instrument_cb = QComboBox(self)
-        action_parameter_instrument_cb.resize(80, 30)
+        action_parameter_instrument_cb.resize(90, 30)
         action_parameter_instrument_cb.move(45, 220 + 40*active_actions)
         action_parameter_instrument_cb.show()
         # fill instrument combo box with instrument names
@@ -241,8 +247,8 @@ class LoopsWidget(QWidget):
 
         # combobox for selecting parameter
         action_parameter_cb = QComboBox(self)
-        action_parameter_cb.resize(80, 30)
-        action_parameter_cb.move(135, 220 + 40*active_actions)
+        action_parameter_cb.resize(110, 30)
+        action_parameter_cb.move(145, 220 + 40*active_actions)
         action_parameter_cb.show()
 
         # add loops to combobox (loop can also be an action of another loop)
@@ -253,8 +259,9 @@ class LoopsWidget(QWidget):
 
         # divider for action parameter
         action_parameter_divider = QLineEdit("1", self)
-        action_parameter_divider.move(240, 220 + 40*active_actions)
+        action_parameter_divider.move(280, 220 + 40*active_actions)
         action_parameter_divider.resize(30, 30)
+        action_parameter_divider.setDisabled(True)
         action_parameter_divider.show()
 
         # save action with a name: action# where # is number of loops created so far
@@ -388,7 +395,7 @@ class LoopsWidget(QWidget):
             instrument = self.sweep_parameter_instrument_cb.currentData()
             for parameter in instrument.parameters:
                 # i guess i dont need to show IDN parameter
-                if parameter != "IDN":
+                if parameter != "IDN" and str(instrument.parameters[parameter]) not in self.dividers:
                     display_member_string = parameter
                     data_member = instrument.parameters[parameter]
                     self.sweep_parameter_cb.addItem(display_member_string, data_member)
@@ -397,6 +404,8 @@ class LoopsWidget(QWidget):
                     display_member_string = self.dividers[name].name
                     data_member = instrument.parameters[parameter]
                     self.sweep_parameter_cb.addItem(display_member_string, data_member)
+
+        self.update_divider_value()
 
     def update_action_instrument_parameters(self, action_name=None):
         """
@@ -424,7 +433,7 @@ class LoopsWidget(QWidget):
                 else:
                     # if it's not a loop, then its an instrument, in that case display all of it's parameters
                     for parameter in action.parameters:
-                        if parameter != "IDN":
+                        if parameter != "IDN" and str(action.parameters[parameter]) not in self.dividers:
                             display_member_string = parameter
                             data_member = action.parameters[parameter]
                             action_array[1].addItem(display_member_string, data_member)
