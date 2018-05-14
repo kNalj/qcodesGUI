@@ -65,10 +65,10 @@ class LoopsWidget(QWidget):
         """
         # set starting position of window relative to the size of the screen
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
-        self.width = 360
+        self.width = 400
         self.height = 340
         self.setGeometry(int(0.05*width) + 620, int(0.05*height), self.width, self.height)
-        self.setMinimumSize(360, 340)
+        self.setMinimumSize(400, 340)
         self.setWindowTitle("Setup loops")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
@@ -86,7 +86,7 @@ class LoopsWidget(QWidget):
 
         for i in range(len(labels)):
             label = QLabel(labels[i], self)
-            label.move(first_location[0] + i * 55, first_location[1] - 20)
+            label.move(first_location[0] + i * 65, first_location[1] - 20)
             label.setToolTip(tooltips[i])
 
         # add text boxes for parameters of the loop
@@ -96,31 +96,31 @@ class LoopsWidget(QWidget):
         self.textbox_lower_limit.resize(45, 20)
         self.textbox_upper_limit = QLineEdit(self)
         self.textbox_upper_limit.setText("0")
-        self.textbox_upper_limit.move(95, 80)
+        self.textbox_upper_limit.move(105, 80)
         self.textbox_upper_limit.resize(45, 20)
         # number of steps
         self.textbox_num = QLineEdit(self)
         self.textbox_num.setText("1")
-        self.textbox_num.move(150, 80)
+        self.textbox_num.move(170, 80)
         self.textbox_num.resize(45, 20)
         self.textbox_num.editingFinished.connect(self.update_step_size)
         # can use this insted of number of steps
         self.textbox_step_size = QLineEdit(self)
         self.textbox_step_size.setText("0")
-        self.textbox_step_size.move(205, 80)
+        self.textbox_step_size.move(235, 80)
         self.textbox_step_size.resize(45, 20)
         self.textbox_step_size.editingFinished.connect(self.update_num_of_steps)
         # this is actualy a delay (NOT STEPS !)
         self.textbox_step = QLineEdit(self)
         self.textbox_step.setText("0")
-        self.textbox_step.move(260, 80)
+        self.textbox_step.move(300, 80)
         self.textbox_step.resize(45, 20)
         # comboboxes for selecting sweep parameter instrument. First you select the instrument that you want to sweep
         # After selecting instrument the other combobox is populated by parameters of that instrument
         label = QLabel("Sweep parameter:", self)
         label.move(25, 120)
         self.sweep_parameter_instrument_cb = QComboBox(self)
-        self.sweep_parameter_instrument_cb.resize(80, 30)
+        self.sweep_parameter_instrument_cb.resize(90, 30)
         self.sweep_parameter_instrument_cb.move(45, 140)
         self.sweep_parameter_instrument_cb.setToolTip("Please select instrument to sweep from")
         for name, instrument in self.instruments.items():
@@ -130,16 +130,16 @@ class LoopsWidget(QWidget):
         self.sweep_parameter_instrument_cb.currentIndexChanged.connect(self.update_sweep_instrument_parameters)
         # combobox for selecting parameter
         self.sweep_parameter_cb = QComboBox(self)
-        self.sweep_parameter_cb.resize(80, 30)
-        self.sweep_parameter_cb.move(135, 140)
+        self.sweep_parameter_cb.resize(110, 30)
+        self.sweep_parameter_cb.move(145, 140)
         self.sweep_parameter_cb.setToolTip("Please select parameter to sweep")
         self.update_sweep_instrument_parameters()
         # Add divider to sweep parameter
         label = QLabel("Divider", self)
-        label.move(240, 120)
+        label.move(280, 120)
         label.setToolTip("Add division/amplification to the instrument being swept")
         self.sweep_parameter_divider = QLineEdit("1", self)
-        self.sweep_parameter_divider.move(240, 140)
+        self.sweep_parameter_divider.move(280, 140)
         self.sweep_parameter_divider.resize(30, 30)
 
         label = QLabel("Loop action parameter:", self)
@@ -150,7 +150,7 @@ class LoopsWidget(QWidget):
         add_parameter.clicked.connect(self.add_parameter)
         # same logic as sweep parameter (see line 110)
         self.action_parameter_instrument_cb = QComboBox(self)
-        self.action_parameter_instrument_cb.resize(80, 30)
+        self.action_parameter_instrument_cb.resize(90, 30)
         self.action_parameter_instrument_cb.move(45, 220)
         for name, instrument in self.instruments.items():
             display_member = name
@@ -161,8 +161,8 @@ class LoopsWidget(QWidget):
                                                                         self.update_action_instrument_parameters(act_name))
         # combobox for selecting parameter
         self.action_parameter_cb = QComboBox(self)
-        self.action_parameter_cb.resize(80, 30)
-        self.action_parameter_cb.move(135, 220)
+        self.action_parameter_cb.resize(110, 30)
+        self.action_parameter_cb.move(145, 220)
         # add loops to combobox (loop can also be an action of another loop)
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
@@ -170,10 +170,10 @@ class LoopsWidget(QWidget):
             self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
         # divider for action parameter
         label = QLabel("Divider", self)
-        label.move(240, 200)
+        label.move(280, 200)
         label.setToolTip("Add division/amplification to the instrument")
         self.action_parameter_divider = QLineEdit("1", self)
-        self.action_parameter_divider.move(240, 220)
+        self.action_parameter_divider.move(280, 220)
         self.action_parameter_divider.resize(30, 30)
         # Creates a loop from user input data
         action_name = "action" + str(len(self.current_loop_actions_dictionary))
@@ -184,7 +184,7 @@ class LoopsWidget(QWidget):
 
         self.add_loop_btn = QPushButton("Create loop", self)
         self.add_loop_btn.move(45, 270)
-        self.add_loop_btn.resize(260, 40)
+        self.add_loop_btn.resize(300, 40)
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
         self.add_loop_btn.clicked.connect(self.create_loop)
 
@@ -219,7 +219,11 @@ class LoopsWidget(QWidget):
 
         # remove action button
         remove_action_btn = QPushButton("x", self)
-        remove_action_btn.move(20, 225 + 40*len(self.current_loop_actions_dictionary))
+        active_actions = 0
+        for name, action in self.current_loop_actions_dictionary.items():
+            if action is not None:
+                active_actions += 1
+        remove_action_btn.move(20, 225 + 40*active_actions)
         remove_action_btn.resize(20, 20)
         remove_action_btn.show()
 
@@ -227,7 +231,7 @@ class LoopsWidget(QWidget):
         # create combo box for selecting an instrument
         action_parameter_instrument_cb = QComboBox(self)
         action_parameter_instrument_cb.resize(80, 30)
-        action_parameter_instrument_cb.move(45, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_instrument_cb.move(45, 220 + 40*active_actions)
         action_parameter_instrument_cb.show()
         # fill instrument combo box with instrument names
         for name, instrument in self.instruments.items():
@@ -238,7 +242,7 @@ class LoopsWidget(QWidget):
         # combobox for selecting parameter
         action_parameter_cb = QComboBox(self)
         action_parameter_cb.resize(80, 30)
-        action_parameter_cb.move(135, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_cb.move(135, 220 + 40*active_actions)
         action_parameter_cb.show()
 
         # add loops to combobox (loop can also be an action of another loop)
@@ -249,7 +253,7 @@ class LoopsWidget(QWidget):
 
         # divider for action parameter
         action_parameter_divider = QLineEdit("1", self)
-        action_parameter_divider.move(240, 220 + 40*len(self.current_loop_actions_dictionary))
+        action_parameter_divider.move(240, 220 + 40*active_actions)
         action_parameter_divider.resize(30, 30)
         action_parameter_divider.show()
 
@@ -363,7 +367,7 @@ class LoopsWidget(QWidget):
                 self.parent.update_loops_preview(edit=name)
             # otherwise create a new loop and save it to the loops dictionary
             else:
-                name = "loop" + str(len(self.actions)+1)
+                name = "loop" + str(len(self.parent.shown_loops)+1)
                 self.loops[name] = lp
                 self.actions.append(lp)
                 self.parent.update_loops_preview()

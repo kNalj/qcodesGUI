@@ -300,7 +300,6 @@ class MainWindow(QMainWindow):
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 self.instruments_table.setItem(rows, 1, item)
                 current_instrument_btn = QPushButton("Edit")
-                current_instrument_btn.resize(35, 20)
                 current_instrument_btn.clicked.connect(self.make_open_instrument_edit(instrument))
                 self.instruments_table.setCellWidget(rows, 2, current_instrument_btn)
                 self.edit_button_dict[instrument] = current_instrument_btn
@@ -361,8 +360,7 @@ class MainWindow(QMainWindow):
                 # Button within the table that removes a loop that is in the same row as the button
                 delete_current_loop = QPushButton("Delete")
                 delete_current_loop.resize(35, 20)
-                delete_current_loop.clicked.connect(lambda checked, row=rows, loop_name=name:
-                                                    self.delete_loop(loop_name, row))
+                delete_current_loop.clicked.connect(self.make_delete_loop(name, item))
                 self.loops_table.setCellWidget(rows, 3, delete_current_loop)
 
                 self.shown_loops.append(name)
@@ -611,23 +609,26 @@ class MainWindow(QMainWindow):
         self.actions[loop_index], self.actions[-1] = self.actions[-1], self.actions[loop_index]
         self.run_with_plot()
 
-    def delete_loop(self, loop, row):
+    def make_delete_loop(self, loop_name, item):
         """
-        Remove a loop from loops_table widget
+        Function factory, creates functions that delete each individual loop from tableWidget for loops
 
-        :param loop: loop name (example: loop1), loop name is automatically assigned to the loop to be able to keep
-                track of loops in the main window dictionary. Loops names are created by taking a number of loops
-                in loops dictonary and adding 1 to it and appending that to the word loop (loop1, loop2, loop3, ...)
-
-        :param row: row of the table where that specific loop is displayed, used for deleting that specific row from the
-                loops_table widget
-        :return: NoneType
+        :param loop_name: name of the loop (to be able to remove it from loops dictionary)
+        :param item: use this item to find which row of the tabelWidget to delete
+        :return: pointer to the newly created function
         """
+        def delete_loop():
+            """
+            Remove a loop from loops_table widget
+            :return: NoneType
+            """
+            self.loops_table.removeRow(self.loops_table.row(item))
+            if loop_name in self.loops:
+                if self.loops[loop_name] in self.actions:
+                    self.actions.remove(self.loops[loop_name])
+                del self.loops[loop_name]
 
-        self.loops_table.removeRow(row)
-        if loop in self.loops:
-            del self.loops[loop]
-            del self.actions[row-1]
+        return delete_loop
 
     def check_stop_request(self):
         """

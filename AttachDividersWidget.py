@@ -125,8 +125,7 @@ class DividerWidget(QWidget):
             # add a delete button for every divider in the table
             current_parameter_btn = QPushButton("Delete")
             current_parameter_btn.resize(35, 20)
-            current_parameter_btn.clicked.connect(lambda checked, param_name=name: self.remove_divider(name=param_name,
-                                                                                                       row=rows))
+            current_parameter_btn.clicked.connect(self.make_remove_divider(name=name, item=item))
             self.dividers_table.setCellWidget(rows, 2, current_parameter_btn)
 
     def attach_divider(self):
@@ -159,24 +158,30 @@ class DividerWidget(QWidget):
                 self.dividers[str(parameter)] = vd
                 self.close()
 
-    def remove_divider(self, name=None, row=None):
+    def make_remove_divider(self, name, item):
         """
-        Removes a divider from the dictionary of dividers (shared with the mainWindow), also removes a row from the
-        divider_table widget in this window.
+        Function factory, create a function that removes a divider from the table of dividers
 
-        :param name: full name of a parameter (example: IVVI_dac1)
-        :param row: row number to be removed from the table
-        :return: NoneType
+        :param name: name of the parameter (used to remove divider from dict divider shared with mainWindow
+        :param item: referes to an item of the tableWidget that we want to remove from the table
+        :return: pointer to newly created function that removes wanted item from tableWidget
         """
-        # if name is passed delete the divider with that name, otherwise delete currently selected divider
-        if name is None:
-            parameter = self.parameter_cb.currentData()
-            if str(parameter) in self.dividers:
-                del self.dividers[str(parameter)]
-        else:
-            if name in self.dividers:
-                del self.dividers[name]
-        self.dividers_table.removeRow(row)
+        def remove_divider():
+            """
+            Removes a divider from the dictionary of dividers (shared with the mainWindow), also removes a row from the
+            divider_table widget in this window.
+
+            :return: NoneType
+            """
+            if name is None:
+                parameter = self.parameter_cb.currentData()
+                if str(parameter) in self.dividers:
+                    del self.dividers[str(parameter)]
+            else:
+                if name in self.dividers:
+                    del self.dividers[name]
+            self.dividers_table.removeRow(self.dividers_table.row(item))
+        return remove_divider
 
     def update_parameters(self):
         """
