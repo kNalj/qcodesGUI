@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt, pyqtSlot
 import sys
 
 from Helpers import *
+from AddNewParameterWidget import AddNewParameterWidget
 from ThreadWorker import Worker, progress_func, print_output, thread_complete
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 from qcodes.instrument_drivers.QuTech.IVVI import IVVI
@@ -149,6 +150,11 @@ class EditInstrumentWidget(QWidget):
                 get_value_btn.resize(40, 20)
                 get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
+
+        add_new_parameter_btn = QPushButton("Add parameter", self)
+        add_new_parameter_btn.move(140, start_y + 20)
+        add_new_parameter_btn.resize(110, 50)
+        add_new_parameter_btn.clicked.connect(self.add_new_parameter)
 
         # U can read right ?
         set_all_to_zero_btn = QPushButton("All zeroes", self)
@@ -363,6 +369,11 @@ class EditInstrumentWidget(QWidget):
             self.worker = Worker(self.single_update, True)
             self.thread_pool.start(self.worker)
             self.live = True
+
+    @pyqtSlot()
+    def add_new_parameter(self):
+        self.add_new_param_widget = AddNewParameterWidget(self.instrument, self.instruments, self.dividers, parent=self)
+        self.add_new_param_widget.show()
 
 
 if __name__ == '__main__':
