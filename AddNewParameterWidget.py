@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox
 
 import sys
+import math
 
 from Helpers import *
 from qcodes.instrument.parameter import Parameter
@@ -136,8 +137,10 @@ class AddNewParameterWidget(QWidget):
             current_text = self.evaluation_function.text()
             if text in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", "(", ")"]:
                 self.evaluation_function.setText(current_text + text)
-            elif text in ["+", "-", "x", "/"]:
+            elif text in ["+", "-", "/"]:
                 self.evaluation_function.setText(current_text + " " + text + " ")
+            elif text == "x":
+                self.evaluation_function.setText(current_text + " " + "*" + " ")
             elif text == "del":
                 self.evaluation_function.setText(current_text[:-1])
             elif text == "param":
@@ -145,10 +148,11 @@ class AddNewParameterWidget(QWidget):
                 parameter_name = parameter.name
                 instrument = self.select_instrument_to_add_from.currentData()
                 instrument_name = instrument.name
-
-                function_name = "func"+str(len(self.functions))
+                function_name = instrument_name + "_" + parameter_name
                 self.functions[function_name] = self.instruments[instrument_name].parameters[parameter_name].get
                 self.evaluation_function.setText(current_text + function_name + "()")
+            elif text == "sqrt":
+                self.evaluation_function.setText(current_text + "math.sqrt()")
         return add_to_eval_function
 
     def add_parameter_to_instrument(self):
@@ -158,16 +162,28 @@ class AddNewParameterWidget(QWidget):
         unit = self.parameter_measurement_unit_combo_box.currentData()
         get_cmd = self.evaluation_function.text()
 
+        if name == "":
+            show_error_message("Warning", "\n Please specify a name for your instrument")
+            return
+        if label == "":
+            show_error_message("Warning", "\n Please specify a label for your instrument")
+            return
+        if get_cmd == "":
+            show_error_message("Warning", "\n Please specify a get command for your instrument")
+            return
+
         try:
-            self.instrument.add_parameter(name, label=label, unit=unit, get_cmd=lambda: eval(get_cmd,
-                                                                                             globals(),
+            try:
+                result = eval(get_cmd, globals(), self.functions)
+            except:
+                show_error_message("Warning", "Your get command is probably not gonna work")
+                return
+            self.instrument.add_parameter(name, label=label, unit=unit, get_cmd=lambda: eval(get_cmd, globals(),
                                                                                              self.functions))
         except Exception as e:
             show_error_message("Warning", str(e))
-
-        for i in self.instrument.parameters:
-            print(i)
-        self.instrument.get(name)
+        else:
+            print("Added parameter->{} to instrument->{}".format(name, self.instrument.name))
 
 
 if __name__ == '__main__':

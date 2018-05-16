@@ -442,6 +442,7 @@ class LoopsWidget(QWidget):
                             display_member_string = self.dividers[param_name].name
                             data_member = action.parameters[parameter]
                             action_array[1].addItem(display_member_string, data_member)
+                    self.update_divider_value()
         # This block will get executed only if this function is called from method self.add_parameter
         elif (len(self.instruments)) and (action_name is not None):
             action_array = self.current_loop_actions_dictionary[action_name]
@@ -502,8 +503,11 @@ class LoopsWidget(QWidget):
                     action_parameter_instrument_name
                 )
                 action_array[0].setCurrentIndex(instrument_index)
-                action_parameter_name = action.v1.name
+                action_parameter_full_name = str(action.v1)
+                action_parameter_name = self.dividers[action_parameter_full_name].name
+                print(action_parameter_name)
                 parameter_index = action_array[1].findText(action_parameter_name)
+                print(parameter_index)
                 action_array[1].setCurrentIndex(parameter_index)
                 action_array[2].setText(str(action.division_value))
             # if its a regular parameter then find if there was a division applied to it and display that insted of 1
@@ -524,7 +528,8 @@ class LoopsWidget(QWidget):
             sweep_parameter_instrument_name = sweep._instrument.name
             index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
             self.sweep_parameter_instrument_cb.setCurrentIndex(index)
-            sweep_parameter_name = sweep.v1.name
+            sweep_parameter_full_name = str(sweep.v1)
+            sweep_parameter_name = self.dividers[sweep_parameter_full_name].name
             index = self.sweep_parameter_cb.findText(sweep_parameter_name)
             self.sweep_parameter_cb.setCurrentIndex(index)
             self.sweep_parameter_divider.setText(str(sweep.division_value))
@@ -605,6 +610,24 @@ class LoopsWidget(QWidget):
             sweep_division = 1
             self.sweep_parameter_divider.setText(str(sweep_division))
 
+        for name, action_array in self.current_loop_actions_dictionary.items():
+            action_parameter = action_array[1].currentData()
+            if hasattr(action_parameter, "full_name"):
+                action_parameter_name = action_parameter.full_name
+            else:
+                action_parameter_name = ""
+            action_display_name = action_array[1].currentText()
+
+            if (action_parameter_name in self.dividers) and (action_display_name == self.dividers[action_parameter_name].name):
+                action_division = self.dividers[action_parameter_name].division_value
+                action_array[2].setText(str(action_division))
+            elif (self.name != "") and (str(self.loop_values[6]) == action_parameter_name):
+                action_division = self.loop_values[7]
+                self.action_parameter_divider.setText(str(action_division))
+            else:
+                action_division = 1
+                self.action_parameter_divider.setText(str(action_division))
+
     def get_loop_data(self):
         """
         Gets all data required to set up the same loop. That includes lower and upper values of sweep, number of steps
@@ -637,9 +660,11 @@ class LoopsWidget(QWidget):
 
         self.loop_values.append(action)
         if isinstance(action, VoltageDivider):
+            self.loop_values[-1] = action.v1.full_name
             self.loop_values.append(action.division_value)
         else:
             self.loop_values.append(1)
+        print(self.loop_values)
 
 
 if __name__ == '__main__':
