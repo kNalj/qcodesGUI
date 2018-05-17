@@ -233,7 +233,6 @@ class LoopsWidget(QWidget):
         remove_action_btn.resize(20, 20)
         remove_action_btn.show()
 
-
         # create combo box for selecting an instrument
         action_parameter_instrument_cb = QComboBox(self)
         action_parameter_instrument_cb.resize(90, 30)
@@ -278,6 +277,7 @@ class LoopsWidget(QWidget):
         self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
                                                              action_parameter_cb,
                                                              action_parameter_divider]
+        action_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
         self.remove_buttons[action_name] = remove_action_btn
 
         # update only newly created combo boxes
@@ -449,7 +449,7 @@ class LoopsWidget(QWidget):
             action_array[1].clear()
             action = action_array[0].currentData()
             for parameter in action.parameters:
-                if parameter != "IDN":
+                if parameter != "IDN" and str(action.parameters[parameter]) not in self.dividers:
                     display_member_string = parameter
                     data_member = action.parameters[parameter]
                     action_array[1].addItem(display_member_string, data_member)
@@ -623,10 +623,10 @@ class LoopsWidget(QWidget):
                 action_array[2].setText(str(action_division))
             elif (self.name != "") and (str(self.loop_values[6]) == action_parameter_name):
                 action_division = self.loop_values[7]
-                self.action_parameter_divider.setText(str(action_division))
+                action_array[2].setText(str(action_division))
             else:
                 action_division = 1
-                self.action_parameter_divider.setText(str(action_division))
+                action_array[2].setText(str(action_division))
 
     def get_loop_data(self):
         """
