@@ -448,16 +448,21 @@ class LoopsWidget(QWidget):
             action_array = self.current_loop_actions_dictionary[action_name]
             action_array[1].clear()
             action = action_array[0].currentData()
-            for parameter in action.parameters:
-                if parameter != "IDN" and str(action.parameters[parameter]) not in self.dividers:
-                    display_member_string = parameter
-                    data_member = action.parameters[parameter]
-                    action_array[1].addItem(display_member_string, data_member)
-                if str(action.parameters[parameter]) in self.dividers:
-                    param_name = str(action.parameters[parameter])
-                    display_member_string = self.dividers[param_name].name
-                    data_member = action.parameters[parameter]
-                    action_array[1].addItem(display_member_string, data_member)
+            if not isinstance(action, ActiveLoop):
+                for parameter in action.parameters:
+                    if parameter != "IDN" and str(action.parameters[parameter]) not in self.dividers:
+                        display_member_string = parameter
+                        data_member = action.parameters[parameter]
+                        action_array[1].addItem(display_member_string, data_member)
+                    if str(action.parameters[parameter]) in self.dividers:
+                        param_name = str(action.parameters[parameter])
+                        display_member_string = self.dividers[param_name].name
+                        data_member = action.parameters[parameter]
+                        action_array[1].addItem(display_member_string, data_member)
+            else:
+                display_member_string = action_array[0].currentText()
+                data_member = self.loops[display_member_string[1:-1]]
+                action_array[1].addItem(display_member_string, data_member)
 
     def fill_loop_data(self):
         """
