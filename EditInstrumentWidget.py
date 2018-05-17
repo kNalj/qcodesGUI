@@ -103,6 +103,7 @@ class EditInstrumentWidget(QWidget):
 
         if isinstance(self.instrument, IVVI):
             params_to_show = {}
+            params_to_show["timeout"] = getattr(self.instrument, "timeout")
             for i in range(self.instrument._numdacs):
                 name = "dac" + str(i + 1)
                 params_to_show[name] = getattr(self.instrument, name)
