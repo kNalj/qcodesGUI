@@ -130,8 +130,8 @@ class Widget(QWidget):
         else:
             if isinstance(instrument, IVVI):
                 for i in range(instrument._numdacs):
-                    name = "dac" + str(i + 1)
-                    parameter = instrument.parameters[name]
+                    param_name = "dac" + str(i + 1)
+                    parameter = instrument.parameters[param_name]
                     parameter.step = 100
                     parameter.inter_delay = 0
 
