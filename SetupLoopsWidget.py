@@ -177,15 +177,21 @@ class LoopsWidget(QWidget):
         self.current_loop_actions_dictionary[action_name] = [self.action_parameter_instrument_cb,
                                                              self.action_parameter_cb,
                                                              self.action_parameter_divider]
+        # after adding all combo boxes update displayed data
         self.update_action_instrument_parameters()
         self.update_sweep_instrument_parameters()
 
-
-        self.add_loop_btn = QPushButton("Create loop", self)
+        # Add a button for creating a loop
+        if self.name != "":
+            text = "Save changes"
+        else:
+            text = "Create loop"
+        self.add_loop_btn = QPushButton(text, self)
         self.add_loop_btn.move(45, 270)
         self.add_loop_btn.resize(300, 40)
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
 
+        # connect actions to buttons and combo boxes after everything has been set up
         self.add_loop_btn.clicked.connect(self.create_loop)
         self.textbox_num.editingFinished.connect(self.update_step_size)
         self.textbox_step_size.editingFinished.connect(self.update_num_of_steps)
@@ -210,6 +216,8 @@ class LoopsWidget(QWidget):
         Expand the window to with new elements that will represent new action. After adding elements for a new action
         fill those elements with data (to be able to select the instrument/parameter/division), and add pointers to
         those elements to a dictionary (self.current_loop_actions_dictionary) to be able to access them later
+
+        Division is set by adding a divider to a parameter that is intendet to have it
 
         :return: NoneType
         """
@@ -274,6 +282,7 @@ class LoopsWidget(QWidget):
                                                  act_name=action_name:
                                           self.remove_parameter(act_name))
 
+        # add pointers to elements of the window representing newly created action
         self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
                                                              action_parameter_cb,
                                                              action_parameter_divider]
@@ -289,13 +298,18 @@ class LoopsWidget(QWidget):
         parameter and removes them from the UI. Repositions other elements and resizes the window.
 
         :param action_name: a list of elements that will be removed from the UI
-        :return:
+
+        :return: NoneType
         """
+        # delete the elements after the control has been returned to the GUI thread
         for element in self.current_loop_actions_dictionary[action_name]:
             element.deleteLater()
+        # set that action to None
         self.current_loop_actions_dictionary[action_name] = None
+        # remove the button for deleting that action
         self.remove_buttons[action_name].deleteLater()
 
+        # iterate through other elements and reposition them if needed
         for name, parameter_elements in self.current_loop_actions_dictionary.items():
             if int(action_name[6:]) < int(name[6:]):
                 # if the param has been added to the window later then one deleted, move it up by 40 (or smtn)
@@ -305,6 +319,7 @@ class LoopsWidget(QWidget):
                     rm_btn = self.remove_buttons[name]
                     rm_btn.move(rm_btn.pos().x(), rm_btn.pos().y() - 40)
 
+        # finally reposition the button for adding / saving loop
         add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
         add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
         self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate - 40)
@@ -433,10 +448,14 @@ class LoopsWidget(QWidget):
                 else:
                     # if it's not a loop, then its an instrument, in that case display all of it's parameters
                     for parameter in action.parameters:
+                        # i don't need to show IDN, otherwise display parameter name, and save reference to parameter
+                        # as a data member of the combo box row (also show basic data only if divider was not attached
+                        # to this parameter
                         if parameter != "IDN" and str(action.parameters[parameter]) not in self.dividers:
                             display_member_string = parameter
                             data_member = action.parameters[parameter]
                             action_array[1].addItem(display_member_string, data_member)
+                        # if divider has been added to this parameter then show values of the divider
                         if str(action.parameters[parameter]) in self.dividers:
                             param_name = str(action.parameters[parameter])
                             display_member_string = self.dividers[param_name].name
@@ -510,9 +529,7 @@ class LoopsWidget(QWidget):
                 action_array[0].setCurrentIndex(instrument_index)
                 action_parameter_full_name = str(action.v1)
                 action_parameter_name = self.dividers[action_parameter_full_name].name
-                print(action_parameter_name)
                 parameter_index = action_array[1].findText(action_parameter_name)
-                print(parameter_index)
                 action_array[1].setCurrentIndex(parameter_index)
                 action_array[2].setText(str(action.division_value))
             # if its a regular parameter then find if there was a division applied to it and display that insted of 1
@@ -598,23 +615,30 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
+        # get currently selected parameter
         sweep_parameter = self.sweep_parameter_cb.currentData()
+        # if that param has an attribute full_name that means that the param is a VoltageDivider
         if hasattr(sweep_parameter, "full_name"):
             sweep_parameter_name = sweep_parameter.full_name
         else:
+            # just to make sure that its not found in dividers dictionary
             sweep_parameter_name = ""
         sweep_display_name = self.sweep_parameter_cb.currentText()
 
+        # if it's a VoltageDivider set the text on it's division text box to the value of it's division
         if (sweep_parameter_name in self.dividers) and (sweep_display_name == self.dividers[sweep_parameter_name].name):
             sweep_division = self.dividers[sweep_parameter_name].division_value
             self.sweep_parameter_divider.setText(str(sweep_division))
+        # I think i don't need this anymore since the change in what is displayed and what not
         elif (self.name != "") and (str(self.loop_values[4]) == sweep_parameter_name):
             sweep_division = self.loop_values[5]
             self.sweep_parameter_divider.setText(str(sweep_division))
+        # if divider is not attached set division to be 1
         else:
             sweep_division = 1
             self.sweep_parameter_divider.setText(str(sweep_division))
 
+        # iterate through all actions of this loop and update the values for them (just like the above block of code)
         for name, action_array in self.current_loop_actions_dictionary.items():
             action_parameter = action_array[1].currentData()
             if hasattr(action_parameter, "full_name"):
@@ -656,20 +680,23 @@ class LoopsWidget(QWidget):
         sweep = self.loop.sweep_values.parameter
         action = self.loop.actions[0]
 
+        # add sweep param to the loop data
         self.loop_values.append(sweep)
+        # if sweep param has divider attached to it, overwrite sweep param in loop data with the VoltageDivider
         if isinstance(sweep, VoltageDivider):
             self.loop_values[-1] = sweep.v1.full_name
             self.loop_values.append(sweep.division_value)
         else:
             self.loop_values.append(1)
 
+        # add action param to loop data dictionary (only the first action)
         self.loop_values.append(action)
+        # if the first action has voltage divider attached to it, overwrite the data with the VoltageDivider
         if isinstance(action, VoltageDivider):
             self.loop_values[-1] = action.v1.full_name
             self.loop_values.append(action.division_value)
         else:
             self.loop_values.append(1)
-        print(self.loop_values)
 
 
 if __name__ == '__main__':

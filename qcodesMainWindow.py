@@ -35,7 +35,9 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # call a function that initializes user interface
         self.init_ui()
+        # call a function that initializes menu bar
         self.init_menu_bar()
 
         # self.instruments is a dictionary containing all instruments that have been connected so far. Form of the dict

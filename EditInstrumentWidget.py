@@ -110,7 +110,6 @@ class EditInstrumentWidget(QWidget):
         else:
             params_to_show = self.instrument.parameters
 
-
         # create a row for each of the parameters of this instrument with fields for displaying original and applied
         # values, also field for editing, and buttons for geting and seting a value
         start_y = 80
@@ -119,6 +118,7 @@ class EditInstrumentWidget(QWidget):
             label.move(30, start_y)
             label.show()
 
+            # create edit button for every inner parameter
             self.inner_parameter_btns[name] = QPushButton("Edit " + name, self)
             self.inner_parameter_btns[name].move(140, start_y)
             self.inner_parameter_btns[name].resize(110, 20)
@@ -128,10 +128,12 @@ class EditInstrumentWidget(QWidget):
                 val = round(float(self.instrument.get(name)), 3)
             else:
                 val = self.instrument.get(name)
+            # display values that are currently set to that instruments inner parameter
             self.textboxes_real_values[name] = QLineEdit(str(val), self)
             self.textboxes_real_values[name].move(255, start_y)
             self.textboxes_real_values[name].resize(50, 20)
             self.textboxes_real_values[name].setDisabled(True)
+            # if that parameter has divider attached to it, display additional text box
             if str(parameter) in self.dividers:
                 self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)), self)
                 self.textboxes_divided_values[name].resize(50, 20)
@@ -140,11 +142,13 @@ class EditInstrumentWidget(QWidget):
             self.textboxes[name] = QLineEdit(str(val), self)
             self.textboxes[name].move(365, start_y)
             self.textboxes[name].resize(80, 20)
+            # show set button if that parameter is settable
             if hasattr(parameter, "set"):
                 set_value_btn = QPushButton("Set", self)
                 set_value_btn.move(460, start_y)
                 set_value_btn.resize(40, 20)
                 set_value_btn.clicked.connect(self.make_set_parameter(name))
+            # show get button if that parameter is gettable
             if hasattr(parameter, "get"):
                 get_value_btn = QPushButton("Get", self)
                 get_value_btn.move(510, start_y)
