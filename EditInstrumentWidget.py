@@ -209,8 +209,18 @@ class EditInstrumentWidget(QWidget):
             """
             # full name is composed of the instrument name and parameter name (Example: IVVI_dac1)
             full_name = str(self.instrument.parameters[parameter])
-            try: # look into qcodes/utils/validators, think of a way
-                value = float(self.textboxes[parameter].text())
+            try:  # look into qcodes/utils/validators, think of a way
+                value = None
+                for data_type in self.instrument.parameters[parameter].vals.validtypes:
+                    try:
+                        value = data_type(self.textboxes[parameter].text())
+                    except:
+                        continue
+                    else:
+                        break
+                if value is None:
+                    raise Exception("Value of the parameter {} is not in the list of allowed value types: \n[{}]".
+                                    format(str(parameter), self.instrument.parameters[parameter].vals.validtypes))
                 if full_name in self.dividers:
                     self.dividers[full_name].set_raw(value)
                 else:
@@ -315,13 +325,23 @@ class EditInstrumentWidget(QWidget):
             full_name = str(parameter)
             if is_numeric(self.instrument.get(name)):
                 try:
-                    value = float(self.textboxes[name].text())
+                    value = None
+                    validtypes = self.instrument.parameters[parameter].vals.validtypes
+                    for data_type in validtypes:
+                        try:
+                            value = data_type(self.textboxes[parameter].text())
+                        except:
+                            continue
+                        else:
+                            break
+                    if value is None:
+                        raise Exception("Value of the parameter {} is not in the list of allowed value types: \n[{}]".
+                                        format(str(parameter), validtypes))
                     if full_name in self.dividers:
                         self.dividers[full_name].set_raw(value)
                     else:
                         if hasattr(parameter, "set"):
                             self.instrument.set(name, value)
-                    print(name)
                 except Exception as e:
                     show_error_message("Warning", str(e))
                     continue
