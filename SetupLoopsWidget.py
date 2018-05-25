@@ -69,7 +69,10 @@ class LoopsWidget(QWidget):
         self.height = 340
         self.setGeometry(int(0.05*width) + 620, int(0.05*height), self.width, self.height)
         self.setMinimumSize(400, 340)
-        self.setWindowTitle("Setup loops")
+        if self.name != "":
+            self.setWindowTitle("Editing {}".format(self.name))
+        else:
+            self.setWindowTitle("Setup loops")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         # label above input fields and tooltips to be shown on mouseover

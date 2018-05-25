@@ -28,7 +28,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-# sys.excepthook = trap_exc_during_debug
+sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -491,6 +491,9 @@ class MainWindow(QMainWindow):
         app.closeAllWindows()
         self.close()
 
+    def closeEvent(self, a0: QtGui.QCloseEvent):
+        self.exit()
+
     @pyqtSlot()
     def add_new_instrument(self, name):
         """
@@ -570,7 +573,7 @@ class MainWindow(QMainWindow):
         that particular instrument. After creating that function i return it so it can be called with a click on the
         button.
 
-        :param instrument: refers to an instrument to be edited
+        :param instrument: refers to a name of the instrument to be edited
         :return: newly created function to open "EditInstrumentWidget" with this particular instrument
         """
         def open_instrument_edit():
