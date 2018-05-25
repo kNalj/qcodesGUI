@@ -382,7 +382,11 @@ class LoopsWidget(QWidget):
             actions.append(task)
 
             # pass dereferenced list of actions to a loops each method
-            lp = qc.Loop(sweep_parameter.sweep(lower, upper, num=num), delay, progress_interval=20).each(*actions)
+            if len(self.instruments):
+                lp = qc.Loop(sweep_parameter.sweep(lower, upper, num=num), delay, progress_interval=20).each(*actions)
+            else:
+                show_error_message("Warning", "U can't make a loop without instruments !")
+                return
 
             # if a loop name has been passed to this widget then overwrite that loop in the loops dictionary
             if self.name != "":
