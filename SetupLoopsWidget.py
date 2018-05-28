@@ -535,10 +535,18 @@ class LoopsWidget(QWidget):
                 )
                 action_array[0].setCurrentIndex(instrument_index)
                 action_parameter_full_name = str(action.v1)
-                action_parameter_name = self.dividers[action_parameter_full_name].name
-                parameter_index = action_array[1].findText(action_parameter_name)
-                action_array[1].setCurrentIndex(parameter_index)
-                action_array[2].setText(str(action.division_value))
+                try:
+                    if action_parameter_full_name in self.dividers:
+                        action_parameter_name = self.dividers[action_parameter_full_name].name
+                    else:
+                        raise Exception(action_parameter_full_name)
+                except Exception as e:
+                    show_error_message("Warning", str(e) +
+                                       "\nMost likely you deleted the divider that was used by this loop")
+                else:
+                    parameter_index = action_array[1].findText(action_parameter_name)
+                    action_array[1].setCurrentIndex(parameter_index)
+                    action_array[2].setText(str(action.division_value))
             # if its a regular parameter then find if there was a division applied to it and display that insted of 1
             else:
                 if not isinstance(action, Task):
@@ -558,10 +566,18 @@ class LoopsWidget(QWidget):
             index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
             self.sweep_parameter_instrument_cb.setCurrentIndex(index)
             sweep_parameter_full_name = str(sweep.v1)
-            sweep_parameter_name = self.dividers[sweep_parameter_full_name].name
-            index = self.sweep_parameter_cb.findText(sweep_parameter_name)
-            self.sweep_parameter_cb.setCurrentIndex(index)
-            self.sweep_parameter_divider.setText(str(sweep.division_value))
+            try:
+                if sweep_parameter_full_name in self.dividers:
+                    sweep_parameter_name = self.dividers[sweep_parameter_full_name].name
+                else:
+                    raise Exception(sweep_parameter_full_name)
+            except Exception as e:
+                show_error_message("Warning", str(e) +
+                                   "\nMost likely you deleted the divider that was used by this loop")
+            else:
+                index = self.sweep_parameter_cb.findText(sweep_parameter_name)
+                self.sweep_parameter_cb.setCurrentIndex(index)
+                self.sweep_parameter_divider.setText(str(sweep.division_value))
         else:
             sweep_parameter_instrument_name = self.loop.sweep_values.parameter._instrument.name
             index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)

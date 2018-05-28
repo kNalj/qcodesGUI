@@ -28,7 +28,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-sys.excepthook = trap_exc_during_debug
+# sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -410,8 +410,8 @@ class MainWindow(QMainWindow):
 
             # adjust save location of the file
             if self.save_location != "":
-                loc_provider = qc.data.location.FormatLocation(fmt=self.save_location +
-                                                                        '/{date}/#{counter}_{name}_{time}')
+                loc_provider = qc.data.location.FormatLocation(
+                    fmt=self.save_location + '/{date}/#{counter}_{name}_{time}')
                 qc.data.data_set.DataSet.location_provider = loc_provider
             data = loop.get_data_set(name=self.output_file_name.text())
 
@@ -437,7 +437,7 @@ class MainWindow(QMainWindow):
 
             # connect the signals of a worker
             worker.signals.result.connect(print_output)
-            worker.signals.finished.connect(self.stop_all_workers)
+            worker.signals.finished.connect(self.cleanup)
             worker.signals.progress.connect(progress_func)
 
             # start the worker
@@ -449,6 +449,7 @@ class MainWindow(QMainWindow):
                 # only if that instrument has this parameter, then start its live mode
                 if self.actions[-1].sweep_values.name in widget.textboxes.keys():
                     widget.toggle_live()"""
+            self.disable_run_buttons()
             self.thread_pool.start(worker)
 
         # Just in case someone presses run with no loops created
@@ -564,9 +565,9 @@ class MainWindow(QMainWindow):
             if widget.live:
                 widget.toggle_live()
         self.stop_loop_requested = True
+        self.enable_run_buttons()
 
     # This is a function factory (wow, i'm so cool, i made a function factory)
-
     def make_open_instrument_edit(self, instrument):
         """
         Hi, i am a function factory, and for each button you see next to an instrument i create a new function to edit
@@ -644,7 +645,42 @@ class MainWindow(QMainWindow):
         :return:
         """
         if self.stop_loop_requested is True:
+            self.enable_run_buttons()
             raise _QcodesBreak
+
+    def disable_run_buttons(self):
+        """
+        This function is used to disable running other loops when one of the loops has started. Multiple loops running
+        at the same time might try to send commands to the same instrument and cause an error.
+
+        :return: NoneType
+        """
+        self.btn_run.setDisabled(True)
+        self.plot_btn.setDisabled(True)
+        for row_index in range(self.loops_table.rowCount()):
+            button = self.loops_table.cellWidget(row_index, 2)
+            button.setDisabled(True)
+            delete_button = self.loops_table.cellWidget(row_index, 3)
+            delete_button.setDisabled(True)
+
+    def enable_run_buttons(self):
+        """
+        After a loop has finished enable running other loops.
+
+        :return: NoneType
+        """
+        self.btn_run.setDisabled(False)
+        self.plot_btn.setDisabled(False)
+        for row_index in range(self.loops_table.rowCount()):
+            run_button = self.loops_table.cellWidget(row_index, 2)
+            run_button.setDisabled(False)
+            delete_button = self.loops_table.cellWidget(row_index, 3)
+            delete_button.setDisabled(False)
+
+    def cleanup(self):
+        self.stop_all_workers()
+        self.enable_run_buttons()
+
 
 
 def main():
