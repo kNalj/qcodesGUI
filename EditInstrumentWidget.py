@@ -189,7 +189,7 @@ class EditInstrumentWidget(QWidget):
     """""""""""""""""""""
     Data manipulation
     """""""""""""""""""""
-    def make_set_parameter(self, parameter):
+    def make_set_parameter(self, parameter_name):
         """
         Function factory that createc function for each of the set buttons. Takes in name of the instrument parameter
         and passes it to the inner function. Function returns newly created function.
@@ -208,23 +208,43 @@ class EditInstrumentWidget(QWidget):
             :return: NoneType
             """
             # full name is composed of the instrument name and parameter name (Example: IVVI_dac1)
-            full_name = str(self.instrument.parameters[parameter])
-            try:  # look into qcodes/utils/validators, think of a way
-                value = None
-                for data_type in self.instrument.parameters[parameter].vals.validtypes:
-                    try:
-                        value = data_type(self.textboxes[parameter].text())
-                    except:
-                        continue
-                    else:
-                        break
-                if value is None:
-                    raise Exception("Value of the parameter {} is not in the list of allowed value types: \n[{}]".
-                                    format(str(parameter), self.instrument.parameters[parameter].vals.validtypes))
-                if full_name in self.dividers:
-                    self.dividers[full_name].set_raw(value)
+            full_name = str(self.instrument.parameters[parameter_name])
+            parameter = self.instrument.parameters[parameter_name]
+            value = self.textboxes[parameter_name].text()
+            try:
+                is_valid = False
+                if hasattr(parameter.vals, "validtypes"):
+                    for data_type in parameter.vals.validtypes:
+                        try:
+                            set_value = data_type(value)
+                        except:
+                            continue
+                        else:
+                            is_valid = True
+                            break
+                elif hasattr(parameter.vals, "_valid_values"):
+                    data_types = list(set([type(value) for value in parameter.vals._valid_values]))
+                    for data_type in data_types:
+                        try:
+                            set_value = data_type(value)
+                        except:
+                            continue
+                        else:
+                            is_valid = True
+                            break
                 else:
-                    self.instrument.set(parameter, value)
+                    is_valid = True
+                    set_value = value
+
+                if is_valid:
+                    if hasattr(parameter, "set"):
+                        self.instrument.set(parameter.name, set_value)
+                    else:
+                        show_error_message("Warning", "Parameter {} does not have a set function".format(full_name))
+                else:
+                    show_error_message("Warning",
+                                       "Value [ {} ] is not in the list of allowed values for parameter [ {} ]" .
+                                       format(value, full_name))
             except Exception as e:
                 show_error_message("Warning", str(e))
             else:
@@ -322,31 +342,45 @@ class EditInstrumentWidget(QWidget):
         :return: NoneType
         """
         for name, parameter in self.instrument.parameters.items():
-            full_name = str(parameter)
-            if is_numeric(self.instrument.get(name)):
+            if name in self.textboxes:
+                full_name = str(self.instrument.parameters[name])
+                value = self.textboxes[name].text()
                 try:
-                    value = None
-                    validtypes = self.instrument.parameters[parameter].vals.validtypes
-                    for data_type in validtypes:
-                        try:
-                            value = data_type(self.textboxes[parameter].text())
-                        except:
-                            continue
-                        else:
-                            break
-                    if value is None:
-                        raise Exception("Value of the parameter {} is not in the list of allowed value types: \n[{}]".
-                                        format(str(parameter), validtypes))
-                    if full_name in self.dividers:
-                        self.dividers[full_name].set_raw(value)
+                    is_valid = False
+                    if hasattr(parameter.vals, "validtypes"):
+                        for data_type in parameter.vals.validtypes:
+                            try:
+                                set_value = data_type(value)
+                            except:
+                                continue
+                            else:
+                                is_valid = True
+                                break
+                    elif hasattr(parameter.vals, "_valid_values"):
+                        data_types = list(set([type(value) for value in parameter.vals._valid_values]))
+                        for data_type in data_types:
+                            try:
+                                set_value = data_type(value)
+                            except:
+                                continue
+                            else:
+                                is_valid = True
+                                break
                     else:
+                        is_valid = True
+                        set_value = value
+
+                    if is_valid:
                         if hasattr(parameter, "set"):
-                            self.instrument.set(name, value)
+                            self.instrument.set(parameter.name, set_value)
+                        else:
+                            show_error_message("Warning", "Parameter {} does not have a set function".format(full_name))
+                    else:
+                        show_error_message("Warning",
+                                           "Value [ {} ] is not in the list of allowed values for parameter [ {} ]".
+                                           format(value, full_name))
                 except Exception as e:
                     show_error_message("Warning", str(e))
-                    continue
-                else:
-                    self.setStatusTip("Parameter value changed to: " + str(value))
         self.update_parameters_data()
 
     """""""""""""""""""""
