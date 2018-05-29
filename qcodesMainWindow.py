@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
-    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget
+    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox
 from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
@@ -204,18 +204,22 @@ class MainWindow(QMainWindow):
         self.open_text_edit_btn.setIcon(icon)
 
         # run a loop with live ploting as a backgroud task (new window with self updating plot will be opened)
-        self.plot_btn = QPushButton("Plot", self)
+        """self.plot_btn = QPushButton("Plot", self)
         self.plot_btn.move(480, 340)
         self.plot_btn.resize(60, 40)
         self.plot_btn.clicked.connect(self.run_with_plot)
         icon = QtGui.QIcon("img/plot_icon.png")
-        self.plot_btn.setIcon(icon)
+        self.plot_btn.setIcon(icon)"""
+
+        self.select_loop_cb = QComboBox(self)
+        self.select_loop_cb.move(480, 340)
+        self.select_loop_cb.resize(60, 40)
 
         # run a loop without displaying the live plot
         self.btn_run = QPushButton("Run", self)
         self.btn_run.move(560, 340)
         self.btn_run.resize(60, 40)
-        self.btn_run.clicked.connect(self.run_qcodes)
+        self.btn_run.clicked.connect(self.run_with_livedata)
         icon = QtGui.QIcon("img/play_icon.png")
         self.btn_run.setIcon(icon)
 
@@ -366,6 +370,7 @@ class MainWindow(QMainWindow):
                 self.loops_table.setCellWidget(rows, 3, delete_current_loop)
 
                 self.shown_loops.append(name)
+                self.select_loop_cb.addItem(name, loop)
 
                 # Create a shortcut for opening each loop. Loop in row1 opens with key combo: CTRL + F1, row2: CTRL+F2
                 key_combo_string = "Ctrl+F"+str(rows+1)
@@ -681,6 +686,21 @@ class MainWindow(QMainWindow):
         self.stop_all_workers()
         self.enable_run_buttons()
 
+    def run_with_livedata(self):
+        loop_name = self.select_loop_cb.currentText()
+        loop = self.loops[loop_name]
+        tsk = Task(self.update_opened_instruments)
+        loop.actions.append(tsk)
+        loop_index = self.actions.index(loop)
+        self.actions[loop_index], self.actions[-1] = self.actions[-1], self.actions[loop_index]
+        self.run_with_plot()
+
+    def update_opened_instruments(self):
+        for widget in self.active_isntruments:
+            # only if that instrument has this parameter, then start its live mode
+            name = self.actions[-1].sweep_values.name
+            if name in widget.textboxes.keys():
+                widget.update_parameters_data(name=name)
 
 
 def main():
