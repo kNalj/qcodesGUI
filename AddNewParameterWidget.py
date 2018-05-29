@@ -184,8 +184,8 @@ class AddNewParameterWidget(QWidget):
             show_error_message("Warning", str(e))
         else:
             print("Added parameter->{} to instrument->{}".format(name, self.instrument.name))
-            self.parent.parent.make_open_instrument_edit(self.parent.instrument_name)()
-            self.parent.close()
+            # self.parent.parent.make_open_instrument_edit(self.parent.instrument_name)()
+            # self.parent.close()
 
 
 if __name__ == '__main__':
