@@ -661,7 +661,6 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         self.btn_run.setDisabled(True)
-        self.plot_btn.setDisabled(True)
         for row_index in range(self.loops_table.rowCount()):
             button = self.loops_table.cellWidget(row_index, 2)
             button.setDisabled(True)
@@ -675,7 +674,6 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         self.btn_run.setDisabled(False)
-        self.plot_btn.setDisabled(False)
         for row_index in range(self.loops_table.rowCount()):
             run_button = self.loops_table.cellWidget(row_index, 2)
             run_button.setDisabled(False)
