@@ -94,6 +94,10 @@ class MainWindow(QMainWindow):
         # holds string representation of folder in which to save measurement data
         self.save_location = ""
 
+        # keep track of number of line traces currently display. Used when loop in a loop is ran to draw the last n
+        # line traces only
+        self.line_trace_count = 0
+
         self.statusBar().showMessage("Ready")
         self.show()
 
@@ -425,6 +429,11 @@ class MainWindow(QMainWindow):
             # 1 background action]), attach a new background action and run a loop by calling a worker to run it in a
             # separate thread
             if with_plot:
+                # if you are running loop in a loop then create one more graph that will display 10 most recent line
+                # traces
+                if isinstance(loop.actions[0], ActiveLoop):
+                    line_traces_plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title="Line traces")
+                    loop.actions.append(Task(lambda: self.update_line_traces(line_traces_plot, data, parameter_name)))
                 parameter = get_plot_parameter(loop)
                 plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title=self.output_file_name.text())
                 parameter_name = str(parameter)
@@ -699,6 +708,12 @@ class MainWindow(QMainWindow):
             name = self.actions[-1].sweep_values.name
             if name in widget.textboxes.keys():
                 widget.update_parameters_data(name=name)
+
+    def update_line_traces(self, plot, dataset, parameter_name):
+        if self.line_trace_count % 10 == 0:
+            plot.clear()
+        plot.add(getattr(dataset, parameter_name)[self.line_trace_count])
+        self.line_trace_count += 1
 
 
 def main():
