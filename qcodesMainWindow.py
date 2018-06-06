@@ -434,6 +434,10 @@ class MainWindow(QMainWindow):
                 if isinstance(loop.actions[0], ActiveLoop):
                     line_traces_plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title="Line traces")
                     loop.actions.append(Task(lambda: self.update_line_traces(line_traces_plot, data, parameter_name)))
+                    loop.actions[0].progress_interval = None
+                else:
+                    if loop.progress_interval is None:
+                        loop.progress_interval = 20
                 parameter = get_plot_parameter(loop)
                 plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title=self.output_file_name.text())
                 parameter_name = str(parameter)
