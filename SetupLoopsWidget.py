@@ -109,7 +109,7 @@ class LoopsWidget(QWidget):
         self.textbox_num.resize(45, 20)
         # can use this insted of number of steps
         self.textbox_step_size = QLineEdit(self)
-        self.textbox_step_size.setText("0")
+        self.textbox_step_size.setText("1")
         self.textbox_step_size.move(235, 80)
         self.textbox_step_size.resize(45, 20)
         # this is actualy a delay (NOT STEPS !)
