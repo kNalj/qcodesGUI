@@ -8,6 +8,7 @@ import qcodes as qc
 from qcodes.actions import _QcodesBreak
 from qcodes.actions import Task
 from qcodes.loops import ActiveLoop
+from qcodes.instrument.base import Instrument
 from qcodes.instrument_drivers.devices import VoltageDivider
 
 
@@ -470,11 +471,11 @@ class LoopsWidget(QWidget):
                             action_array[1].addItem(display_member_string, data_member)
                     self.update_divider_value()
         # This block will get executed only if this function is called from method self.add_parameter
-        elif (len(self.instruments)) and (action_name is not None) and (action_name != "action0"):
+        elif (len(self.instruments)) and (action_name is not None):
             action_array = self.current_loop_actions_dictionary[action_name]
             action_array[1].clear()
             action = action_array[0].currentData()
-            if not isinstance(action, ActiveLoop):
+            if not isinstance(action, ActiveLoop) and isinstance(action, Instrument):
                 for parameter in action.parameters:
                     if parameter != "IDN" and str(action.parameters[parameter]) not in self.dividers:
                         display_member_string = parameter
