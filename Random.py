@@ -20,7 +20,10 @@ random = {1: "If you try to fail, and succeed, which have you done? ",
           12: "Most of my clothes have been to countries that I have not.",
           13: "I have no idea what I've forgotten.",
           14: "The person who would proof read Hitler's speeches was a grammar Nazi.",
-          15: ""}
-while True:
-    print(random[randint(1, len(random))])
-    time.sleep(2)
+          15: "If at first you don’t succeed, then skydiving definitely isn’t for you.",
+          16: "When I was younger I felt like a man trapped inside a woman’s body. Then I was born.",
+          17: "I really wanted kids when I was in my early 20s but I could just never… lure them into my car. No, I’m kidding… I don’t have a licence.",
+          18: "My granny was recently beaten to death by my grandad. Not as in, with a stick – he just died first",
+          19: "If we shouldn’t eat at night, why do they put a light in the fridge?",
+          20: ""
+          }

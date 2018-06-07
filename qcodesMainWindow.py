@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
 import inspect
+from random import randint
 
 from PyQt5.QtCore import Qt
 import qcodes as qc
@@ -11,6 +12,7 @@ from qcodes.actions import _QcodesBreak
 from qcodes.actions import Task
 
 from Helpers import *
+from Random import random
 from ViewTree import ViewTree
 from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
@@ -555,8 +557,8 @@ class MainWindow(QMainWindow):
 
         :return: NoneType
         """
-        self.text_editor = Notepad()
-        self.text_editor.show()
+        msg = random[randint(1, len(random))]
+        show_error_message("Do you need some motivation ?", msg)
 
     @pyqtSlot()
     def open_attach_divider(self):
