@@ -405,6 +405,7 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         self.stop_loop_requested = False
+        self.line_trace_count = 0
 
         # first create a station and add all instruments to it, to have the data available in the output files
         station = qc.Station()
