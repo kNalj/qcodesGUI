@@ -195,6 +195,10 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.resize(300, 40)
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
 
+        # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
+        if self.name != "":
+            self.fill_loop_data()
+
         # connect actions to buttons and combo boxes after everything has been set up
         self.add_loop_btn.clicked.connect(self.create_loop)
         self.textbox_num.editingFinished.connect(self.update_step_size)
@@ -207,9 +211,6 @@ class LoopsWidget(QWidget):
         self.action_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
         self.sweep_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
 
-        # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
-        if self.name != "":
-            self.fill_loop_data()
 
         # shortcuts for certain actions
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
@@ -472,6 +473,7 @@ class LoopsWidget(QWidget):
                     self.update_divider_value()
         # This block will get executed only if this function is called from method self.add_parameter
         elif (len(self.instruments)) and (action_name is not None):
+            print(self.current_loop_actions_dictionary[action_name][0])
             action_array = self.current_loop_actions_dictionary[action_name]
             action_array[1].clear()
             action = action_array[0].currentData()
@@ -550,7 +552,7 @@ class LoopsWidget(QWidget):
                     action_array[2].setText(str(action.division_value))
             # if its a regular parameter then find if there was a division applied to it and display that insted of 1
             else:
-                if not isinstance(action, Task):
+                if not isinstance(action, Task) and action is not None:
                     action_parameter_instrument_name = action._instrument.name
                     action_name = "action" + str(index)
                     action_array = self.current_loop_actions_dictionary[action_name]
