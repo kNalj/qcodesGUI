@@ -341,9 +341,76 @@ class LoopsWidget(QWidget):
 
         :return: NoneType
         """
-        # Try to fetch user input data and cast it to floats
-        # If it fails, throw an exception
-        # Otherwise, create a loop, add it to the shared dict
+        if self.name != "":
+            self.save_changes()
+        else:
+            # otherwise create a new loop and save it to the loops dictionary
+            # Try to fetch user input data and cast it to floats
+            # If it fails, throw an exception
+            # Otherwise, create a loop, add it to the shared dict
+
+            # Create a task that checks if loop stop has been request on each measure point of the loop
+            task = Task(self.parent.check_stop_request)
+            # grab data for creating a loop from elements of the widget
+            try:
+                lower = float(self.textbox_lower_limit.text())
+                upper = float(self.textbox_upper_limit.text())
+                num = float(self.textbox_num.text())
+                delay = float(self.textbox_step.text())
+                sweep_division = float(self.sweep_parameter_divider.text())
+            except Exception as e:
+                warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
+                                 + str(e)
+                show_error_message("Warning", warning_string)
+            else:
+                # Create dividres and add them to a dict of dividers (shared with main window)
+                sweep_parameter = self.sweep_parameter_cb.currentData()
+                if sweep_division != 1:
+                    full_name = str(sweep_parameter)
+                    sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
+                    self.dividers[full_name] = sweep_parameter
+
+                # create a list and fill it with actions created by user (dividers if they are attached)
+                actions = []
+                for i in range(len(self.current_loop_actions_dictionary)):
+                    action_array = self.current_loop_actions_dictionary["action" + str(i)]
+                    if action_array is not None:
+                        action_parameter = action_array[1].currentData()
+                        try:
+                            division = float(action_array[2].text())
+                        except Exception as e:
+                            show_error_message("Warning", str(e))
+                        else:
+                            if division != 1:
+                                action_parameter = VoltageDivider(action_parameter, division)
+                            actions.append(action_parameter)
+                # append a task that checks for loop stop request
+                actions.append(task)
+
+                # pass dereferenced list of actions to a loops each method
+                if len(self.instruments):
+                    lp = qc.Loop(sweep_parameter.sweep(lower, upper, num=num), delay, progress_interval=20).each(*actions)
+                else:
+                    show_error_message("Warning", "U can't make a loop without instruments !")
+                    return
+                name = "loop" + str(len(self.parent.shown_loops)+1)
+                self.loops[name] = lp
+                self.actions.append(lp)
+                self.parent.update_loops_preview()
+
+                """# if a loop name has been passed to this widget then overwrite that loop in the loops dictionary
+            if self.name != "":
+                name = self.name
+                self.loops[name] = lp
+                self.actions.append(lp)
+                self.parent.update_loops_preview(edit=name)
+            # otherwise create a new loop and save it to the loops dictionary
+            else:"""
+
+                # self.close()
+
+    def save_changes(self):
+        name = self.name
 
         # Create a task that checks if loop stop has been request on each measure point of the loop
         task = Task(self.parent.check_stop_request)
@@ -355,7 +422,7 @@ class LoopsWidget(QWidget):
             delay = float(self.textbox_step.text())
             sweep_division = float(self.sweep_parameter_divider.text())
         except Exception as e:
-            warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n"\
+            warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n" \
                              + str(e)
             show_error_message("Warning", warning_string)
         else:
@@ -365,13 +432,14 @@ class LoopsWidget(QWidget):
                 full_name = str(sweep_parameter)
                 sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
                 self.dividers[full_name] = sweep_parameter
-
             # create a list and fill it with actions created by user (dividers if they are attached)
             actions = []
             for i in range(len(self.current_loop_actions_dictionary)):
                 action_array = self.current_loop_actions_dictionary["action" + str(i)]
                 if action_array is not None:
                     action_parameter = action_array[1].currentData()
+                    if isinstance(action_parameter, ActiveLoop):
+                        print(action_parameter.name)
                     try:
                         division = float(action_array[2].text())
                     except Exception as e:
@@ -383,26 +451,11 @@ class LoopsWidget(QWidget):
             # append a task that checks for loop stop request
             actions.append(task)
 
-            # pass dereferenced list of actions to a loops each method
-            if len(self.instruments):
-                lp = qc.Loop(sweep_parameter.sweep(lower, upper, num=num), delay, progress_interval=20).each(*actions)
-            else:
-                show_error_message("Warning", "U can't make a loop without instruments !")
-                return
+            self.loops[name].sweep_values = sweep_parameter.sweep(lower, upper, num=num)
+            self.loops[name].delay = delay
+            self.loops[name].actions = list(actions)
 
-            # if a loop name has been passed to this widget then overwrite that loop in the loops dictionary
-            if self.name != "":
-                name = self.name
-                self.loops[name] = lp
-                self.actions.append(lp)
-                self.parent.update_loops_preview(edit=name)
-            # otherwise create a new loop and save it to the loops dictionary
-            else:
-                name = "loop" + str(len(self.parent.shown_loops)+1)
-                self.loops[name] = lp
-                self.actions.append(lp)
-                self.parent.update_loops_preview()
-                # self.close()
+        self.parent.update_loops_preview(edit=name)
 
     def update_sweep_instrument_parameters(self):
         """

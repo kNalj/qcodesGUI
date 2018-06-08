@@ -394,6 +394,11 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem(display_string)
                 item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 self.loops_table.setItem(rows, 0, item)
+                self.loops_table.removeCellWidget(rows, 3)
+                delete_current_loop = QPushButton("Delete")
+                delete_current_loop.resize(35, 20)
+                delete_current_loop.clicked.connect(self.make_delete_loop(name, item))
+                self.loops_table.setCellWidget(rows, 3, delete_current_loop)
 
     def run_qcodes(self, with_plot=False):
         """
