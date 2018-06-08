@@ -666,22 +666,24 @@ class LoopsWidget(QWidget):
 
         # iterate through all actions of this loop and update the values for them (just like the above block of code)
         for name, action_array in self.current_loop_actions_dictionary.items():
-            action_parameter = action_array[1].currentData()
-            if hasattr(action_parameter, "full_name"):
-                action_parameter_name = action_parameter.full_name
-            else:
-                action_parameter_name = ""
-            action_display_name = action_array[1].currentText()
+            # deleting items set that item in dict to None, this is way we have to check that its not None
+            if action_array is not None:
+                action_parameter = action_array[1].currentData()
+                if hasattr(action_parameter, "full_name"):
+                    action_parameter_name = action_parameter.full_name
+                else:
+                    action_parameter_name = ""
+                action_display_name = action_array[1].currentText()
 
-            if (action_parameter_name in self.dividers) and (action_display_name == self.dividers[action_parameter_name].name):
-                action_division = self.dividers[action_parameter_name].division_value
-                action_array[2].setText(str(action_division))
-            elif (self.name != "") and (str(self.loop_values[6]) == action_parameter_name):
-                action_division = self.loop_values[7]
-                action_array[2].setText(str(action_division))
-            else:
-                action_division = 1
-                action_array[2].setText(str(action_division))
+                if (action_parameter_name in self.dividers) and (action_display_name == self.dividers[action_parameter_name].name):
+                    action_division = self.dividers[action_parameter_name].division_value
+                    action_array[2].setText(str(action_division))
+                elif (self.name != "") and (str(self.loop_values[6]) == action_parameter_name):
+                    action_division = self.loop_values[7]
+                    action_array[2].setText(str(action_division))
+                else:
+                    action_division = 1
+                    action_array[2].setText(str(action_division))
 
     def get_loop_data(self):
         """
