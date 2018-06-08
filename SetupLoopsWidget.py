@@ -195,10 +195,6 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.resize(300, 40)
         self.add_loop_btn.setToolTip("Create a loop with chosen parameters")
 
-        # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
-        if self.name != "":
-            self.fill_loop_data()
-
         # connect actions to buttons and combo boxes after everything has been set up
         self.add_loop_btn.clicked.connect(self.create_loop)
         self.textbox_num.editingFinished.connect(self.update_step_size)
@@ -211,6 +207,9 @@ class LoopsWidget(QWidget):
         self.action_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
         self.sweep_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
 
+        # if the loop name has been passed to the widget, fill the fields with required data (obtained from the loop)
+        if self.name != "":
+            self.fill_loop_data()
 
         # shortcuts for certain actions
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
@@ -438,8 +437,6 @@ class LoopsWidget(QWidget):
                 action_array = self.current_loop_actions_dictionary["action" + str(i)]
                 if action_array is not None:
                     action_parameter = action_array[1].currentData()
-                    if isinstance(action_parameter, ActiveLoop):
-                        print(action_parameter.name)
                     try:
                         division = float(action_array[2].text())
                     except Exception as e:
