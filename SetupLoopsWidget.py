@@ -473,7 +473,6 @@ class LoopsWidget(QWidget):
                     self.update_divider_value()
         # This block will get executed only if this function is called from method self.add_parameter
         elif (len(self.instruments)) and (action_name is not None):
-            print(self.current_loop_actions_dictionary[action_name][0])
             action_array = self.current_loop_actions_dictionary[action_name]
             action_array[1].clear()
             action = action_array[0].currentData()
