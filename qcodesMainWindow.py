@@ -382,6 +382,8 @@ class MainWindow(QMainWindow):
                 key_combo_string = "Ctrl+F"+str(rows+1)
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
+
+                self.resize_for_loop()
             elif edit == name:
                 rows = int(name[-1])-1
 
@@ -726,6 +728,9 @@ class MainWindow(QMainWindow):
             plot.clear()
         plot.add(getattr(dataset, parameter_name)[self.line_trace_count])
         self.line_trace_count += 1
+
+    def resize_for_loop(self):
+        pass
 
 
 def main():
