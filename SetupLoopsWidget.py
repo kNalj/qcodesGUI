@@ -567,6 +567,8 @@ class LoopsWidget(QWidget):
         actions = self.loop.actions
         for index, action in enumerate(actions):
             # action can be a loop, then just show loop name
+            if str(action) in self.dividers:
+                action = self.dividers[str(action)]
             if isinstance(action, ActiveLoop):
                 action_parameter_instrument_name = action
                 action_name = "action"+str(index)
@@ -613,6 +615,8 @@ class LoopsWidget(QWidget):
 
         # do the same thing for sweep parameter
         sweep = self.loop.sweep_values.parameter
+        if str(sweep) in self.dividers:
+            sweep = self.dividers[str(sweep)]
         if isinstance(sweep, VoltageDivider):
             sweep_parameter_instrument_name = sweep._instrument.name
             index = self.sweep_parameter_instrument_cb.findText(sweep_parameter_instrument_name)
@@ -755,7 +759,13 @@ class LoopsWidget(QWidget):
         self.loop_values.append(loop_delay)
 
         sweep = self.loop.sweep_values.parameter
+        if str(sweep) in self.dividers:
+            name = str(sweep)
+            sweep = self.dividers[name]
         action = self.loop.actions[0]
+        if str(action) in self.dividers:
+            name = str(action)
+            action = self.dividers[name]
 
         # add sweep param to the loop data
         self.loop_values.append(sweep)
