@@ -661,6 +661,7 @@ class MainWindow(QMainWindow):
                 if self.loops[loop_name] in self.actions:
                     self.actions.remove(self.loops[loop_name])
                 del self.loops[loop_name]
+            self.resize_for_loop(decrease=True)
 
         return delete_loop
 
@@ -729,8 +730,16 @@ class MainWindow(QMainWindow):
         plot.add(getattr(dataset, parameter_name)[self.line_trace_count])
         self.line_trace_count += 1
 
-    def resize_for_loop(self):
-        pass
+    def resize_for_loop(self, decrease=False):
+
+        if decrease == False:
+            if self.loops_table.rowCount() > 2:
+                self.loops_table.resize(self.loops_table.width(), self.loops_table.height() + 30)
+                self.resize(self.width(), self.height() + 30)
+        else:
+            if self.loops_table.rowCount() > 1:
+                self.loops_table.resize(self.loops_table.width(), self.loops_table.height() - 30)
+                self.resize(self.width(), self.height() - 30)
 
 
 def main():
