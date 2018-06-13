@@ -705,10 +705,20 @@ class MainWindow(QMainWindow):
             delete_button.setDisabled(False)
 
     def cleanup(self):
+        """
+        This function is called when a thread is finished to stop the workers and re enable run buttons.
+        :return:
+        """
         self.stop_all_workers()
         self.enable_run_buttons()
 
     def run_with_livedata(self):
+        """
+        This function appends a task to a loop. Task updates value of instruments parameter every iteration of the loop.
+        After appending the task the loop gets started with plot option turned on.
+
+        :return: NoneType
+        """
         loop_name = self.select_loop_cb.currentText()
         loop = self.loops[loop_name]
         tsk = Task(self.update_opened_instruments)
@@ -718,6 +728,11 @@ class MainWindow(QMainWindow):
         self.run_with_plot()
 
     def update_opened_instruments(self):
+        """
+        Function that updates the value of a parameter that is being swept if the EditWindow of that window is opened.
+
+        :return: NoneType
+        """
         for widget in self.active_isntruments:
             # only if that instrument has this parameter, then start its live mode
             name = self.actions[-1].sweep_values.name
@@ -725,12 +740,26 @@ class MainWindow(QMainWindow):
                 widget.update_parameters_data(name=name)
 
     def update_line_traces(self, plot, dataset, parameter_name):
+        """
+        Add 10 line traces to a graph, and then clear the graph and add 10 new line traces.
+
+        :param plot: Instance of a graph that we want to add a line trace eto
+        :param dataset: Dataset from which we extract the data
+        :param parameter_name: Name of the parameter that is being plotted
+        :return: NoneType
+        """
         if self.line_trace_count % 10 == 0:
             plot.clear()
         plot.add(getattr(dataset, parameter_name)[self.line_trace_count])
         self.line_trace_count += 1
 
     def resize_for_loop(self, decrease=False):
+        """
+        Method that resizes the window when a loop is added/removed from it.
+
+        :param decrease: If loop is being removed decreas will be set to True and window size will be decreased
+        :return: NoneType
+        """
 
         if decrease == False:
             if self.loops_table.rowCount() > 2:
