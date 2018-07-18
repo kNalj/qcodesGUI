@@ -1,6 +1,9 @@
 import os
+import sys
 from Helpers import show_error_message
 from PyQt5.QtWidgets import QTextEdit, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog
+
+from PyQt5.QtWidgets import QApplication
 
 
 class Notepad(QWidget):
@@ -54,3 +57,8 @@ class Notepad(QWidget):
 
     def clear_text(self):
         self.text.clear()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Notepad()
+    sys.exit(app.exec_())
