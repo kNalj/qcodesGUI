@@ -3,7 +3,8 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget, \
+    QRadioButton, QButtonGroup, QGroupBox, QHBoxLayout
 from PyQt5.QtCore import Qt, pyqtSlot
 
 import sys
@@ -155,6 +156,26 @@ class EditInstrumentWidget(QWidget):
                 get_value_btn.resize(40, 20)
                 get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
+
+        if isinstance(self.instrument, IVVI):
+            for i in range(self.instrument._numdacs):
+                if not ((i + 1) % 4):
+                    box = QGroupBox(self)
+                    layout = QHBoxLayout(self)
+                    box.move(365, start_y)
+                    box.resize(80, 35)
+                    group = QButtonGroup(self)
+                    neg = QRadioButton(self)
+                    group.addButton(neg)
+                    layout.addWidget(neg)
+                    bip = QRadioButton(self)
+                    group.addButton(bip)
+                    layout.addWidget(bip)
+                    pos = QRadioButton(self)
+                    group.addButton(pos)
+                    layout.addWidget(pos)
+                    box.setLayout(layout)
+                    start_y += 35
 
         add_new_parameter_btn = QPushButton("Add parameter", self)
         add_new_parameter_btn.move(140, start_y + 20)
