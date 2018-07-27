@@ -267,7 +267,7 @@ class MainWindow(QMainWindow):
             start_new_measurement_menu.addMenu(current_brand_menu)
             models = get_files_in_folder(path + "\\" + brand, True)
             for model in models:
-                if model[0:-3] not in ["M3201A", "M3300A", "M4i", "ZIUHFLI", "Keithley_2600_channels", "AWGFileParser",
+                if model[0:-3] not in ["M3201A", "M3300A", "M4i", "Keithley_2600_channels", "AWGFileParser",
                                        "Keysight_33500B_channels", "Infiniium", "KeysightAgilent_33XXX", "Model_336",
                                        "Base_SPDT", "RC_SP4T", "RC_SPDT", "USB_SPDT", "QDac_channels", "RTO1000", "ZNB",
                                        "SR860", "SR86x", "AWG5208", "AWG70000A", "AWG70002A", "Keithley_2600_channels"]:
@@ -382,6 +382,8 @@ class MainWindow(QMainWindow):
                 key_combo_string = "Ctrl+F"+str(rows+1)
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
+
+                self.resize_for_loop()
             elif edit == name:
                 rows = int(name[-1])-1
 
@@ -659,6 +661,7 @@ class MainWindow(QMainWindow):
                 if self.loops[loop_name] in self.actions:
                     self.actions.remove(self.loops[loop_name])
                 del self.loops[loop_name]
+            self.resize_for_loop(decrease=True)
 
         return delete_loop
 
@@ -702,10 +705,20 @@ class MainWindow(QMainWindow):
             delete_button.setDisabled(False)
 
     def cleanup(self):
+        """
+        This function is called when a thread is finished to stop the workers and re enable run buttons.
+        :return:
+        """
         self.stop_all_workers()
         self.enable_run_buttons()
 
     def run_with_livedata(self):
+        """
+        This function appends a task to a loop. Task updates value of instruments parameter every iteration of the loop.
+        After appending the task the loop gets started with plot option turned on.
+
+        :return: NoneType
+        """
         loop_name = self.select_loop_cb.currentText()
         loop = self.loops[loop_name]
         tsk = Task(self.update_opened_instruments)
@@ -715,6 +728,11 @@ class MainWindow(QMainWindow):
         self.run_with_plot()
 
     def update_opened_instruments(self):
+        """
+        Function that updates the value of a parameter that is being swept if the EditWindow of that window is opened.
+
+        :return: NoneType
+        """
         for widget in self.active_isntruments:
             # only if that instrument has this parameter, then start its live mode
             name = self.actions[-1].sweep_values.name
@@ -722,10 +740,35 @@ class MainWindow(QMainWindow):
                 widget.update_parameters_data(name=name)
 
     def update_line_traces(self, plot, dataset, parameter_name):
+        """
+        Add 10 line traces to a graph, and then clear the graph and add 10 new line traces.
+
+        :param plot: Instance of a graph that we want to add a line trace eto
+        :param dataset: Dataset from which we extract the data
+        :param parameter_name: Name of the parameter that is being plotted
+        :return: NoneType
+        """
         if self.line_trace_count % 10 == 0:
             plot.clear()
         plot.add(getattr(dataset, parameter_name)[self.line_trace_count])
         self.line_trace_count += 1
+
+    def resize_for_loop(self, decrease=False):
+        """
+        Method that resizes the window when a loop is added/removed from it.
+
+        :param decrease: If loop is being removed decreas will be set to True and window size will be decreased
+        :return: NoneType
+        """
+
+        if decrease == False:
+            if self.loops_table.rowCount() > 2:
+                self.loops_table.resize(self.loops_table.width(), self.loops_table.height() + 30)
+                self.resize(self.width(), self.height() + 30)
+        else:
+            if self.loops_table.rowCount() > 1:
+                self.loops_table.resize(self.loops_table.width(), self.loops_table.height() - 30)
+                self.resize(self.width(), self.height() - 30)
 
 
 def main():

@@ -12,10 +12,10 @@ import importlib
 
 import qcodes as qc
 from qcodes.instrument_drivers.QuTech.IVVI import IVVI
+from qcodes.instrument_drivers.tektronix.AWG5014 import Tektronix_AWG5014
 from instrument_imports import *
 from InstrumentData import *
 from Helpers import *
-
 
 
 class Widget(QWidget):
@@ -216,7 +216,7 @@ class Widget(QWidget):
         :return: NoneType
         """
         self.premade_instruments["DummyInstrument"] = getattr(importlib.import_module("qcodes.tests.instrument_mocks"), "DummyInstrument")
-        not_working = ["Keysight_33500B_channels", "M3201A", "M3300A", "M4i", "ZIUHFLI", "AWGFileParser", "Infiniium",
+        not_working = ["Keysight_33500B_channels", "M3201A", "M3300A", "M4i", "AWGFileParser", "Infiniium",
                        "KeysightAgilent_33XXX", "Model_336", "Base_SPDT", "RC_SP4T", "RC_SPDT", "USB_SPDT",
                        "QDac_channels", "RTO1000", "ZNB", "SR860", "SR86x", "AWG5208", "AWG70000A", "AWG70002A", "Keithley_2600_channels"]
 
@@ -275,7 +275,11 @@ class Widget(QWidget):
         else:
             address = self.instrument_address.text()
             try:
-                instrument = self.premade_instruments[classname](name, address)
+                if name == "AWG":
+                    address_string = 'TCPIP0::' + address + '::inst0::INSTR'
+                    instrument = self.premade_instruments[classname](name, address_string)
+                else:
+                    instrument = self.premade_instruments[classname](name, address)
             except Exception as e:
                 if "VI_ERROR_RSRC_NFOUND" in str(e):
                     show_error_message("Critical error", str(e) +

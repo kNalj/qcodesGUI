@@ -108,6 +108,9 @@ class EditInstrumentWidget(QWidget):
             for i in range(self.instrument._numdacs):
                 name = "dac" + str(i + 1)
                 params_to_show[name] = getattr(self.instrument, name)
+        elif self.instrument_name == "UHFLI":
+            print("ja sam uhfli")
+            params_to_show = {}
         else:
             params_to_show = self.instrument.parameters
 
