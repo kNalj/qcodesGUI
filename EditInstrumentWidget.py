@@ -108,6 +108,7 @@ class EditInstrumentWidget(QWidget):
             for i in range(self.instrument._numdacs):
                 name = "dac" + str(i + 1)
                 params_to_show[name] = getattr(self.instrument, name)
+        # ################################################ Fix this ##################################################
         elif self.instrument_name == "UHFLI":
             print("ja sam uhfli")
             params_to_show = {}
@@ -160,25 +161,54 @@ class EditInstrumentWidget(QWidget):
                 get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
 
+        # setting the polarity of the dacs (specific for IVVI instrument)
+        # i should make this a base class and extend for every "special needs" instrument
         if isinstance(self.instrument, IVVI):
+            neg_label = QLabel("Neg", self)
+            neg_label.move(370, start_y)
+            bip_label = QLabel("Bip", self)
+            bip_label.move(395, start_y)
+            pos_label = QLabel("Pos", self)
+            pos_label.move(415, start_y)
+            start_y += 20
+            self.group = {}
+            self.dac_polarities = {}
             for i in range(self.instrument._numdacs):
                 if not ((i + 1) % 4):
+                    dacs_label = QLabel("Dacs " + str(i-2) + " - " + str(i+1), self)
+                    self.dac_polarities[i] = QLineEdit("BIP", self)
+                    self.dac_polarities[i].move(255, start_y)
+                    self.dac_polarities[i].resize(50, 20)
+                    self.dac_polarities[i].setDisabled(True)
+                    dacs_label.move(30, start_y)
                     box = QGroupBox(self)
                     layout = QHBoxLayout(self)
                     box.move(365, start_y)
                     box.resize(80, 35)
-                    group = QButtonGroup(self)
+                    self.group[i] = QButtonGroup(self)
                     neg = QRadioButton(self)
-                    group.addButton(neg)
+                    self.group[i].addButton(neg)
                     layout.addWidget(neg)
                     bip = QRadioButton(self)
-                    group.addButton(bip)
+                    bip.setChecked(True)
+                    self.group[i].addButton(bip)
                     layout.addWidget(bip)
                     pos = QRadioButton(self)
-                    group.addButton(pos)
+                    self.group[i].addButton(pos)
                     layout.addWidget(pos)
                     box.setLayout(layout)
+                    self.group[i].setId(neg, 0)
+                    self.group[i].setId(bip, 1)
+                    self.group[i].setId(pos, 2)
+                    set_polarity_btn = QPushButton("Set", self)
+                    set_polarity_btn.clicked.connect(self.make_set_polarity(i, range(i-2, i+2)))
+                    set_polarity_btn.move(460, start_y)
+                    set_polarity_btn.resize(40, 20)
+                    get_polarity_btn = QPushButton("Get", self)
+                    get_polarity_btn.move(510, start_y)
+                    get_polarity_btn.resize(40, 20)
                     start_y += 35
+
 
         add_new_parameter_btn = QPushButton("Add parameter", self)
         add_new_parameter_btn.move(140, start_y + 20)
@@ -288,6 +318,16 @@ class EditInstrumentWidget(QWidget):
             self.edit_instrument_parameters.show()
 
         return edit_parameter
+
+    def make_set_polarity(self, group_id, dacs):
+
+        def set_polarity():
+            mapping = {0: "NEG", 1: "BIP", 2: "POS"}
+            polarity = mapping[self.group[group_id].checkedId()]
+            self.instrument.set_pol_dacrack(polarity, dacs)
+            self.dac_polarities[group_id].setText(polarity)
+
+        return set_polarity
 
     def update_parameters_data(self, name=None):
         """
