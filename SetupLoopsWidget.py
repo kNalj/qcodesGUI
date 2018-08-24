@@ -415,48 +415,54 @@ class LoopsWidget(QWidget):
     def save_changes(self):
         name = self.name
 
-        # Create a task that checks if loop stop has been request on each measure point of the loop
-        task = Task(self.parent.check_stop_request)
-        # grab data for creating a loop from elements of the widget
-        try:
-            lower = float(self.textbox_lower_limit.text())
-            upper = float(self.textbox_upper_limit.text())
-            num = float(self.textbox_num.text())
-            delay = float(self.textbox_step.text())
-            sweep_division = float(self.sweep_parameter_divider.text())
-        except Exception as e:
-            warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n" \
-                             + str(e)
-            show_error_message("Warning", warning_string)
+        if name in self.loops:
+            # Create a task that checks if loop stop has been request on each measure point of the loop
+            task = Task(self.parent.check_stop_request)
+            # grab data for creating a loop from elements of the widget
+            try:
+                lower = float(self.textbox_lower_limit.text())
+                upper = float(self.textbox_upper_limit.text())
+                num = float(self.textbox_num.text())
+                delay = float(self.textbox_step.text())
+                sweep_division = float(self.sweep_parameter_divider.text())
+            except Exception as e:
+                warning_string = "Errm, looks like something went wrong ! \nHINT: Measurement parameters not set. \n" \
+                                 + str(e)
+                show_error_message("Warning", warning_string)
+            else:
+                # Create dividres and add them to a dict of dividers (shared with main window)
+                sweep_parameter = self.sweep_parameter_cb.currentData()
+                if sweep_division != 1:
+                    full_name = str(sweep_parameter)
+                    sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
+                    self.dividers[full_name] = sweep_parameter
+                # create a list and fill it with actions created by user (dividers if they are attached)
+                actions = []
+                for i in range(len(self.current_loop_actions_dictionary)):
+                    action_array = self.current_loop_actions_dictionary["action" + str(i)]
+                    if action_array is not None:
+                        action_parameter = action_array[1].currentData()
+                        try:
+                            division = float(action_array[2].text())
+                        except Exception as e:
+                            show_error_message("Warning", str(e))
+                        else:
+                            if division != 1:
+                                action_parameter = VoltageDivider(action_parameter, division)
+                            actions.append(action_parameter)
+                # append a task that checks for loop stop request
+                actions.append(task)
+
+                self.loops[name].sweep_values = sweep_parameter.sweep(lower, upper, num=num)
+                self.loops[name].delay = delay
+                self.loops[name].actions = list(actions)
+
+            self.parent.update_loops_preview(edit=name)
         else:
-            # Create dividres and add them to a dict of dividers (shared with main window)
-            sweep_parameter = self.sweep_parameter_cb.currentData()
-            if sweep_division != 1:
-                full_name = str(sweep_parameter)
-                sweep_parameter = VoltageDivider(sweep_parameter, sweep_division)
-                self.dividers[full_name] = sweep_parameter
-            # create a list and fill it with actions created by user (dividers if they are attached)
-            actions = []
-            for i in range(len(self.current_loop_actions_dictionary)):
-                action_array = self.current_loop_actions_dictionary["action" + str(i)]
-                if action_array is not None:
-                    action_parameter = action_array[1].currentData()
-                    try:
-                        division = float(action_array[2].text())
-                    except Exception as e:
-                        show_error_message("Warning", str(e))
-                    else:
-                        if division != 1:
-                            action_parameter = VoltageDivider(action_parameter, division)
-                        actions.append(action_parameter)
-            # append a task that checks for loop stop request
-            actions.append(task)
-
-            self.loops[name].sweep_values = sweep_parameter.sweep(lower, upper, num=num)
-            self.loops[name].delay = delay
-            self.loops[name].actions = list(actions)
-
-        self.parent.update_loops_preview(edit=name)
+            show_error_message("Warning", "The loop does not exist. \nNew loop will be created")
+            self.name = ""
+            self.create_loop()
+            self.close()
 
     def update_sweep_instrument_parameters(self):
         """
