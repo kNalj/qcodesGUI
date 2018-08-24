@@ -611,6 +611,8 @@ class MainWindow(QMainWindow):
 
             :return: NoneType
             """
+            if hasattr(self.instruments[instrument], "timeout"):
+                self.instruments[instrument].set("timeout", 50)
             # Parameters:
             # self. instruments: widget needs access to all instruments to be able to edit them and add new ones
             # self.dividers: widget needs access to dividers to be able to display them if they are attached

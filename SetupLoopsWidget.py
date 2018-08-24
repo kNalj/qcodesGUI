@@ -98,24 +98,28 @@ class LoopsWidget(QWidget):
         self.textbox_lower_limit.setText("0")
         self.textbox_lower_limit.move(first_location[0], first_location[1])
         self.textbox_lower_limit.resize(45, 20)
+        self.switch_btn = QPushButton("<>", self)
+        self.switch_btn.move(88, 80)
+        self.switch_btn.resize(25, 20)
+        self.switch_btn.clicked.connect(self.switch_upper_and_lower)
         self.textbox_upper_limit = QLineEdit(self)
         self.textbox_upper_limit.setText("0")
-        self.textbox_upper_limit.move(105, 80)
+        self.textbox_upper_limit.move(115, 80)
         self.textbox_upper_limit.resize(45, 20)
         # number of steps
         self.textbox_num = QLineEdit(self)
         self.textbox_num.setText("1")
-        self.textbox_num.move(170, 80)
+        self.textbox_num.move(180, 80)
         self.textbox_num.resize(45, 20)
         # can use this insted of number of steps
         self.textbox_step_size = QLineEdit(self)
         self.textbox_step_size.setText("1")
-        self.textbox_step_size.move(235, 80)
+        self.textbox_step_size.move(245, 80)
         self.textbox_step_size.resize(45, 20)
         # this is actualy a delay (NOT STEPS !)
         self.textbox_step = QLineEdit(self)
         self.textbox_step.setText("0")
-        self.textbox_step.move(300, 80)
+        self.textbox_step.move(310, 80)
         self.textbox_step.resize(45, 20)
         # comboboxes for selecting sweep parameter instrument. First you select the instrument that you want to sweep
         # After selecting instrument the other combobox is populated by parameters of that instrument
@@ -784,6 +788,14 @@ class LoopsWidget(QWidget):
             self.loop_values.append(action.division_value)
         else:
             self.loop_values.append(1)
+
+    def switch_upper_and_lower(self):
+        lower = self.textbox_upper_limit.text()
+        upper = self.textbox_lower_limit.text()
+
+        self.textbox_lower_limit.setText(lower)
+        self.textbox_upper_limit.setText(upper)
+
 
 
 if __name__ == '__main__':
