@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
-    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox
+    QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox, QWidget
 from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
@@ -30,7 +30,7 @@ def trap_exc_during_debug(exctype, value, traceback, *args):
 
 
 # install exception hook: without this, uncaught exception would cause application to exit
-# sys.excepthook = trap_exc_during_debug
+sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
@@ -113,16 +113,19 @@ class MainWindow(QMainWindow):
         """
         # get dimensions of the monitor, and position the window accordingly
         _, _, width, height = QDesktopWidget().screenGeometry().getCoords()
-        self.setGeometry(int(0.02 * width), int(0.05 * height), 640, 400)
+        self.setGeometry(int(0.02 * width), int(0.05 * height), 640, 440)
         # define the size, title and icon of the window
-        self.setMinimumSize(640, 400)
+        self.setMinimumSize(640, 440)
         self.setWindowTitle("qcodes starter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        self.cw = QWidget(self)
+        self.setCentralWidget(self.cw)
+
         # Create and define table for displaying instruments added to the self.instruments dictionary
-        label = QLabel("Instruments:", self)
+        label = QLabel("Instruments:", self.cw)
         label.move(25,  30)
-        self.instruments_table = QTableWidget(0, 3, self)
+        self.instruments_table = QTableWidget(0, 3, self.cw)
         self.instruments_table.move(45, 65)
         self.instruments_table.resize(400, 160)
         self.instruments_table.setHorizontalHeaderLabels(("Name", "Type", "Edit"))
@@ -133,7 +136,7 @@ class MainWindow(QMainWindow):
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         # Button for displaying data structure of each created loop
-        self.show_loop_details_btn = QPushButton("Show tree", self)
+        self.show_loop_details_btn = QPushButton("Show tree", self.cw)
         self.show_loop_details_btn.move(80, 240)
         self.show_loop_details_btn.resize(100, 30)
         icon = QtGui.QIcon("img/binary_tree_icon.png")
@@ -141,9 +144,9 @@ class MainWindow(QMainWindow):
         self.show_loop_details_btn.clicked.connect(self.open_tree)
 
         # Create and define table for displaying loops added to the self.loops dictionary
-        label = QLabel("Loops", self)
+        label = QLabel("Loops", self.cw)
         label.move(25, 240)
-        self.loops_table = QTableWidget(0, 4, self)
+        self.loops_table = QTableWidget(0, 4, self.cw)
         self.loops_table.move(45, 280)
         self.loops_table.resize(400, 100)
         self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run", "Delete"))
@@ -155,7 +158,7 @@ class MainWindow(QMainWindow):
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
         # Button for opening a new window that is used for connecting to instruments
-        self.btn_add_instrument = QPushButton("Add instrument", self)
+        self.btn_add_instrument = QPushButton("Add instrument", self.cw)
         self.btn_add_instrument.move(480, 50)
         self.btn_add_instrument.resize(140, 40)
         icon = QtGui.QIcon("img/osciloscope_icon.png")
@@ -163,7 +166,7 @@ class MainWindow(QMainWindow):
         self.btn_add_instrument.clicked.connect(lambda checked, name="DummyInstrument": self.add_new_instrument(name))
 
         # Button to open a window that is used to create and manage loops (measurements)
-        self.btn_setup_loops = QPushButton("Setup loops", self)
+        self.btn_setup_loops = QPushButton("Setup loops", self.cw)
         self.btn_setup_loops.move(480, 95)
         self.btn_setup_loops.resize(140, 40)
         icon = QtGui.QIcon("img/measure.png")
@@ -171,7 +174,7 @@ class MainWindow(QMainWindow):
         self.btn_setup_loops.clicked.connect(self.setup_loops)
 
         # Button to open a new window that is used for creating, editing and deleting dividers
-        self.btn_attach_dividers = QPushButton("Attach dividers", self)
+        self.btn_attach_dividers = QPushButton("Attach dividers", self.cw)
         self.btn_attach_dividers.move(480, 140)
         self.btn_attach_dividers.resize(140, 40)
         icon = QtGui.QIcon("img/rheostat_icon.png")
@@ -179,14 +182,14 @@ class MainWindow(QMainWindow):
         self.btn_attach_dividers.clicked.connect(self.open_attach_divider)
 
         # text box used to input the desired name of your output file produced by the loop
-        label = QLabel("Output file name", self)
+        label = QLabel("Output file name", self.cw)
         label.move(480, 225)
-        self.output_file_name = QLineEdit(self)
+        self.output_file_name = QLineEdit(self.cw)
         self.output_file_name.move(480, 250)
         self.output_file_name.resize(140, 30)
 
         # btn that opens file dialog for selecting a desired location where to save the ouput file of the loop
-        self.btn_select_save_location = QPushButton("Select save location", self)
+        self.btn_select_save_location = QPushButton("Select save location", self.cw)
         self.btn_select_save_location.move(480, 185)
         self.btn_select_save_location.resize(140, 40)
         icon = QtGui.QIcon("img/save_icon.png")
@@ -194,7 +197,7 @@ class MainWindow(QMainWindow):
         self.btn_select_save_location.clicked.connect(self.select_save_location)
 
         # btn for stoping all currently active loops
-        self.stop_btn = QPushButton("STOP", self)
+        self.stop_btn = QPushButton("STOP", self.cw)
         self.stop_btn.move(480, 290)
         self.stop_btn.resize(140, 40)
         icon = QtGui.QIcon("img/cancel_1-512.png")
@@ -202,7 +205,7 @@ class MainWindow(QMainWindow):
         self.stop_btn.clicked.connect(self.stop_all_workers)
 
         # simple text editor
-        self.open_text_edit_btn = QPushButton("Text", self)
+        self.open_text_edit_btn = QPushButton("Text", self.cw)
         self.open_text_edit_btn.move(200, 240)
         self.open_text_edit_btn.resize(100, 30)
         self.open_text_edit_btn.clicked.connect(self.open_text_editor)
@@ -217,12 +220,12 @@ class MainWindow(QMainWindow):
         icon = QtGui.QIcon("img/plot_icon.png")
         self.plot_btn.setIcon(icon)"""
 
-        self.select_loop_cb = QComboBox(self)
+        self.select_loop_cb = QComboBox(self.cw)
         self.select_loop_cb.move(480, 340)
         self.select_loop_cb.resize(60, 40)
 
         # run a loop without displaying the live plot
-        self.btn_run = QPushButton("Run", self)
+        self.btn_run = QPushButton("Run", self.cw)
         self.btn_run.move(560, 340)
         self.btn_run.resize(60, 40)
         self.btn_run.clicked.connect(self.run_with_livedata)
@@ -232,8 +235,10 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Ready")
 
         # Defining all shortcuts
-        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_F12), self)
+        add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_F12), self.cw)
         add_shortcut.activated.connect(self.setup_loops)
+
+        # self.setCentralWidget(self)
 
     def init_menu_bar(self):
         """
@@ -385,6 +390,7 @@ class MainWindow(QMainWindow):
 
                 self.resize_for_loop()
             elif edit == name:
+                ################ BUG ALERT ################## FIX AT SOME POINT OF YOUR LIFE DUDE
                 rows = int(name[-1])-1
 
                 # if a loop is being edited, just update the values of the edited loop

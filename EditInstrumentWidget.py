@@ -174,6 +174,11 @@ class EditInstrumentWidget(QWidget):
             self.group = {}
             self.dac_polarities = {}
             for i in range(self.instrument._numdacs):
+                # add label that show what this group of radio buttons refers to
+                # add field that displays current value
+                # add group of radio buttons
+                # add set and get buttons
+                # create function that handles changing value (its not the same as set value
                 if not ((i + 1) % 4):
                     dacs_label = QLabel("Dacs " + str(i-2) + " - " + str(i+1), self)
                     self.dac_polarities[i] = QLineEdit("BIP", self)
