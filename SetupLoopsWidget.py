@@ -270,7 +270,7 @@ class LoopsWidget(QWidget):
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
             data_member = loop
-            self.action_parameter_instrument_cb.addItem(display_member_string, data_member)
+            action_parameter_instrument_cb.addItem(display_member_string, data_member)
 
         # divider for action parameter
         action_parameter_divider = QLineEdit("1", self)
