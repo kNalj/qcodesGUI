@@ -579,6 +579,7 @@ class LoopsWidget(QWidget):
             # action can be a loop, then just show loop name
             if str(action) in self.dividers:
                 action = self.dividers[str(action)]
+
             if isinstance(action, ActiveLoop):
                 action_parameter_instrument_name = action
                 action_name = "action"+str(index)
@@ -587,7 +588,6 @@ class LoopsWidget(QWidget):
                     action_parameter_instrument_name
                 )
                 action_array[0].setCurrentIndex(instrument_index)
-
             # if action is a voltage divider then get the parameter that this divider is attached to and also show
             # correct division that has been applied to this divider
             elif isinstance(action, VoltageDivider):
