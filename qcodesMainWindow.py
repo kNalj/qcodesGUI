@@ -390,7 +390,6 @@ class MainWindow(QMainWindow):
                 add_shortcut = QShortcut(QtGui.QKeySequence(key_combo_string), self)
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
 
-                self.resize_for_loop()
             elif edit == name:
                 ################ BUG ALERT ################## FIX AT SOME POINT OF YOUR LIFE DUDE
                 rows = int(name[-1])-1
@@ -671,7 +670,6 @@ class MainWindow(QMainWindow):
                 if self.loops[loop_name] in self.actions:
                     self.actions.remove(self.loops[loop_name])
                 del self.loops[loop_name]
-            self.resize_for_loop(decrease=True)
 
         return delete_loop
 
@@ -765,6 +763,8 @@ class MainWindow(QMainWindow):
 
     def resize_for_loop(self, decrease=False):
         """
+        Legacy method, not used anymore since switching to layouts
+
         Method that resizes the window when a loop is added/removed from it.
 
         :param decrease: If loop is being removed decreas will be set to True and window size will be decreased
