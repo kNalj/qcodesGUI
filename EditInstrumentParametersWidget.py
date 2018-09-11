@@ -3,7 +3,7 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QVBoxLayout, QHBoxLayout
 from PyQt5.QtCore import Qt
 
 import sys
@@ -58,50 +58,48 @@ class EditInstrumentParameterWidget(QWidget):
         self.setWindowTitle("Edit " + self.parameter.name + " parameter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        self.setLayout(QVBoxLayout())
+
         # parameters that can be edited with this window are it the list below
         extras = ["step", "inter_delay", "_min_value", "_max_value"]
-        start_y = 25
         # for each parameter in the list create text box and get/set buttons
         for name in extras:
+            horizontal = QHBoxLayout()
+            self.layout().addLayout(horizontal)
             if name == "step":
                 if hasattr(self.parameter, name):
-                    self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step), self)
+                    self.textboxes_real_values[name] = QLineEdit(str(self.parameter.step))
             elif name == "inter_delay":
                 if hasattr(self.parameter, name):
-                    self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay), self)
+                    self.textboxes_real_values[name] = QLineEdit(str(self.parameter.inter_delay))
             else:
                 if hasattr(self.parameter.vals, name):
-                    self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
+                    self.textboxes_real_values[name] = QLineEdit(str(getattr(self.parameter.vals, name)))
             if name in self.textboxes_real_values:
-                label = QLabel(name, self)
-                label.move(30, start_y)
-                label.show()
-                self.textboxes_real_values[name].move(120, start_y)
-                self.textboxes_real_values[name].resize(40, 20)
+                label = QLabel(name)
+                horizontal.addWidget(label)
+                horizontal.addWidget(self.textboxes_real_values[name])
                 self.textboxes_real_values[name].setDisabled(True)
             if name == "step":
-                self.textboxes[name] = QLineEdit(str(self.parameter.step), self)
+                self.textboxes[name] = QLineEdit(str(self.parameter.step))
             elif name == "inter_delay":
-                self.textboxes[name] = QLineEdit(str(self.parameter.inter_delay), self)
+                self.textboxes[name] = QLineEdit(str(self.parameter.inter_delay))
             else:
                 if hasattr(self.parameter.vals, name):
-                    self.textboxes[name] = QLineEdit(str(getattr(self.parameter.vals, name)), self)
+                    self.textboxes[name] = QLineEdit(str(getattr(self.parameter.vals, name)))
             if name in self.textboxes:
-                self.textboxes[name].move(180, start_y)
+                horizontal.addWidget(self.textboxes[name])
                 if hasattr(self.parameter, "set"):
-                    set_value_btn = QPushButton("Set", self)
-                    set_value_btn.move(340, start_y)
-                    set_value_btn.resize(40, 20)
+                    set_value_btn = QPushButton("Set")
+                    horizontal.addWidget(set_value_btn)
                     set_value_btn.clicked.connect(self.make_set_value(name))
-                get_value_btn = QPushButton("Get", self)
-                get_value_btn.move(390, start_y)
-                get_value_btn.resize(40, 20)
+                get_value_btn = QPushButton("Get")
+                horizontal.addWidget(get_value_btn)
                 get_value_btn.clicked.connect(self.update_displayed_values)
-            start_y += 25
 
         # Its just an CLOSE button man, dont read this
-        self.OK_btn = QPushButton("Close", self)
-        self.OK_btn.move(400, 220)
+        self.OK_btn = QPushButton("Close")
+        self.layout().addWidget(self.OK_btn)
         self.OK_btn.clicked.connect(self.close)
 
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
