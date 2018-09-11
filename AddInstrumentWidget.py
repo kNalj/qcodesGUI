@@ -3,7 +3,7 @@ qcodes/instrument/base.py -> line 263
 There u can find a set function for setting paramater defined by "name" to a value defined by "value"
 """
 
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QShortcut, QVBoxLayout
 from PyQt5.QtCore import Qt
 
 import inspect
@@ -62,10 +62,12 @@ class Widget(QWidget):
         self.setWindowTitle("Add new instrument")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        self.vertical_layout = QVBoxLayout()
+        self.setLayout(self.vertical_layout)
+
         # combobox filled with all instrument classes that were found in the qcodes directory: "instrument drivers"
-        self.cb = QComboBox(self)
-        self.cb.move(20, 20)
-        self.cb.resize(280, 30)
+        self.cb = QComboBox()
+        self.vertical_layout.addWidget(self.cb)
         for key, value in self.premade_instruments.items():
             self.cb.addItem(key)
         index = self.cb.findText(self.default)
@@ -73,30 +75,29 @@ class Widget(QWidget):
         self.cb.currentIndexChanged.connect(self.update_instrument_data)
 
         # text box that displays the type of the instrument currently selected
-        type_label = QLabel("Type", self)
-        type_label.move(20, 65)
-        self.instrument_type = QLineEdit(self)
-        self.instrument_type.move(20, 80)
+        type_label = QLabel("Type")
+        self.vertical_layout.addWidget(type_label)
+        self.instrument_type = QLineEdit()
         self.instrument_type.setEnabled(False)
+        self.vertical_layout.addWidget(self.instrument_type)
 
         # text box for choosing a name of the instrument (if it exists in the InstrumentData.py then it will be filled
         # automatically
-        name_label = QLabel("Name", self)
-        name_label.move(20, 115)
-        self.instrument_name = QLineEdit(self)
-        self.instrument_name.move(20, 130)
+        name_label = QLabel("Name")
+        self.vertical_layout.addWidget(name_label)
+        self.instrument_name = QLineEdit()
+        self.vertical_layout.addWidget(self.instrument_name)
 
         # tex box for address, filled automatically if instrument exists in InstrumentData.py
-        address_label = QLabel("Address", self)
-        address_label.move(20, 165)
-        address_label.resize(400, 15)
-        self.instrument_address = QLineEdit(self)
-        self.instrument_address.move(20, 180)
+        address_label = QLabel("Address")
+        self.vertical_layout.addWidget(address_label)
+        self.instrument_address = QLineEdit()
+        self.vertical_layout.addWidget(self.instrument_address)
 
         # It's a button, that says OK, what do u think it does ?
-        self.ok_button = QPushButton("OK", self)
-        self.ok_button.move(20, 220)
+        self.ok_button = QPushButton("OK")
         self.ok_button.clicked.connect(self.add_instrument)
+        self.vertical_layout.addWidget(self.ok_button)
 
         # Define some shortcuts
         add_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Return), self)

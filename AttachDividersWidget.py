@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QTabWidget, \
-    QTableWidget, QTableWidgetItem, QHeaderView, QTableView
+    QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QVBoxLayout, QHBoxLayout, QGridLayout, QSizePolicy
 from PyQt5.QtCore import Qt
 
 
@@ -55,26 +55,37 @@ class DividerWidget(QWidget):
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         # Create two separate tabs of this widget, one for adding and one for deleting existing dividers
-        self.tabs = QTabWidget(self)
+        self.tabs = QTabWidget()
         self.tab1 = QWidget()
         self.tab2 = QWidget()
         self.tabs.addTab(self.tab1, "Add")
         self.tabs.addTab(self.tab2, "Remove")
         self.tabs.resize(320, 260)
+
+        self.grid_layout = QGridLayout()
+        self.setLayout(self.grid_layout)
+
+        self.grid_layout.addWidget(self.tabs)
+
         self.tabs.show()
 
         """""""""""""""""""""
         First tab, adding new dividers
         """""""""""""""""""""
-        label = QLabel("Parameter:", self.tab1)
-        label.move(25, 40)
+        main_layout_tab1 = QVBoxLayout()
+        self.tab1.setLayout(main_layout_tab1)
+
+        label = QLabel("Parameter:")
+        main_layout_tab1.addWidget(label)
         # combo boxes for instrument and parameter
-        self.instrument_cb = QComboBox(self.tab1)
-        self.instrument_cb.move(45, 60)
-        self.instrument_cb.resize(90, 30)
-        self.parameter_cb = QComboBox(self.tab1)
-        self.parameter_cb.resize(90, 30)
-        self.parameter_cb.move(145, 60)
+
+        horizontal = QHBoxLayout()
+
+        self.instrument_cb = QComboBox()
+        horizontal.addWidget(self.instrument_cb)
+        self.parameter_cb = QComboBox()
+        horizontal.addWidget(self.parameter_cb)
+        main_layout_tab1.addLayout(horizontal)
         for name, instrument in self.instruments.items():
             display_member = name
             value_member = instrument
@@ -83,29 +94,30 @@ class DividerWidget(QWidget):
         self.update_parameters()
 
         # text box for division value
-        label = QLabel("Division", self.tab1)
-        label.move(25, 100)
-        self.division_value_textbox = QLineEdit(self.tab1)
-        self.division_value_textbox.move(40, 120)
-        self.division_value_textbox.resize(190, 30)
+        label = QLabel("Division")
+        main_layout_tab1.addWidget(label)
+        self.division_value_textbox = QLineEdit()
+        main_layout_tab1.addWidget(self.division_value_textbox)
 
         # button to confirm adding divider
-        self.attach_divider_btn = QPushButton("Add", self.tab1)
-        self.attach_divider_btn.resize(60, 30)
-        self.attach_divider_btn.move(240, 180)
+        self.attach_divider_btn = QPushButton("Add")
+        main_layout_tab1.addWidget(self.attach_divider_btn)
         self.attach_divider_btn.clicked.connect(self.attach_divider)
 
         """""""""""""""""""""
         Second tab, removing dividers
         """""""""""""""""""""
+
+        main_layout_tab2 = QVBoxLayout()
+        self.tab2.setLayout(main_layout_tab2)
+
         # table containing all dividers created so far
-        self.dividers_table = QTableWidget(0, 3, self.tab2)
-        self.dividers_table.move(0, 0)
-        self.dividers_table.resize(300, 240)
+        self.dividers_table = QTableWidget(0, 3)
+        main_layout_tab2.addWidget(self.dividers_table)
         self.dividers_table.setHorizontalHeaderLabels(("Parameter", "Division", "Delete"))
         header = self.dividers_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.dividers_table.setSelectionBehavior(QTableView.SelectRows)
 

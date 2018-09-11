@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QGridLayout, QSizePolicy
 
 import sys
 import math
@@ -37,49 +37,49 @@ class AddNewParameterWidget(QWidget):
         self.setWindowTitle("Create new parameter")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        self.grid_layout = QGridLayout()
+        self.setLayout(self.grid_layout)
+
         # add a combo box for selecting an instrument
-        label_instrument_name = QLabel("Instrument data (name): ", self)
-        label_instrument_name.move(20, 10)
-        self.instrument_text_box = QLineEdit(self.instrument.name, self)
-        self.instrument_text_box.move(60, 30)
-        self.instrument_text_box.resize(80, 40)
+        label_instrument_name = QLabel("Instrument data (name): ")
+        self.grid_layout.addWidget(label_instrument_name, 0, 0, 1, 8)
+        self.instrument_text_box = QLineEdit(self.instrument.name)
+        self.instrument_text_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.grid_layout.addWidget(self.instrument_text_box, 1, 0, 1, 8)
         self.instrument_text_box.setDisabled(True)
 
-        label_for_parameter = QLabel("Parameter data:", self)
-        label_for_parameter.move(20, 80)
+        label_for_parameter = QLabel("Parameter data:")
+        self.grid_layout.addWidget(label_for_parameter, 2, 0, 1, 8)
 
         # text box for parameter name
-        label_for_parameter_name = QLabel("Name", self)
-        label_for_parameter_name.move(40, 100)
-        self.parameter_name_text_box = QLineEdit("", self)
-        self.parameter_name_text_box.move(40, 120)
-        self.parameter_name_text_box.resize(50, 30)
+        label_for_parameter_name = QLabel("Name")
+        self.grid_layout.addWidget(label_for_parameter_name, 3, 0, 1, 4)
+        self.parameter_name_text_box = QLineEdit("")
+        self.grid_layout.addWidget(self.parameter_name_text_box, 4, 0, 1, 2)
+
         # text box for parameters label
-        label_for_parameter_label = QLabel("Label", self)
-        label_for_parameter_label.move(100, 100)
-        self.parameter_label_text_box = QLineEdit("", self)
-        self.parameter_label_text_box.move(100, 120)
-        self.parameter_label_text_box.resize(50, 30)
+        label_for_parameter_label = QLabel("Label")
+        self.grid_layout.addWidget(label_for_parameter_label, 3, 2, 1, 2)
+        self.parameter_label_text_box = QLineEdit("")
+        self.grid_layout.addWidget(self.parameter_label_text_box, 4, 2, 1, 2)
         # text box for measurement units
         valid_units = {"Ampere": "A", "Volt": "V", "Ohm": "Ω", "Watt": "W", "Farad": "F", "Henry": "H", "Joule": "J",
                        "Electron-Volt": "eV", "Tesla": "T", "Hertz": "Hz", "No idea": "??"}
-        label_for_parameter_measurement_unit = QLabel("Unit", self)
-        label_for_parameter_measurement_unit.move(210, 100)
+        label_for_parameter_measurement_unit = QLabel("Unit")
+        self.grid_layout.addWidget(label_for_parameter_measurement_unit, 3, 4, 1, 4)
         self.parameter_measurement_unit_combo_box = QComboBox(self)
-        self.parameter_measurement_unit_combo_box.move(170, 120)
-        self.parameter_measurement_unit_combo_box.resize(120, 30)
+        self.grid_layout.addWidget(self.parameter_measurement_unit_combo_box, 4, 4, 1, 4)
         for name, unit in valid_units.items():
             display_member_string = "[" + name + "]"
             data_member = unit
             self.parameter_measurement_unit_combo_box.addItem(display_member_string, data_member)
 
         self.evaluation_function = QLineEdit("", self)
-        self.evaluation_function.move(40, 180)
-        self.evaluation_function.resize(250, 40)
+        self.evaluation_function.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.grid_layout.addWidget(self.evaluation_function, 5, 0, 1, 8)
 
-        starting_position = [40, 240]
-        # position relative to starting: x = starting_position[0] + (i%4)*30
-        #                                y = starting_position[1] + (i//4)*30
+        # position relative to starting: x = (i%4)
+        #                                y =(i//4)
         buttons = [["7"], ["8"], ["9"], ["+"],
                    ["4"], ["5"], ["6"], ["x"],
                    ["1"], ["2"], ["3"], ["-"],
@@ -87,30 +87,24 @@ class AddNewParameterWidget(QWidget):
                    ["del"], ["("], [")"], ["sqrt"]]
 
         for index, text in enumerate(buttons):
-            current_btn = QPushButton(text[0], self)
-            current_btn.move(starting_position[0] + (index % 4)*30, starting_position[1] + (index // 4)*30)
-            current_btn.resize(25, 25)
-            current_btn.show()
+            current_btn = QPushButton(text[0])
+            self.grid_layout.addWidget(current_btn, 6+index//4, index % 4, 1, 1)
             current_btn.clicked.connect(self.make_add_to_eval(text[0]))
 
         self.select_instrument_to_add_from = QComboBox(self)
-        self.select_instrument_to_add_from.move(170, 240)
-        self.select_instrument_to_add_from.resize(120, 30)
+        self.grid_layout.addWidget(self.select_instrument_to_add_from, 6, 4, 1, 4)
         for name, instrument in self.instruments.items():
             display_member_string = "[" + name + "]"
             data_member = instrument
             self.select_instrument_to_add_from.addItem(display_member_string, data_member)
         self.select_parameter_to_add = QComboBox(self)
-        self.select_parameter_to_add.move(170, 280)
-        self.select_parameter_to_add.resize(120, 30)
+        self.grid_layout.addWidget(self.select_parameter_to_add, 7, 4, 1, 4)
         self.add_selected_parameter = QPushButton("Add to eval", self)
-        self.add_selected_parameter.move(170, 320)
-        self.add_selected_parameter.resize(120, 30)
+        self.grid_layout.addWidget(self.add_selected_parameter, 8, 4, 1, 4)
         self.add_selected_parameter.clicked.connect(self.make_add_to_eval("param"))
 
         self.save_parameter = QPushButton("Save", self)
-        self.save_parameter.move(170, 360)
-        self.save_parameter.resize(120, 30)
+        self.grid_layout.addWidget(self.save_parameter, 9, 4, 2, 4)
         self.save_parameter.clicked.connect(self.add_parameter_to_instrument)
 
         self.select_instrument_to_add_from.currentIndexChanged.connect(self.update_parameters_combobox)
