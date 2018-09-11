@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
     QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox, QWidget, \
-    QGridLayout, QSizePolicy
+    QGridLayout, QSizePolicy, QSplitter, QHBoxLayout
 from PyQt5.QtCore import pyqtSlot, QThreadPool
 
 import sys
@@ -121,6 +121,8 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
         self.grid_layout = QGridLayout()
+        self.splitter = QSplitter(Qt.Vertical)
+        self.grid_layout.addWidget(self.splitter, 0, 0, 9, 6)
 
         self.cw = QWidget(self)
         self.cw.setLayout(self.grid_layout)
@@ -128,9 +130,9 @@ class MainWindow(QMainWindow):
 
         # Create and define table for displaying instruments added to the self.instruments dictionary
         label = QLabel("Instruments:")
-        self.grid_layout.addWidget(label, 0, 0, 1, 1)
+        self.splitter.addWidget(label)
         self.instruments_table = QTableWidget(0, 3)
-        self.grid_layout.addWidget(self.instruments_table, 1, 0, 3, 6)
+        self.splitter.addWidget(self.instruments_table)
         self.instruments_table.setHorizontalHeaderLabels(("Name", "Type", "Edit"))
         header = self.instruments_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -138,26 +140,30 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
 
+        horizontal = QSplitter()
+
+        # Create and define table for displaying loops added to the self.loops dictionary
+        label = QLabel("Loops")
+        horizontal.addWidget(label)
+        self.splitter.addWidget(horizontal)
+
         # Button for displaying data structure of each created loop
         self.show_loop_details_btn = QPushButton("Show tree", self.cw)
-        self.grid_layout.addWidget(self.show_loop_details_btn, 4, 1, 1, 1)
+        horizontal.addWidget(self.show_loop_details_btn)
         icon = QtGui.QIcon("img/binary_tree_icon.png")
         self.show_loop_details_btn.setIcon(icon)
         self.show_loop_details_btn.clicked.connect(self.open_tree)
 
         # simple text editor
         self.open_text_edit_btn = QPushButton("Text", self.cw)
-        self.grid_layout.addWidget(self.open_text_edit_btn, 4, 2, 1, 1)
+        horizontal.addWidget(self.open_text_edit_btn)
         self.open_text_edit_btn.clicked.connect(self.open_text_editor)
         icon = QtGui.QIcon("img/text_icon.png")
         self.open_text_edit_btn.setIcon(icon)
 
-        # Create and define table for displaying loops added to the self.loops dictionary
-        label = QLabel("Loops")
-        self.grid_layout.addWidget(label, 4, 0, 1, 1)
         self.loops_table = QTableWidget(0, 4)
         self.loops_table.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding))
-        self.grid_layout.addWidget(self.loops_table, 5, 0, 4, 6)
+        self.splitter.addWidget(self.loops_table)
         self.loops_table.setHorizontalHeaderLabels(("Name", "Edit", "Run", "Delete"))
         header = self.loops_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
@@ -165,6 +171,7 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         self.instruments_table.setSelectionBehavior(QTableView.SelectRows)
+
 
         # Button for opening a new window that is used for connecting to instruments
         self.btn_add_instrument = QPushButton("Add instrument")
@@ -190,21 +197,21 @@ class MainWindow(QMainWindow):
 
         # text box used to input the desired name of your output file produced by the loop
         label = QLabel("Output file name")
-        self.grid_layout.addWidget(label, 4, 5, 1, 1)
+        self.grid_layout.addWidget(label, 4, 6, 1, 1)
         self.output_file_name = QLineEdit()
-        self.grid_layout.addWidget(self.output_file_name, 4, 6, 1, 2)
+        self.grid_layout.addWidget(self.output_file_name, 5, 6, 1, 2)
 
 
         # btn that opens file dialog for selecting a desired location where to save the ouput file of the loop
         self.btn_select_save_location = QPushButton("Select save location")
-        self.grid_layout.addWidget(self.btn_select_save_location, 5, 6, 1, 2)
+        self.grid_layout.addWidget(self.btn_select_save_location, 6, 6, 1, 2)
         icon = QtGui.QIcon("img/save_icon.png")
         self.btn_select_save_location.setIcon(icon)
         self.btn_select_save_location.clicked.connect(self.select_save_location)
 
         # btn for stoping all currently active loops
         self.stop_btn = QPushButton("STOP")
-        self.grid_layout.addWidget(self.stop_btn, 6, 6, 1, 2)
+        self.grid_layout.addWidget(self.stop_btn, 7, 6, 1, 2)
         icon = QtGui.QIcon("img/cancel_1-512.png")
         self.stop_btn.setIcon(icon)
         self.stop_btn.clicked.connect(self.stop_all_workers)
@@ -218,11 +225,11 @@ class MainWindow(QMainWindow):
         self.plot_btn.setIcon(icon)"""
 
         self.select_loop_cb = QComboBox()
-        self.grid_layout.addWidget(self.select_loop_cb, 7, 6, 1, 1)
+        self.grid_layout.addWidget(self.select_loop_cb, 8, 6, 1, 1)
 
         # run a loop without displaying the live plot
         self.btn_run = QPushButton("Run")
-        self.grid_layout.addWidget(self.btn_run, 7, 7, 1, 1)
+        self.grid_layout.addWidget(self.btn_run, 8, 7, 1, 1)
         self.btn_run.clicked.connect(self.run_with_livedata)
         icon = QtGui.QIcon("img/play_icon.png")
         self.btn_run.setIcon(icon)
