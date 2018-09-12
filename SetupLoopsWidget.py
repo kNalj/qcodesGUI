@@ -276,6 +276,7 @@ class LoopsWidget(QWidget):
 
         # divider for action parameter
         action_parameter_divider = QLineEdit("1")
+        action_parameter_divider.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         horizontal_layout.addWidget(action_parameter_divider)
         action_parameter_divider.setDisabled(True)
 

@@ -4,7 +4,7 @@ There u can find a set function for setting paramater defined by "name" to a val
 """
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QShortcut, QDesktopWidget, \
-    QRadioButton, QButtonGroup, QGroupBox, QHBoxLayout
+    QRadioButton, QButtonGroup, QGroupBox, QHBoxLayout, QGridLayout, QVBoxLayout, QSizePolicy
 from PyQt5.QtCore import Qt, pyqtSlot
 
 import sys
@@ -84,23 +84,26 @@ class EditInstrumentWidget(QWidget):
         self.setWindowTitle("Edit " + self.instrument_name.upper() + " instrument")
         self.setWindowIcon(QtGui.QIcon("img/osciloscope_icon.png"))
 
+        self.grid_layout = QGridLayout()
+        self.setLayout(self.grid_layout)
+
         # show the name of the instrument that is being edited
-        label = QLabel("Name:", self)
-        label.move(30, 30)
-        self.instrument_name_txtbox = QLineEdit(self.instrument_name, self)
-        self.instrument_name_txtbox.move(80, 30)
+        label = QLabel("Name:")
+        self.layout().addWidget(label, 0, 0, 1, 1)
+        self.instrument_name_txtbox = QLineEdit(self.instrument_name)
+        self.layout().addWidget(self.instrument_name_txtbox, 0, 1, 1, 1)
         self.instrument_name_txtbox.setDisabled(True)
 
         # button to start live updating of the parameters of this instrument
         self.go_live_btn = QPushButton("Go live", self)
-        self.go_live_btn.move(460, 30)
-        self.go_live_btn.resize(90, 40)
+        self.go_live_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.layout().addWidget(self.go_live_btn, 0, 5, 2, 2)
         self.go_live_btn.clicked.connect(self.toggle_live)
 
         label = QLabel("Original", self)
-        label.move(260, 60)
+        self.layout().addWidget(label, 2, 2, 1, 1)
         label = QLabel("Applied", self)
-        label.move(310, 60)
+        self.layout().addWidget(label, 2, 3, 1, 1)
 
         if isinstance(self.instrument, IVVI):
             params_to_show = {}
@@ -118,15 +121,14 @@ class EditInstrumentWidget(QWidget):
         # create a row for each of the parameters of this instrument with fields for displaying original and applied
         # values, also field for editing, and buttons for geting and seting a value
         start_y = 80
+        row = 3
         for name, parameter in params_to_show.items():
             label = QLabel(name, self)
-            label.move(30, start_y)
-            label.show()
+            self.layout().addWidget(label, row, 0, 1, 1)
 
             # create edit button for every inner parameter
             self.inner_parameter_btns[name] = QPushButton("Edit " + name, self)
-            self.inner_parameter_btns[name].move(140, start_y)
-            self.inner_parameter_btns[name].resize(110, 20)
+            self.layout().addWidget(self.inner_parameter_btns[name], row, 1, 1, 1)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
             if is_numeric(self.instrument.get(name)):
@@ -135,41 +137,37 @@ class EditInstrumentWidget(QWidget):
                 val = self.instrument.get(name)
             # display values that are currently set to that instruments inner parameter
             self.textboxes_real_values[name] = QLineEdit(str(val), self)
-            self.textboxes_real_values[name].move(255, start_y)
-            self.textboxes_real_values[name].resize(50, 20)
+            self.layout().addWidget(self.textboxes_real_values[name], row, 2, 1, 1)
             self.textboxes_real_values[name].setDisabled(True)
             # if that parameter has divider attached to it, display additional text box
             if str(parameter) in self.dividers:
                 self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)), self)
-                self.textboxes_divided_values[name].resize(50, 20)
-                self.textboxes_divided_values[name].move(310, start_y)
+                self.layout().addWidget(self.textboxes_divided_values[name], row, 3, 1, 1)
                 self.textboxes_divided_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(val), self)
-            self.textboxes[name].move(365, start_y)
-            self.textboxes[name].resize(80, 20)
+            self.layout().addWidget(self.textboxes[name], row, 4, 1, 1)
             # show set button if that parameter is settable
             if hasattr(parameter, "set"):
                 set_value_btn = QPushButton("Set", self)
-                set_value_btn.move(460, start_y)
-                set_value_btn.resize(40, 20)
+                self.layout().addWidget(set_value_btn, row, 5, 1, 1)
                 set_value_btn.clicked.connect(self.make_set_parameter(name))
             # show get button if that parameter is gettable
             if hasattr(parameter, "get"):
                 get_value_btn = QPushButton("Get", self)
-                get_value_btn.move(510, start_y)
-                get_value_btn.resize(40, 20)
+                self.layout().addWidget(get_value_btn, row, 6, 1, 1)
                 get_value_btn.clicked.connect(lambda checked, parameter_name=name: self.update_parameters_data(parameter_name))
             start_y += 25
+            row += 1
 
         # setting the polarity of the dacs (specific for IVVI instrument)
         # i should make this a base class and extend for every "special needs" instrument
         if isinstance(self.instrument, IVVI):
             neg_label = QLabel("Neg", self)
-            neg_label.move(370, start_y)
+            self.layout().addWidget(neg_label, row, 3, 1, 1)
             bip_label = QLabel("Bip", self)
-            bip_label.move(395, start_y)
+            self.layout().addWidget(bip_label, row, 4, 1, 1)
             pos_label = QLabel("Pos", self)
-            pos_label.move(415, start_y)
+            self.layout().addWidget(pos_label, row, 5, 1, 1)
             start_y += 20
             self.group = {}
             self.dac_polarities = {}
@@ -213,33 +211,34 @@ class EditInstrumentWidget(QWidget):
                     get_polarity_btn.move(510, start_y)
                     get_polarity_btn.resize(40, 20)
                     start_y += 35
-
+                    row += 1
 
         add_new_parameter_btn = QPushButton("Add parameter", self)
-        add_new_parameter_btn.move(140, start_y + 20)
-        add_new_parameter_btn.resize(110, 50)
+        add_new_parameter_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.layout().addWidget(add_new_parameter_btn, row, 0, 2, 2)
         add_new_parameter_btn.clicked.connect(self.add_new_parameter)
 
         # U can read right ?
         set_all_to_zero_btn = QPushButton("All zeroes", self)
-        set_all_to_zero_btn.move(480, start_y + 20)
+        self.layout().addWidget(set_all_to_zero_btn, row, 6, 1, 1)
         set_all_to_zero_btn.clicked.connect(self.call_worker(self.set_all_to_zero))
 
         # Sets all to values currently displayed in the text boxes that are editable
         set_all_btn = QPushButton("SET ALL", self)
-        set_all_btn.move(390, start_y + 20)
+        self.layout().addWidget(set_all_btn, row, 5, 1, 1)
         # set_all_btn.clicked.connect(self.call_worker(self.set_all))
         set_all_btn.clicked.connect(self.set_all)
 
         # gets all parameters and updates the displayed values
-        set_all_btn = QPushButton("GET ALL", self)
-        set_all_btn.move(390, start_y + 50)
-        set_all_btn.clicked.connect(self.call_worker(self.update_parameters_data))
+        get_all_btn = QPushButton("GET ALL", self)
+        self.layout().addWidget(get_all_btn, row+1, 5, 1, 1)
+
+        get_all_btn.clicked.connect(self.call_worker(self.update_parameters_data))
 
         # if u click this button u get a house and a car on Bahamas, also your partner suddenly becomes the most
         # attractive person in the world, in addition to this you get a Nobel prize for whatever u want ... Easy life
         ok_btn = QPushButton("Close", self)
-        ok_btn.move(480, start_y + 50)
+        self.layout().addWidget(ok_btn, row+1, 6, 1, 1)
         ok_btn.clicked.connect(self.close)
 
         close_shortcut = QShortcut(QtGui.QKeySequence(Qt.Key_Escape), self)
