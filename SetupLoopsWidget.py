@@ -156,15 +156,17 @@ class LoopsWidget(QWidget):
         h_layout_sweep.addLayout(div_layout)
         self.layout().addLayout(h_layout_sweep)
 
+        self.actions_v_layout = QVBoxLayout()
+
         label = QLabel("Loop action parameter:")
         self.layout().addWidget(label)
         add_parameter = QPushButton("Add action parameter")
         self.layout().addWidget(add_parameter)
         add_parameter.clicked.connect(self.add_parameter)
         # same logic as sweep parameter (see line 110)
-        self.h_layout_action = QHBoxLayout()
+        h_layout_action = QHBoxLayout()
         self.action_parameter_instrument_cb = QComboBox(self)
-        self.h_layout_action.addWidget(self.action_parameter_instrument_cb)
+        h_layout_action.addWidget(self.action_parameter_instrument_cb)
         for name, instrument in self.instruments.items():
             display_member = name
             value_member = instrument
@@ -172,7 +174,7 @@ class LoopsWidget(QWidget):
 
         # combobox for selecting parameter
         self.action_parameter_cb = QComboBox(self)
-        self.h_layout_action.addWidget(self.action_parameter_cb)
+        h_layout_action.addWidget(self.action_parameter_cb)
         # add loops to combobox (loop can also be an action of another loop)
         for name, loop in self.loops.items():
             display_member_string = "[" + name + "]"
@@ -187,8 +189,9 @@ class LoopsWidget(QWidget):
         self.action_parameter_divider.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         div_layout.addWidget(self.action_parameter_divider)
         self.action_parameter_divider.setDisabled(True)
-        self.h_layout_action.addLayout(div_layout)
-        self.layout().addLayout(self.h_layout_action)
+        h_layout_action.addLayout(div_layout)
+        self.actions_v_layout.addLayout(h_layout_action)
+        self.layout().addLayout(self.actions_v_layout)
         # Creates a loop from user input data
         action_name = "action" + str(len(self.current_loop_actions_dictionary))
         self.current_loop_actions_dictionary[action_name] = [self.action_parameter_instrument_cb,
@@ -238,30 +241,23 @@ class LoopsWidget(QWidget):
         :return: NoneType
         """
 
-        # increase the window height by 40 (should be enough to add another set of controls for adding extra actions)
-        self.height += 40
+        horizontal_layout = QHBoxLayout()
+        # self.resize(self.width, self.height + 20)
+        self.height += 29
         self.resize(self.width, self.height)
 
-        # find and change the current position of the add loop button (keep it on the bottom of the window)
-        add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
-        add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
-        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate + 40)
-
         # remove action button
-        remove_action_btn = QPushButton("x", self)
+        remove_action_btn = QPushButton("x")
+        remove_action_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         active_actions = 0
         for name, action in self.current_loop_actions_dictionary.items():
             if action is not None:
                 active_actions += 1
-        remove_action_btn.move(20, 225 + 40*active_actions)
-        remove_action_btn.resize(20, 20)
-        remove_action_btn.show()
+        horizontal_layout.addWidget(remove_action_btn)
 
         # create combo box for selecting an instrument
-        action_parameter_instrument_cb = QComboBox(self)
-        action_parameter_instrument_cb.resize(90, 30)
-        action_parameter_instrument_cb.move(45, 220 + 40*active_actions)
-        action_parameter_instrument_cb.show()
+        action_parameter_instrument_cb = QComboBox()
+        horizontal_layout.addWidget(action_parameter_instrument_cb)
         # fill instrument combo box with instrument names
         for name, instrument in self.instruments.items():
             display_member = name
@@ -269,10 +265,8 @@ class LoopsWidget(QWidget):
             action_parameter_instrument_cb.addItem(display_member, value_member)
 
         # combobox for selecting parameter
-        action_parameter_cb = QComboBox(self)
-        action_parameter_cb.resize(110, 30)
-        action_parameter_cb.move(145, 220 + 40*active_actions)
-        action_parameter_cb.show()
+        action_parameter_cb = QComboBox()
+        horizontal_layout.addWidget(action_parameter_cb)
 
         # add loops to combobox (loop can also be an action of another loop)
         for name, loop in self.loops.items():
@@ -281,11 +275,9 @@ class LoopsWidget(QWidget):
             action_parameter_instrument_cb.addItem(display_member_string, data_member)
 
         # divider for action parameter
-        action_parameter_divider = QLineEdit("1", self)
-        action_parameter_divider.move(280, 220 + 40*active_actions)
-        action_parameter_divider.resize(30, 30)
+        action_parameter_divider = QLineEdit("1")
+        horizontal_layout.addWidget(action_parameter_divider)
         action_parameter_divider.setDisabled(True)
-        action_parameter_divider.show()
 
         # save action with a name: action# where # is number of loops created so far
 
@@ -301,12 +293,13 @@ class LoopsWidget(QWidget):
         # add pointers to elements of the window representing newly created action
         self.current_loop_actions_dictionary[action_name] = [action_parameter_instrument_cb,
                                                              action_parameter_cb,
-                                                             action_parameter_divider]
+                                                             action_parameter_divider, horizontal_layout]
         action_parameter_cb.currentIndexChanged.connect(self.update_divider_value)
         self.remove_buttons[action_name] = remove_action_btn
 
         # update only newly created combo boxes
         self.update_action_instrument_parameters(action_name=action_name)
+        self.actions_v_layout.addLayout(horizontal_layout)
 
     def remove_parameter(self, action_name):
         """
@@ -324,22 +317,7 @@ class LoopsWidget(QWidget):
         self.current_loop_actions_dictionary[action_name] = None
         # remove the button for deleting that action
         self.remove_buttons[action_name].deleteLater()
-
-        # iterate through other elements and reposition them if needed
-        for name, parameter_elements in self.current_loop_actions_dictionary.items():
-            if int(action_name[6:]) < int(name[6:]):
-                # if the param has been added to the window later then one deleted, move it up by 40 (or smtn)
-                if parameter_elements is not None:
-                    for element in parameter_elements:
-                        element.move(element.pos().x(), element.pos().y() - 40)
-                    rm_btn = self.remove_buttons[name]
-                    rm_btn.move(rm_btn.pos().x(), rm_btn.pos().y() - 40)
-
-        # finally reposition the button for adding / saving loop
-        add_loop_btn_current_x_coordinate = self.add_loop_btn.pos().x()
-        add_loop_btn_current_y_coordinate = self.add_loop_btn.pos().y()
-        self.add_loop_btn.move(add_loop_btn_current_x_coordinate, add_loop_btn_current_y_coordinate - 40)
-        self.height -= 40
+        self.height -= 29
         self.resize(self.width, self.height)
 
     """""""""""""""""""""
