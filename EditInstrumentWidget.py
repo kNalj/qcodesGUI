@@ -171,6 +171,7 @@ class EditInstrumentWidget(QWidget):
             start_y += 20
             self.group = {}
             self.dac_polarities = {}
+            row += 1
             for i in range(self.instrument._numdacs):
                 # add label that show what this group of radio buttons refers to
                 # add field that displays current value
@@ -179,15 +180,13 @@ class EditInstrumentWidget(QWidget):
                 # create function that handles changing value (its not the same as set value
                 if not ((i + 1) % 4):
                     dacs_label = QLabel("Dacs " + str(i-2) + " - " + str(i+1), self)
+                    self.layout().addWidget(dacs_label, row, 1, 1, 1)
                     self.dac_polarities[i] = QLineEdit("BIP", self)
-                    self.dac_polarities[i].move(255, start_y)
-                    self.dac_polarities[i].resize(50, 20)
+                    self.layout().addWidget(self.dac_polarities[i], row, 2, 1, 1)
                     self.dac_polarities[i].setDisabled(True)
-                    dacs_label.move(30, start_y)
                     box = QGroupBox(self)
                     layout = QHBoxLayout(self)
-                    box.move(365, start_y)
-                    box.resize(80, 35)
+                    self.layout().addWidget(box, row, 3, 1, 2)
                     self.group[i] = QButtonGroup(self)
                     neg = QRadioButton(self)
                     self.group[i].addButton(neg)
@@ -205,11 +204,9 @@ class EditInstrumentWidget(QWidget):
                     self.group[i].setId(pos, 2)
                     set_polarity_btn = QPushButton("Set", self)
                     set_polarity_btn.clicked.connect(self.make_set_polarity(i, range(i-2, i+2)))
-                    set_polarity_btn.move(460, start_y)
-                    set_polarity_btn.resize(40, 20)
+                    self.layout().addWidget(set_polarity_btn, row, 5, 1, 1)
                     get_polarity_btn = QPushButton("Get", self)
-                    get_polarity_btn.move(510, start_y)
-                    get_polarity_btn.resize(40, 20)
+                    self.layout().addWidget(get_polarity_btn, row, 6, 1, 1)
                     start_y += 35
                     row += 1
 
