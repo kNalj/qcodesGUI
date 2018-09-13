@@ -181,7 +181,9 @@ class EditInstrumentWidget(QWidget):
                 if not ((i + 1) % 4):
                     dacs_label = QLabel("Dacs " + str(i-2) + " - " + str(i+1), self)
                     self.layout().addWidget(dacs_label, row, 1, 1, 1)
-                    self.dac_polarities[i] = QLineEdit("BIP", self)
+                    val = self.instrument.get_pol_dac(i-2)
+                    print(val)
+                    self.dac_polarities[i] = QLineEdit(val, self)
                     self.layout().addWidget(self.dac_polarities[i], row, 2, 1, 1)
                     self.dac_polarities[i].setDisabled(True)
                     box = QGroupBox(self)
