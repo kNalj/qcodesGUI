@@ -131,10 +131,10 @@ class EditInstrumentWidget(QWidget):
             self.layout().addWidget(self.inner_parameter_btns[name], row, 1, 1, 1)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
-            if is_numeric(self.instrument.get(name)):
-                val = round(float(self.instrument.get(name)), 3)
+            if is_numeric(self.instrument.parameters[name].get_latest()):
+                val = round(float(self.instrument.parameters[name].get_latest()), 3)
             else:
-                val = self.instrument.get(name)
+                val = self.instrument.parameters[name].get_latest()
             # display values that are currently set to that instruments inner parameter
             self.textboxes_real_values[name] = QLineEdit(str(val), self)
             self.layout().addWidget(self.textboxes_real_values[name], row, 2, 1, 1)
@@ -347,32 +347,32 @@ class EditInstrumentWidget(QWidget):
             if full_name in self.dividers:
                 self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
             else:
-                if is_numeric(self.instrument.get(name)):
-                    self.textboxes[name].setText(str(round(self.instrument.get(name), 3)))
+                if is_numeric(self.instrument.parameters[name].get_latest()):
+                    self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
                 else:
-                    self.textboxes[name].setText(str(self.instrument.get(name)))
+                    self.textboxes[name].setText(str(self.instrument.parameters[name].get_latest()))
             if is_numeric(self.instrument.get(name)):
-                self.textboxes_real_values[name].setText(str(round(self.instrument.get(name), 3)))
+                self.textboxes_real_values[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
             else:
-                self.textboxes_real_values[name].setText(str(self.instrument.get(name)))
+                self.textboxes_real_values[name].setText(str(self.instrument.parameters[name].get_latest()))
         else:
             for name, textbox in self.textboxes.items():
                 full_name = str(self.instrument.parameters[name])
                 if full_name in self.dividers:
                     textbox.setText(str(round(self.dividers[full_name].get_raw(), 3)))
                 else:
-                    if is_numeric(self.instrument.get(name)):
-                        textbox.setText(str(round(float(self.instrument.get(name)), 3)))
+                    if is_numeric(self.instrument.parameters[name].get_latest()):
+                        textbox.setText(str(round(float(self.instrument.parameters[name].get_latest()), 3)))
                     else:
-                        textbox.setText(str(self.instrument.get(name)))
+                        textbox.setText(str(self.instrument.parameters[name].get_latest()))
             for name, textbox in self.textboxes_real_values.items():
-                if is_numeric(self.instrument.get(name)):
-                    textbox.setText(str(round(float(self.instrument.get(name)), 3)))
+                if is_numeric(self.instrument.parameters[name].get_latest()):
+                    textbox.setText(str(round(float(self.instrument.parameters[name].get_latest()), 3)))
                 else:
-                    if is_numeric(self.instrument.get(name)):
-                        textbox.setText(str(round(float(self.instrument.get(name)), 3)))
+                    if is_numeric(self.instrument.parameters[name].get_latest()):
+                        textbox.setText(str(round(float(self.instrument.parameters[name].get_latest()), 3)))
                     else:
-                        textbox.setText(str(self.instrument.get(name)))
+                        textbox.setText(str(self.instrument.parameters[name].get_latest()))
             self.update_divided_values()
 
     def single_update(self):
@@ -492,7 +492,7 @@ class EditInstrumentWidget(QWidget):
                 self.tracked_parameter = self.parent.actions[-1].sweep_values.name
             for tb in self.textboxes:
                 self.textboxes[tb].setDisabled(True)
-            self.worker = Worker(self.single_update, True)
+            self.worker = Worker(self.update_parameters_data, True)
             self.thread_pool.start(self.worker)
             self.live = True
 

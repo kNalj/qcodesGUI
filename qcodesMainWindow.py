@@ -230,7 +230,7 @@ class MainWindow(QMainWindow):
         # run a loop without displaying the live plot
         self.btn_run = QPushButton("Run")
         self.grid_layout.addWidget(self.btn_run, 8, 7, 1, 1)
-        self.btn_run.clicked.connect(self.run_with_livedata)
+        self.btn_run.clicked.connect(self.run_with_plot)
         icon = QtGui.QIcon("img/play_icon.png")
         self.btn_run.setIcon(icon)
 
@@ -722,6 +722,11 @@ class MainWindow(QMainWindow):
 
     def run_with_livedata(self):
         """
+        ################################################################################################################
+        LEGACY METHOD. Was used when i had no idea that each parameter hold the data of its last value so i dont need to
+        get it everytime from the physical instrument, i can just get it from tha parameter object.
+        ################################################################################################################
+
         This function appends a task to a loop. Task updates value of instruments parameter every iteration of the loop.
         After appending the task the loop gets started with plot option turned on.
 
