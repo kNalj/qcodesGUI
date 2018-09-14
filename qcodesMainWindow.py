@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
     QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox, QWidget, \
     QGridLayout, QSizePolicy, QSplitter, QHBoxLayout
-from PyQt5.QtCore import pyqtSlot, QThreadPool
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThreadPool
 
 import sys
 import inspect
@@ -35,6 +35,10 @@ sys.excepthook = trap_exc_during_debug
 
 
 class MainWindow(QMainWindow):
+
+    loop_started = pyqtSignal()
+    loop_finished = pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
@@ -421,6 +425,7 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         self.stop_loop_requested = False
+        self.loop_started.emit()
         self.line_trace_count = 0
 
         # first create a station and add all instruments to it, to have the data available in the output files
@@ -724,6 +729,7 @@ class MainWindow(QMainWindow):
         """
         self.stop_all_workers()
         self.enable_run_buttons()
+        self.loop_finished.emit()
 
     def run_with_livedata(self):
         """

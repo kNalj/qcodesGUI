@@ -34,6 +34,8 @@ class LoopsWidget(QWidget):
         self.loops = loops
         self.actions = actions
         self.parent = parent
+        self.parent.loop_started.connect(self.disable_changes)
+        self.parent.loop_finished.connect(self.enable_changes)
         self.name = loop_name
 
         # dictionary contining all loop actions that should be appended to the loop. Format: key : value
@@ -788,6 +790,14 @@ class LoopsWidget(QWidget):
 
         self.textbox_lower_limit.setText(lower)
         self.textbox_upper_limit.setText(upper)
+
+    def disable_changes(self):
+        self.add_loop_btn.setDisabled(True)
+        self.add_loop_btn.setText("Disabled: Loop running")
+
+    def enable_changes(self):
+        self.add_loop_btn.setDisabled(False)
+        self.add_loop_btn.setText("Save Changes")
 
 
 
