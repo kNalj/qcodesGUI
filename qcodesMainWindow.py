@@ -693,11 +693,14 @@ class MainWindow(QMainWindow):
         :return: NoneType
         """
         self.btn_run.setDisabled(True)
+
         for row_index in range(self.loops_table.rowCount()):
-            button = self.loops_table.cellWidget(row_index, 2)
-            button.setDisabled(True)
+            run_button = self.loops_table.cellWidget(row_index, 2)
+            run_button.setDisabled(True)
             delete_button = self.loops_table.cellWidget(row_index, 3)
             delete_button.setDisabled(True)
+            edit_button = self.loops_table.cellWidget(row_index, 1)
+            edit_button.setDisabled(True)
 
     def enable_run_buttons(self):
         """
@@ -711,6 +714,8 @@ class MainWindow(QMainWindow):
             run_button.setDisabled(False)
             delete_button = self.loops_table.cellWidget(row_index, 3)
             delete_button.setDisabled(False)
+            edit_button = self.loops_table.cellWidget(row_index, 1)
+            edit_button.setDisabled(False)
 
     def cleanup(self):
         """
