@@ -105,6 +105,9 @@ class MainWindow(QMainWindow):
         # line traces only
         self.line_trace_count = 0
 
+        # keep track of live plots in case someone closes one of them that they can be reopened
+        self.live_plots = []
+
         self.statusBar().showMessage("Ready")
         self.show()
 
@@ -294,10 +297,15 @@ class MainWindow(QMainWindow):
                     current_brand_menu.addAction(current_model_action)
                     current_model_action.triggered.connect(lambda checked, name=current_model_action.data(): self.add_new_instrument(name))
 
-        menu_bar = self.menuBar()
-        file_menu = menu_bar.addMenu("&File")
+        reopen_plot_window = QAction("Reopen plot", self)
+        reopen_plot_window.triggered.connect(self.reopen_plot_windows)
+
+        file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction(exit_action)
         file_menu.addMenu(start_new_measurement_menu)
+
+        tools_menu = self.menuBar().addMenu("&Tools")
+        tools_menu.addAction(reopen_plot_window)
 
     """""""""""""""""""""
     Data manipulation
@@ -455,6 +463,7 @@ class MainWindow(QMainWindow):
                 # traces
                 if isinstance(loop.actions[0], ActiveLoop):
                     line_traces_plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title="Line traces")
+                    self.live_plots.append(line_traces_plot)
                     loop.actions.append(Task(lambda: self.update_line_traces(line_traces_plot, data, parameter_name)))
                     loop.actions[0].progress_interval = None
                 else:
@@ -462,6 +471,7 @@ class MainWindow(QMainWindow):
                         loop.progress_interval = 20
                 parameter = get_plot_parameter(loop)
                 plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title=self.output_file_name.text())
+                self.live_plots.append(plot)
                 parameter_name = str(parameter)
                 plot.add(getattr(data, parameter_name))
                 # loop.with_bg_task(plot.update, plot.save).run(use_threads=True)
@@ -730,6 +740,7 @@ class MainWindow(QMainWindow):
         self.stop_all_workers()
         self.enable_run_buttons()
         self.loop_finished.emit()
+        self.live_plots = []
 
     def run_with_livedata(self):
         """
@@ -795,6 +806,12 @@ class MainWindow(QMainWindow):
             if self.loops_table.rowCount() > 1:
                 self.loops_table.resize(self.loops_table.width(), self.loops_table.height() - 30)
                 self.resize(self.width(), self.height() - 30)
+
+    def reopen_plot_windows(self):
+        for plot in self.live_plots:
+            plot.win.show()
+            print(plot)
+
 
 
 def main():
