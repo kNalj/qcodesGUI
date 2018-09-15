@@ -351,7 +351,7 @@ class EditInstrumentWidget(QWidget):
                     self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
                 else:
                     self.textboxes[name].setText(str(self.instrument.parameters[name].get_latest()))
-            if is_numeric(self.instrument.get(name)):
+            if is_numeric(self.instrument.parameters[name].get_latest()):
                 self.textboxes_real_values[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
             else:
                 self.textboxes_real_values[name].setText(str(self.instrument.parameters[name].get_latest()))
@@ -397,9 +397,13 @@ class EditInstrumentWidget(QWidget):
             self.instrument.set_dacs_zero()
         else:
             for name, parameter in self.instrument.parameters.items():
-                if is_numeric(self.instrument.get(name)):
+                if is_numeric(self.instrument.parameters[name].get_latest()):
                     if name[0:3] == "dac" and len(name) == (4 or 5):
                         self.instrument.set(name, 0)
+                    else:
+                        if hasattr(parameter, "set"):
+                            self.instrument.set(name, 0)
+
         self.update_parameters_data()
 
     def set_all(self):
@@ -409,45 +413,46 @@ class EditInstrumentWidget(QWidget):
         :return: NoneType
         """
         for name, parameter in self.instrument.parameters.items():
-            if name in self.textboxes:
-                full_name = str(self.instrument.parameters[name])
-                value = self.textboxes[name].text()
-                try:
-                    is_valid = False
-                    if hasattr(parameter.vals, "validtypes"):
-                        for data_type in parameter.vals.validtypes:
-                            try:
-                                set_value = data_type(value)
-                            except:
-                                continue
-                            else:
-                                is_valid = True
-                                break
-                    elif hasattr(parameter.vals, "_valid_values"):
-                        data_types = list(set([type(value) for value in parameter.vals._valid_values]))
-                        for data_type in data_types:
-                            try:
-                                set_value = data_type(value)
-                            except:
-                                continue
-                            else:
-                                is_valid = True
-                                break
-                    else:
-                        is_valid = True
-                        set_value = value
-
-                    if is_valid:
-                        if hasattr(parameter, "set"):
-                            self.instrument.set(parameter.name, set_value)
+            if hasattr(self.instrument.parameters[name], "set"):
+                if name in self.textboxes:
+                    full_name = str(self.instrument.parameters[name])
+                    value = self.textboxes[name].text()
+                    try:
+                        is_valid = False
+                        if hasattr(parameter.vals, "validtypes"):
+                            for data_type in parameter.vals.validtypes:
+                                try:
+                                    set_value = data_type(value)
+                                except:
+                                    continue
+                                else:
+                                    is_valid = True
+                                    break
+                        elif hasattr(parameter.vals, "_valid_values"):
+                            data_types = list(set([type(value) for value in parameter.vals._valid_values]))
+                            for data_type in data_types:
+                                try:
+                                    set_value = data_type(value)
+                                except:
+                                    continue
+                                else:
+                                    is_valid = True
+                                    break
                         else:
-                            show_error_message("Warning", "Parameter {} does not have a set function".format(full_name))
-                    else:
-                        show_error_message("Warning",
-                                           "Value [ {} ] is not in the list of allowed values for parameter [ {} ]".
-                                           format(value, full_name))
-                except Exception as e:
-                    show_error_message("Warning", str(e))
+                            is_valid = True
+                            set_value = value
+
+                        if is_valid:
+                            if hasattr(parameter, "set"):
+                                self.instrument.set(parameter.name, set_value)
+                            else:
+                                show_error_message("Warning", "Parameter {} does not have a set function".format(full_name))
+                        else:
+                            show_error_message("Warning",
+                                               "Value [ {} ] is not in the list of allowed values for parameter [ {} ]".
+                                               format(value, full_name))
+                    except Exception as e:
+                        show_error_message("Warning", str(e))
         self.update_parameters_data()
 
     """""""""""""""""""""
