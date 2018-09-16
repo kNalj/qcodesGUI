@@ -4,7 +4,7 @@ There u can find a set function for setting paramater defined by "name" to a val
 """
 
 from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QLabel, QComboBox, QShortcut, QVBoxLayout
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 import inspect
 import sys
@@ -19,6 +19,8 @@ from Helpers import *
 
 
 class Widget(QWidget):
+
+    submitted = pyqtSignal(object)
 
     def __init__(self, instruments, parent=None, default="DummyInstrument"):
         """
@@ -140,7 +142,8 @@ class Widget(QWidget):
         # preview of the instruments in the main window
         if instrument is not None:
             self.instruments[name] = instrument
-            self.parent.update_station_preview()
+            self.submitted.emit(instrument)
+            # self.parent.update_station_preview()
             self.close()
         
     def update_instrument_data(self):

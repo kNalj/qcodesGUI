@@ -554,6 +554,7 @@ class MainWindow(QMainWindow):
         # AddInstrumentWidget need access to self.instruments dictionary in order to be able to add any newly created
         # instruments to it
         self.add_instrument = Widget(self.instruments, parent=self, default=name)
+        self.add_instrument.submitted.connect(self.update_station_preview)
         self.add_instrument.show()
 
     @pyqtSlot()

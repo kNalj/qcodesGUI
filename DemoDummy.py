@@ -9,7 +9,7 @@ class DummyInstrument(Instrument):
     def __init__(self, name='dummy', gates=['dac1', 'dac2', 'dac3'], **kwargs):
 
         """
-        Create a dummy instrument that can be used for testing
+        Random measurement demonstration dummy
 
         Args:
             name (string): name for the instrument
