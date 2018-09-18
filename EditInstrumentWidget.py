@@ -14,6 +14,7 @@ from AddNewParameterWidget import AddNewParameterWidget
 from ThreadWorker import Worker, progress_func, print_output, thread_complete
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 from qcodes.instrument_drivers.QuTech.IVVI import IVVI
+from qcodes.instrument_drivers.IST_devices.DAC20bit import IST_20
 
 
 class EditInstrumentWidget(QWidget):
@@ -211,6 +212,11 @@ class EditInstrumentWidget(QWidget):
                     self.layout().addWidget(get_polarity_btn, row, 6, 1, 1)
                     start_y += 35
                     row += 1
+
+        if isinstance(self.instrument, IST_20):
+            reinit_dac_btn = QPushButton("Re init dacs")
+            reinit_dac_btn.clicked.connect(self.reinit_dacs)
+            self.layout().addWidget(reinit_dac_btn, row, 4, 1, 1)
 
         add_new_parameter_btn = QPushButton("Add parameter", self)
         add_new_parameter_btn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -505,6 +511,13 @@ class EditInstrumentWidget(QWidget):
     def add_new_parameter(self):
         self.add_new_param_widget = AddNewParameterWidget(self.instrument, self.instruments, self.dividers, parent=self)
         self.add_new_param_widget.show()
+
+    def reinit_dacs(self):
+
+        if self.instrument.reinitialize_dacs() == [82, 73, 97, 68]:
+            print("reinitialized")
+        else:
+            show_error_message("Warning", "Oops something went wrong.")
 
 
 if __name__ == '__main__':
