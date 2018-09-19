@@ -132,7 +132,7 @@ class EditInstrumentWidget(QWidget):
             self.layout().addWidget(self.inner_parameter_btns[name], row, 1, 1, 1)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
-            if is_numeric(self.instrument.parameters[name].get_latest()):
+            if is_numeric(self.instrument.parameters[name].get()):
                 val = round(float(self.instrument.parameters[name].get()), 3)
             else:
                 val = self.instrument.parameters[name].get()
@@ -142,7 +142,8 @@ class EditInstrumentWidget(QWidget):
             self.textboxes_real_values[name].setDisabled(True)
             # if that parameter has divider attached to it, display additional text box
             if str(parameter) in self.dividers:
-                self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)), self)
+                self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)),
+                                                                self)
                 self.layout().addWidget(self.textboxes_divided_values[name], row, 3, 1, 1)
                 self.textboxes_divided_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(val), self)
@@ -350,7 +351,7 @@ class EditInstrumentWidget(QWidget):
         if name is not None:
             full_name = str(self.instrument.parameters[name])
             if full_name in self.dividers:
-                self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
+                self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest() / self.dividers[full_name].division_value, 3)))
             else:
                 if is_numeric(self.instrument.parameters[name].get_latest()):
                     self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
@@ -364,7 +365,7 @@ class EditInstrumentWidget(QWidget):
             for name, textbox in self.textboxes.items():
                 full_name = str(self.instrument.parameters[name])
                 if full_name in self.dividers:
-                    textbox.setText(str(round(self.dividers[full_name].get_raw(), 3)))
+                    textbox.setText(str(round(self.instrument.parameters[name].get_latest() / self.dividers[full_name].division_value, 3)))
                 else:
                     if is_numeric(self.instrument.parameters[name].get_latest()):
                         textbox.setText(str(round(float(self.instrument.parameters[name].get_latest()), 3)))
@@ -389,7 +390,9 @@ class EditInstrumentWidget(QWidget):
     def update_divided_values(self):
         for name, textbox in self.textboxes_divided_values.items():
             # get values from the divider
-            textbox.setText(str(round(self.dividers[str(self.instrument.parameters[name])].get_raw(), 3)))
+            param = self.instrument.parameters[name]
+            divider = self.dividers[str(param)]
+            textbox.setText(str(round(param.get_latest()/divider.division_value, 3)))
 
     def set_all_to_zero(self):
         """
