@@ -406,14 +406,14 @@ class EditInstrumentWidget(QWidget):
             self.instrument.set_dacs_zero()
         else:
             for name, parameter in self.instrument.parameters.items():
-                if is_numeric(self.instrument.parameters[name].get_latest()):
+                if is_numeric(self.instrument.parameters[name].get()):
                     if name[0:3] == "dac" and len(name) == (4 or 5):
                         self.instrument.set(name, 0)
                     else:
                         if hasattr(parameter, "set"):
                             self.instrument.set(name, 0)
 
-        self.update_parameters_data()
+        self.hard_update_parameters_data()
 
     def set_all(self):
         """
@@ -521,6 +521,21 @@ class EditInstrumentWidget(QWidget):
             print("reinitialized")
         else:
             show_error_message("Warning", "Oops something went wrong.")
+
+    def hard_update_parameters_data(self):
+        for name, textbox in self.textboxes.items():
+            full_name = str(self.instrument.parameters[name])
+            if full_name in self.dividers:
+                value = round(self.instrument.parameters[name].get_raw(), 3)
+                divided_value = round(self.dividers[full_name].get(), 3)
+                self.textboxes_divided_values[name].setText(str(divided_value))
+            else:
+                if is_numeric(self.instrument.parameters[name].get()):
+                    value = round(float(self.instrument.parameters[name].get_latest()), 3)
+                else:
+                    value = self.instrument.parameters[name].get_latest()
+            self.textboxes[name].setText(str(value))
+            self.textboxes_real_values[name].setText(str(value))
 
 
 if __name__ == '__main__':
