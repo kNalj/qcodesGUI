@@ -133,9 +133,9 @@ class EditInstrumentWidget(QWidget):
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
             if is_numeric(self.instrument.parameters[name].get_latest()):
-                val = round(float(self.instrument.parameters[name].get_latest()), 3)
+                val = round(float(self.instrument.parameters[name].get()), 3)
             else:
-                val = self.instrument.parameters[name].get_latest()
+                val = self.instrument.parameters[name].get()
             # display values that are currently set to that instruments inner parameter
             self.textboxes_real_values[name] = QLineEdit(str(val), self)
             self.layout().addWidget(self.textboxes_real_values[name], row, 2, 1, 1)
@@ -183,7 +183,6 @@ class EditInstrumentWidget(QWidget):
                     dacs_label = QLabel("Dacs " + str(i-2) + " - " + str(i+1), self)
                     self.layout().addWidget(dacs_label, row, 1, 1, 1)
                     val = self.instrument.get_pol_dac(i-2)
-                    print(val)
                     self.dac_polarities[i] = QLineEdit(val, self)
                     self.layout().addWidget(self.dac_polarities[i], row, 2, 1, 1)
                     self.dac_polarities[i].setDisabled(True)
@@ -382,6 +381,7 @@ class EditInstrumentWidget(QWidget):
             self.update_divided_values()
 
     def single_update(self):
+
         # used to live update only a single parameter that is being swept by the currently running loop
         if self.tracked_parameter is not None:
             self.update_parameters_data(self.tracked_parameter)

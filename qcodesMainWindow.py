@@ -741,6 +741,7 @@ class MainWindow(QMainWindow):
         self.stop_all_workers()
         self.enable_run_buttons()
         self.loop_finished.emit()
+        self.line_trace_count = 0
         self.live_plots = []
 
     def run_with_livedata(self):
@@ -765,6 +766,10 @@ class MainWindow(QMainWindow):
 
     def update_opened_instruments(self):
         """
+        ################################################################################################################
+        LEGACY METHOD. Was used when i had no idea that each parameter hold the data of its last value so i dont need to
+        get it everytime from the physical instrument, i can just get it from tha parameter object.
+        ################################################################################################################
         Function that updates the value of a parameter that is being swept if the EditWindow of that window is opened.
 
         :return: NoneType
