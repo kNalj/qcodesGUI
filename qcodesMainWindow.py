@@ -403,8 +403,11 @@ class MainWindow(QMainWindow):
                 add_shortcut.activated.connect(lambda loop_name=name: self.setup_loops(loop_name))
 
             elif edit == name:
-                ################ BUG ALERT ################## FIX AT SOME POINT OF YOUR LIFE DUDE
-                rows = int(name[-1])-1
+                for i in range(self.loops_table.rowCount()):
+                    item = self.loops_table.item(i, 0)
+                    if item.text()[:len(name)+1] == name + " ":
+                        rows = i
+                        break
 
                 # if a loop is being edited, just update the values of the edited loop
                 lower = str(loop.sweep_values[0])
