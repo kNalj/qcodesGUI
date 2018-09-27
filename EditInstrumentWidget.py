@@ -132,17 +132,18 @@ class EditInstrumentWidget(QWidget):
             self.layout().addWidget(self.inner_parameter_btns[name], row, 1, 1, 1)
             self.inner_parameter_btns[name].clicked.connect(self.make_edit_parameter(name))
 
-            if is_numeric(self.instrument.parameters[name].get_latest()):
-                val = round(float(self.instrument.parameters[name].get_latest()), 3)
+            if is_numeric(self.instrument.parameters[name].get()):
+                val = round(float(self.instrument.parameters[name].get()), 3)
             else:
-                val = self.instrument.parameters[name].get_latest()
+                val = self.instrument.parameters[name].get()
             # display values that are currently set to that instruments inner parameter
             self.textboxes_real_values[name] = QLineEdit(str(val), self)
             self.layout().addWidget(self.textboxes_real_values[name], row, 2, 1, 1)
             self.textboxes_real_values[name].setDisabled(True)
             # if that parameter has divider attached to it, display additional text box
             if str(parameter) in self.dividers:
-                self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)), self)
+                self.textboxes_divided_values[name] = QLineEdit(str(round(self.dividers[str(parameter)].get_raw(), 3)),
+                                                                self)
                 self.layout().addWidget(self.textboxes_divided_values[name], row, 3, 1, 1)
                 self.textboxes_divided_values[name].setDisabled(True)
             self.textboxes[name] = QLineEdit(str(val), self)
@@ -183,7 +184,6 @@ class EditInstrumentWidget(QWidget):
                     dacs_label = QLabel("Dacs " + str(i-2) + " - " + str(i+1), self)
                     self.layout().addWidget(dacs_label, row, 1, 1, 1)
                     val = self.instrument.get_pol_dac(i-2)
-                    print(val)
                     self.dac_polarities[i] = QLineEdit(val, self)
                     self.layout().addWidget(self.dac_polarities[i], row, 2, 1, 1)
                     self.dac_polarities[i].setDisabled(True)
@@ -351,7 +351,7 @@ class EditInstrumentWidget(QWidget):
         if name is not None:
             full_name = str(self.instrument.parameters[name])
             if full_name in self.dividers:
-                self.textboxes[name].setText(str(round(self.dividers[full_name].get_raw(), 3)))
+                self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest() / self.dividers[full_name].division_value, 3)))
             else:
                 if is_numeric(self.instrument.parameters[name].get_latest()):
                     self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
@@ -365,7 +365,7 @@ class EditInstrumentWidget(QWidget):
             for name, textbox in self.textboxes.items():
                 full_name = str(self.instrument.parameters[name])
                 if full_name in self.dividers:
-                    textbox.setText(str(round(self.dividers[full_name].get_raw(), 3)))
+                    textbox.setText(str(round(self.instrument.parameters[name].get_latest() / self.dividers[full_name].division_value, 3)))
                 else:
                     if is_numeric(self.instrument.parameters[name].get_latest()):
                         textbox.setText(str(round(float(self.instrument.parameters[name].get_latest()), 3)))
@@ -382,6 +382,7 @@ class EditInstrumentWidget(QWidget):
             self.update_divided_values()
 
     def single_update(self):
+
         # used to live update only a single parameter that is being swept by the currently running loop
         if self.tracked_parameter is not None:
             self.update_parameters_data(self.tracked_parameter)
@@ -389,7 +390,9 @@ class EditInstrumentWidget(QWidget):
     def update_divided_values(self):
         for name, textbox in self.textboxes_divided_values.items():
             # get values from the divider
-            textbox.setText(str(round(self.dividers[str(self.instrument.parameters[name])].get_raw(), 3)))
+            param = self.instrument.parameters[name]
+            divider = self.dividers[str(param)]
+            textbox.setText(str(round(param.get_latest()/divider.division_value, 3)))
 
     def set_all_to_zero(self):
         """
@@ -403,14 +406,14 @@ class EditInstrumentWidget(QWidget):
             self.instrument.set_dacs_zero()
         else:
             for name, parameter in self.instrument.parameters.items():
-                if is_numeric(self.instrument.parameters[name].get_latest()):
+                if is_numeric(self.instrument.parameters[name].get()):
                     if name[0:3] == "dac" and len(name) == (4 or 5):
                         self.instrument.set(name, 0)
                     else:
                         if hasattr(parameter, "set"):
                             self.instrument.set(name, 0)
 
-        self.update_parameters_data()
+        self.hard_update_parameters_data()
 
     def set_all(self):
         """
@@ -518,6 +521,21 @@ class EditInstrumentWidget(QWidget):
             print("reinitialized")
         else:
             show_error_message("Warning", "Oops something went wrong.")
+
+    def hard_update_parameters_data(self):
+        for name, textbox in self.textboxes.items():
+            full_name = str(self.instrument.parameters[name])
+            if full_name in self.dividers:
+                value = round(self.instrument.parameters[name].get_raw(), 3)
+                divided_value = round(self.dividers[full_name].get(), 3)
+                self.textboxes_divided_values[name].setText(str(divided_value))
+            else:
+                if is_numeric(self.instrument.parameters[name].get()):
+                    value = round(float(self.instrument.parameters[name].get_latest()), 3)
+                else:
+                    value = self.instrument.parameters[name].get_latest()
+            self.textboxes[name].setText(str(value))
+            self.textboxes_real_values[name].setText(str(value))
 
 
 if __name__ == '__main__':
