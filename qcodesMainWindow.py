@@ -467,7 +467,10 @@ class MainWindow(QMainWindow):
                 if isinstance(loop.actions[0], ActiveLoop):
                     line_traces_plot = qc.QtPlot(fig_x_position=0.05, fig_y_position=0.4, window_title="Line traces")
                     self.live_plots.append(line_traces_plot)
-                    loop.actions.append(Task(lambda: self.update_line_traces(line_traces_plot, data, parameter_name)))
+                    if len(loop.actions) < 3:
+                        loop.actions.append(Task(lambda: self.update_line_traces(line_traces_plot, data, parameter_name)))
+                    else:
+                        loop.actions[-1] = Task(lambda: self.update_line_traces(line_traces_plot, data, parameter_name))
                     loop.actions[0].progress_interval = None
                 else:
                     if loop.progress_interval is None:
@@ -795,6 +798,7 @@ class MainWindow(QMainWindow):
         if self.line_trace_count % 10 == 0:
             plot.clear()
         plot.add(getattr(dataset, parameter_name)[self.line_trace_count])
+        print(self.line_trace_count)
         self.line_trace_count += 1
 
     def resize_for_loop(self, decrease=False):
