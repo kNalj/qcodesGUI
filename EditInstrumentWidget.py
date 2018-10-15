@@ -301,7 +301,9 @@ class EditInstrumentWidget(QWidget):
 
                 if is_valid:
                     if hasattr(parameter, "set"):
-                        self.instrument.set(parameter.name, set_value)
+                        worker = Worker(lambda: self.instrument.set(parameter.name, set_value), False)
+                        worker.signals.finished.connect(self.update_parameters_data)
+                        self.thread_pool.start(worker)
                     else:
                         show_error_message("Warning", "Parameter {} does not have a set function".format(full_name))
                 else:
