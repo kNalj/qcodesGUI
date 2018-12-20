@@ -230,6 +230,7 @@ class EditInstrumentWidget(QWidget):
 
         # Sets all to values currently displayed in the text boxes that are editable
         set_all_btn = QPushButton("SET ALL", self)
+        set_all_btn.hide()
         self.layout().addWidget(set_all_btn, row, 5, 1, 1)
         # set_all_btn.clicked.connect(self.call_worker(self.set_all))
         set_all_btn.clicked.connect(self.set_all)
