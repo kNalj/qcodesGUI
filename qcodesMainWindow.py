@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
     QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox, QWidget, \
-    QGridLayout, QSizePolicy, QSplitter, QHBoxLayout
+    QGridLayout, QSizePolicy, QSplitter, QHBoxLayout, QMessageBox
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThreadPool
 
 import sys
@@ -547,6 +547,7 @@ class MainWindow(QMainWindow):
         Close the main window
         :return: NoneType
         """
+
         # Close all the instruments not to leave any hanging tails
         for name, instrument in self.instruments.items():
             print("Closing", instrument)
@@ -556,7 +557,17 @@ class MainWindow(QMainWindow):
         app.closeAllWindows()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
-        self.exit()
+        are_you_sure = QMessageBox()
+        close = are_you_sure.question(self, "Don't do it.",
+                                      "Are you sure you want to close all windows and exit the application ?",
+                                      are_you_sure.Yes | are_you_sure.No)
+
+        if close == are_you_sure.Yes:
+            self.exit()
+            a0.accept()
+        else:
+            a0.ignore()
+            return
 
     @pyqtSlot()
     def add_new_instrument(self, name):
