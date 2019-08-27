@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QMenu, QPushButton, QLabel, QFileDialog, \
     QLineEdit, QShortcut, QTableWidget, QTableWidgetItem, QHeaderView, QTableView, QDesktopWidget, QComboBox, QWidget, \
-    QGridLayout, QSizePolicy, QSplitter, QHBoxLayout
+    QGridLayout, QSizePolicy, QSplitter, QHBoxLayout, QMessageBox
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThreadPool
 
 import sys
@@ -17,6 +17,7 @@ from Random import random
 from ViewTree import ViewTree
 from TextEditWidget import Notepad
 from AddInstrumentWidget import Widget
+from measurments.MultiSweep import MultiSweep
 from SetupLoopsWidget import LoopsWidget
 from InstrumentData import instrument_data
 from AttachDividersWidget import DividerWidget
@@ -300,12 +301,19 @@ class MainWindow(QMainWindow):
         reopen_plot_window = QAction("Reopen plot", self)
         reopen_plot_window.triggered.connect(self.reopen_plot_windows)
 
+        multi_param_measurement = QAction("Multi sweep", self)
+        multi_param_measurement.triggered.connect(self.open_multi_sweep_measurement)
+
         file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction(exit_action)
         file_menu.addMenu(start_new_measurement_menu)
 
         tools_menu = self.menuBar().addMenu("&Tools")
         tools_menu.addAction(reopen_plot_window)
+
+        measurement_menu = self.menuBar().addMenu("&Measurement")
+        measurement_menu.addAction(multi_param_measurement)
+
 
     """""""""""""""""""""
     Data manipulation
@@ -539,6 +547,7 @@ class MainWindow(QMainWindow):
         Close the main window
         :return: NoneType
         """
+
         # Close all the instruments not to leave any hanging tails
         for name, instrument in self.instruments.items():
             print("Closing", instrument)
@@ -546,10 +555,19 @@ class MainWindow(QMainWindow):
         # Close all other windows that are currently opened
         app = QtGui.QGuiApplication.instance()
         app.closeAllWindows()
-        self.close()
 
     def closeEvent(self, a0: QtGui.QCloseEvent):
-        self.exit()
+        are_you_sure = QMessageBox()
+        close = are_you_sure.question(self, "Don't do it.",
+                                      "Are you sure you want to close all windows and exit the application ?",
+                                      are_you_sure.Yes | are_you_sure.No)
+
+        if close == are_you_sure.Yes:
+            self.exit()
+            a0.accept()
+        else:
+            a0.ignore()
+            return
 
     @pyqtSlot()
     def add_new_instrument(self, name):
@@ -607,6 +625,11 @@ class MainWindow(QMainWindow):
         """
         self.attach_divider_widget = DividerWidget(self.instruments, self.dividers, parent=self)
         self.attach_divider_widget.show()
+
+    @pyqtSlot()
+    def open_multi_sweep_measurement(self, name=""):
+        self.msm = MultiSweep(self.instruments, self.dividers, self.loops, self.actions, parent=self, loop_name=name)
+        self.msm.show()
 
     def stop_all_workers(self):
         """

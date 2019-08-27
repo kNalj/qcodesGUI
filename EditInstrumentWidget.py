@@ -230,6 +230,7 @@ class EditInstrumentWidget(QWidget):
 
         # Sets all to values currently displayed in the text boxes that are editable
         set_all_btn = QPushButton("SET ALL", self)
+        set_all_btn.hide()
         self.layout().addWidget(set_all_btn, row, 5, 1, 1)
         # set_all_btn.clicked.connect(self.call_worker(self.set_all))
         set_all_btn.clicked.connect(self.set_all)
@@ -301,7 +302,9 @@ class EditInstrumentWidget(QWidget):
 
                 if is_valid:
                     if hasattr(parameter, "set"):
-                        self.instrument.set(parameter.name, set_value)
+                        worker = Worker(lambda: self.instrument.set(parameter.name, set_value), False)
+                        worker.signals.finished.connect(self.update_parameters_data)
+                        self.thread_pool.start(worker)
                     else:
                         show_error_message("Warning", "Parameter {} does not have a set function".format(full_name))
                 else:

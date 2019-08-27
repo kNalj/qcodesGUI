@@ -800,7 +800,6 @@ class LoopsWidget(QWidget):
         self.add_loop_btn.setText("Save Changes")
 
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = LoopsWidget([])
