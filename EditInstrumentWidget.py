@@ -15,6 +15,7 @@ from ThreadWorker import Worker, progress_func, print_output, thread_complete
 from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 from qcodes.instrument_drivers.QuTech.IVVI import IVVI
 from qcodes.instrument_drivers.IST_devices.DAC20bit import IST_20
+from qcodes.instrument_drivers.ZI.MFLI import MFLI
 
 
 class EditInstrumentWidget(QWidget):
@@ -255,10 +256,10 @@ class EditInstrumentWidget(QWidget):
     """""""""""""""""""""
     def make_set_parameter(self, parameter_name):
         """
-        Function factory that createc function for each of the set buttons. Takes in name of the instrument parameter
+        Function factory that creates function for each of the set buttons. Takes in name of the instrument parameter
         and passes it to the inner function. Function returns newly created function.
 
-        :param parameter: name of the parameter that is being set
+        :param parameter_name: name of the parameter that is being set
         :return: function that sets the parameter
         """
 
@@ -356,10 +357,13 @@ class EditInstrumentWidget(QWidget):
             if full_name in self.dividers:
                 self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest() / self.dividers[full_name].division_value, 3)))
             else:
-                if is_numeric(self.instrument.parameters[name].get_latest()):
-                    self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
+                if isinstance(self.instrument, MFLI):
+                    self.textboxes[name].setText(str(round(self.instrument.parameters[name].get(), 9)))
                 else:
-                    self.textboxes[name].setText(str(self.instrument.parameters[name].get_latest()))
+                    if is_numeric(self.instrument.parameters[name].get_latest()):
+                        self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
+                    else:
+                        self.textboxes[name].setText(str(self.instrument.parameters[name].get_latest()))
             if is_numeric(self.instrument.parameters[name].get_latest()):
                 self.textboxes_real_values[name].setText(str(round(self.instrument.parameters[name].get_latest(), 3)))
             else:
