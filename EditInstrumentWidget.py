@@ -16,6 +16,7 @@ from EditInstrumentParametersWidget import EditInstrumentParameterWidget
 from qcodes.instrument_drivers.QuTech.IVVI import IVVI
 from qcodes.instrument_drivers.IST_devices.DAC20bit import IST_20
 from qcodes.instrument_drivers.ZI.MFLI import MFLI
+from qcodes.instrument_drivers.ZI.MFLIpoll import MFLIpoll
 
 
 class EditInstrumentWidget(QWidget):
@@ -114,8 +115,8 @@ class EditInstrumentWidget(QWidget):
                 name = "dac" + str(i + 1)
                 params_to_show[name] = getattr(self.instrument, name)
         # ################################################ Fix this ##################################################
-        elif self.instrument_name == "UHFLI":
-            print("ja sam uhfli")
+        elif self.instrument_name in ["UHFLI", "MFLI"]:
+            print("ja sam LockIn")
             params_to_show = {}
         else:
             params_to_show = self.instrument.parameters
@@ -357,7 +358,7 @@ class EditInstrumentWidget(QWidget):
             if full_name in self.dividers:
                 self.textboxes[name].setText(str(round(self.instrument.parameters[name].get_latest() / self.dividers[full_name].division_value, 3)))
             else:
-                if isinstance(self.instrument, MFLI):
+                if isinstance(self.instrument, MFLI) or isinstance(self.instrument, MFLIpoll):
                     self.textboxes[name].setText(str(round(self.instrument.parameters[name].get(), 9)))
                 else:
                     if is_numeric(self.instrument.parameters[name].get_latest()):
