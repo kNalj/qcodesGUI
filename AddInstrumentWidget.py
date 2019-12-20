@@ -222,7 +222,9 @@ class Widget(QWidget):
         self.premade_instruments["DummyInstrument"] = getattr(importlib.import_module("DemoDummy"), "DummyInstrument")
         not_working = ["Keysight_33500B_channels", "M3201A", "M3300A", "M4i", "AWGFileParser", "Infiniium",
                        "KeysightAgilent_33XXX", "Model_336", "Base_SPDT", "RC_SP4T", "RC_SPDT", "USB_SPDT", "ZIUHFLI",
-                       "QDac_channels", "RTO1000", "ZNB", "SR860", "SR86x", "AWG5208", "AWG70000A", "AWG70002A", "Keithley_2600_channels"]
+                       "QDac_channels", "RTO1000", "ZNB", "SR860", "SR86x", "AWG5208", "AWG70000A", "AWG70002A",
+                       "Keithley_2600_channels", "Keysight_N5183B", "Keysight_N6705B", "N52xx", "AG_UC8",
+                       "MercuryiPS_VISA", ]
 
         path = os.path.dirname(inspect.getfile(qc)) + "\\instrument_drivers"
         brands = get_subfolders(path, True)
